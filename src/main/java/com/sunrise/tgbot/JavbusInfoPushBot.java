@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @description: 信息推送
@@ -121,9 +123,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 if (!linkedDeque.isEmpty()) {
                     JavbusDataItem javbusDataItem = linkedDeque.pollFirst();
-                    //Runnable tgPushTask = new JavbusPushInfoJob(javbusDataItem);
+                    Runnable tgPushTask = new JavbusPushInfoJob(javbusDataItem);
 
-                    JavbusPushInfoPipelineJob tgPushTask = new JavbusPushInfoPipelineJob(javbusDataItem);
+                    //JavbusPushInfoPipelineJob tgPushTask = new JavbusPushInfoPipelineJob(javbusDataItem);
 
                     JobExcutor.doTgJob(tgPushTask);
 
@@ -181,16 +183,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     sendMessage.enableMarkdown(false);
                     sendMessage.enableNotification();
                     try {
-                        Message backMessage = execute(sendMessage);
-                        return backMessage;
+                        executeAsync(sendMessage).whenCompleteAsync((message, throwable) -> System.out.println("推送简介完成：" + javbusDataItem.getCode()));
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
                     return null;
                 });
-
-                stage1.whenCompleteAsync((message, throwable) -> System.out.println("推送简介完成：" + javbusDataItem.getCode()));
-
                 CompletableFuture<Message> stage2 = CompletableFuture.supplyAsync(() -> {
                     String magnetStrs = javbusDataItem.toPrettyMagnetStrs();
                     SendMessage magnetMessage = new SendMessage();
@@ -199,15 +197,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     magnetMessage.enableHtml(true);
                     magnetMessage.enableMarkdown(false);
                     try {
-                        Message backMessage = execute(magnetMessage);
-                        return backMessage;
+                        executeAsync(magnetMessage).whenCompleteAsync((message, throwable) -> System.out.println("推送磁力链接完成：" + javbusDataItem.getCode()));
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
                     return null;
-                });
 
-                stage2.whenCompleteAsync((message, throwable) -> System.out.println("推送磁力链接完成：" + javbusDataItem.getCode()));
+                });
 
                 CompletableFuture<Message> stage3 = CompletableFuture.supplyAsync(() -> {
                     List<String> sampleImgs = javbusDataItem.getSampleImgs();
@@ -244,20 +240,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             SendMediaGroup sendMediaGroup = new SendMediaGroup();
                             sendMediaGroup.setChatId(chatId);
                             sendMediaGroup.setMedias(inputMediaPhotoList);
-                            try {
-                                execute(sendMediaGroup);
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
-                            }
+                            executeAsync(sendMediaGroup).whenCompleteAsync((message, throwable) -> System.out.println("推送样品图完成：" + javbusDataItem.getCode()));
                         }
 
                     }
                     return null;
                 });
 
-                stage3.whenCompleteAsync((message, throwable) -> System.out.println("推送样品图完成：" + javbusDataItem.getCode()));
-
-                CompletableFuture<Void> all = CompletableFuture.allOf(stage1, stage2,stage3);
+                CompletableFuture<Void> all = CompletableFuture.allOf(stage1, stage2, stage3);
                 //等待所有任务完成
                 all.join();
 
@@ -300,27 +290,73 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 for (List<String> strings : listList) {
                     List<InputMedia> inputMediaPhotoList = new ArrayList<>();
                     boolean hasSetTag = true;
-                    for (String sampleImg : strings) {
+                    //for (String sampleImg : strings) {
+                    //    InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
+                    //    if (hasSetTag) {
+                    //        inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
+                    //        hasSetTag = false;
+                    //    }
+                    //
+                    //    //下载图片
+                    //    OkHttpClient client = new OkHttpClient();
+                    //    //获取请求对象
+                    //    Request request = new Request.Builder().url(sampleImg.trim()).build();
+                    //    //获取响应体
+                    //    ResponseBody body = null;
+                    //    try {
+                    //        body = client.newCall(request).execute().body();
+                    //    } catch (IOException e) {
+                    //        e.printStackTrace();
+                    //    }
+                    //    //获取流
+                    //    InputStream in = body.byteStream();
+                    //    inputMediaPhoto.setMedia(in, sampleImg.substring(sampleImg.lastIndexOf("/")));
+                    //    inputMediaPhoto.setParseMode("Markdown");
+                    //    inputMediaPhotoList.add(inputMediaPhoto);
+                    //}
+
+                    CompletableFuture[] completableFutures = strings.stream()
+                            .map(el -> {
+                                CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                                    //下载图片
+                                    OkHttpClient client = new OkHttpClient.Builder()
+                                            .retryOnConnectionFailure(true)
+                                            .connectTimeout(15, TimeUnit.SECONDS) //连接超时
+                                            .readTimeout(15, TimeUnit.SECONDS) //读取超时
+                                            .writeTimeout(15, TimeUnit.SECONDS) //写超时
+                                            .build();
+                                    //获取请求对象
+                                    Request request = new Request.Builder().url(el.trim()).build();
+                                    //获取响应体
+                                    ResponseBody body = null;
+                                    try {
+                                        body = client.newCall(request).execute().body();
+                                    } catch (IOException exception) {
+                                        exception.printStackTrace();
+                                    }
+                                    Object[] objects = new Object[2];
+                                    objects[0] = body.byteStream();
+                                    objects[1] = el.trim();
+                                    return objects;
+                                });
+
+                                return inputStreamCompletableFuture;
+                            }).toArray(CompletableFuture[]::new);
+
+                    CompletableFuture.allOf(completableFutures).join();
+
+                    for (int i = 0; i < completableFutures.length; i++) {
                         InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                         if (hasSetTag) {
                             inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
                             hasSetTag = false;
                         }
+                        CompletableFuture completableFuture = completableFutures[i];
+                        Object[] objects = (Object[]) completableFuture.get();
+                        InputStream inputStream = (InputStream)objects[0];
+                        String sampleImg = (String)objects[1];
 
-                        //下载图片
-                        OkHttpClient client = new OkHttpClient();
-                        //获取请求对象
-                        Request request = new Request.Builder().url(sampleImg.trim()).build();
-                        //获取响应体
-                        ResponseBody body = null;
-                        try {
-                            body = client.newCall(request).execute().body();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        //获取流
-                        InputStream in = body.byteStream();
-                        inputMediaPhoto.setMedia(in, sampleImg.substring(sampleImg.lastIndexOf("/")));
+                        inputMediaPhoto.setMedia(inputStream, sampleImg.substring(sampleImg.lastIndexOf("/")));
                         inputMediaPhoto.setParseMode("Markdown");
                         inputMediaPhotoList.add(inputMediaPhoto);
                     }
@@ -329,24 +365,20 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     sendMediaGroup.setChatId(chatId);
                     sendMediaGroup.setMedias(inputMediaPhotoList);
                     CompletableFuture<List<Message>> listCompletableFuture = executeAsync(sendMediaGroup);
-                    while (!listCompletableFuture.isDone()) {
-                        TimeUnit.SECONDS.sleep(5);
-                        System.out.println("正在推送样品图" + javbusDataItem.getCode() + "，请稍等...: ");
-                    }
-                    System.out.println("推送样品图完成：" + javbusDataItem.getCode());
 
-                    //Thread.sleep(5000);
+                    listCompletableFuture.whenCompleteAsync((message, throwable) -> System.out.println("推送样品图完成：" + javbusDataItem.getCode()))
+                            .exceptionally(new Function<Throwable, List<Message>>() {
+                                @Override
+                                public List<Message> apply(Throwable throwable) {
+                                    System.out.println("推送样品图出现异常：" + throwable.getMessage());
+                                    return null;
+                                }
+                            });
+                    listCompletableFuture.join();
                 }
-
             }
         } catch (Exception e) {
             System.out.println("推送样品图出现异常：" + e.getMessage());
-            //try {
-            //    Thread.sleep(15000);
-            //    pushSampleImagesInfo(javbusDataItem);
-            //} catch (InterruptedException interruptedException) {
-            //    interruptedException.printStackTrace();
-            //}
         }
 
     }

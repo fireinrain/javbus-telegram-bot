@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +44,10 @@ public class JavbusSpider {
         Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
         okHttpClient = new OkHttpClient.Builder()
                 .proxy(proxy)
+                .retryOnConnectionFailure(true)
+                .connectTimeout(15, TimeUnit.SECONDS) //连接超时
+                .readTimeout(15, TimeUnit.SECONDS) //读取超时
+                .writeTimeout(15, TimeUnit.SECONDS) //写超时
                 .build();
     }
 
@@ -53,6 +58,7 @@ public class JavbusSpider {
 
     /**
      * 按照番号获取该番号信息
+     *
      * @param fileCode
      * @return
      */
@@ -66,12 +72,29 @@ public class JavbusSpider {
         Response execute = null;
         try {
             execute = okHttpClient.newCall(request).execute();
-            if (execute.code() != 200){
-                System.out.println("无法查询："+filmReqUrl);
+            if (execute.code() != 200) {
+                System.out.println("无法查询：" + filmReqUrl);
                 return javbusDataItem;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            //重试次数
+            int retry = 0;
+            while (retry < 3) {
+                try {
+                    execute = okHttpClient.newCall(request).execute();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                if (execute.code() != 200) {
+                    System.out.println("无法查询：" + filmReqUrl);
+                    return javbusDataItem;
+                }
+                if (execute.code() == 200) {
+                    break;
+                }
+                retry++;
+            }
         }
         String result = null;
         try {
@@ -136,6 +159,7 @@ public class JavbusSpider {
 
     /**
      * 抽取简介内容
+     *
      * @param javbusDataItem
      * @param elements
      */
@@ -203,6 +227,7 @@ public class JavbusSpider {
 
     /**
      * 抽取磁力内容
+     *
      * @param javbusDataItem
      * @param body
      * @param fileReqUrl
@@ -238,6 +263,7 @@ public class JavbusSpider {
 
     /**
      * 提取磁力内容到列表
+     *
      * @param elements
      * @return
      */
@@ -281,6 +307,7 @@ public class JavbusSpider {
 
     /**
      * 解析磁力相应dom
+     *
      * @param elementList
      * @return
      */
@@ -361,6 +388,7 @@ public class JavbusSpider {
 
     /**
      * 判断是否是日期
+     *
      * @param str
      * @return
      */
@@ -380,6 +408,7 @@ public class JavbusSpider {
 
     /**
      * 组装磁力内容请求
+     *
      * @param dataStr
      * @return
      */
@@ -397,6 +426,7 @@ public class JavbusSpider {
 
     /**
      * 生成磁力内容请求
+     *
      * @param filmreqUrl
      * @param magnetReqUrl
      * @return
@@ -410,6 +440,7 @@ public class JavbusSpider {
 
     /**
      * 获取磁力链接请求头
+     *
      * @param filmreqUrl
      * @param magnentReqUrl
      * @return
@@ -440,12 +471,13 @@ public class JavbusSpider {
 
     /**
      * 测试方法
+     *
      * @param args
      * @throws JsonProcessingException
      */
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
-        SpiderJob spiderJob = new SpiderJob("FSDSS-211",JobExcutor.concurrentLinkedDeque);
+        SpiderJob spiderJob = new SpiderJob("FSDSS-211", JobExcutor.concurrentLinkedDeque);
         JobExcutor.doSpiderJob(spiderJob);
 
 

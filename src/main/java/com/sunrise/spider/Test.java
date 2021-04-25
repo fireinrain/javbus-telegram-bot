@@ -3,15 +3,19 @@ package com.sunrise.spider;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import org.checkerframework.checker.units.qual.A;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -86,34 +90,74 @@ public class Test {
         int number = (int) Math.ceil((float) 13 / 10);
         System.out.println(number);
 
-        OkHttpClient okHttpClient = new OkHttpClient();
+        ArrayList<String> strings = new ArrayList<>();
+        String a = "https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-1.jpg";
+        String b ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-2.jpg";
+        String c ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-3.jpg";
+        String d ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-4.jpg";
+        String e ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-5.jpg";
 
-        Request request = new Request.Builder().url("https://www.javbus.com/xiaoqian").get().build();
+        strings.add(a);
+        strings.add(b);
+        strings.add(c);
+        strings.add(d);
+        strings.add(e);
 
-        Response execute = null;
-        try {
-            execute = okHttpClient.newCall(request).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String result = null;
-        try {
-            if (execute.code() != 200){
-                System.out.println("无法查询");
-                return;
-            }
-            result = execute.body().string();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        CompletableFuture[] objects = strings.stream()
+                .map(el -> {
+                    CompletableFuture<InputStream> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                        //下载图片
+                        OkHttpClient client = new OkHttpClient();
+                        //获取请求对象
+                        Request request = new Request.Builder().url(el.trim()).build();
+                        //获取响应体
+                        ResponseBody body = null;
+                        try {
+                            body = client.newCall(request).execute().body();
+                        } catch (IOException exception) {
+                            exception.printStackTrace();
+                        }
+                        return body.byteStream();
+                    });
 
-        Document document = Jsoup.parse(result);
+                    return inputStreamCompletableFuture;
+                }).toArray(CompletableFuture[]::new);
 
-        Elements contentContainer = document.select("body > div.wrap.mt30 > ul > li");
 
-        for (Element element : contentContainer) {
-            System.out.println(element.text());
-        }
+        CompletableFuture.allOf(objects).join();
+
+
+
+        System.out.println("");
+
+        //OkHttpClient okHttpClient = new OkHttpClient();
+        //
+        //Request request = new Request.Builder().url("https://www.javbus.com/xiaoqian").get().build();
+        //
+        //Response execute = null;
+        //try {
+        //    execute = okHttpClient.newCall(request).execute();
+        //} catch (IOException e) {
+        //    e.printStackTrace();
+        //}
+        //String result = null;
+        //try {
+        //    if (execute.code() != 200){
+        //        System.out.println("无法查询");
+        //        return;
+        //    }
+        //    result = execute.body().string();
+        //} catch (IOException e) {
+        //    e.printStackTrace();
+        //}
+        //
+        //Document document = Jsoup.parse(result);
+        //
+        //Elements contentContainer = document.select("body > div.wrap.mt30 > ul > li");
+        //
+        //for (Element element : contentContainer) {
+        //    System.out.println(element.text());
+        //}
 
 
         //body > div.wrap.mt30 > ul > li:nth-child(29) > a > p
