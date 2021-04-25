@@ -1,0 +1,422 @@
+package com.sunrise.tgbot;
+
+import com.sunrise.spider.JavbusDataItem;
+import com.sunrise.spider.JobExcutor;
+import com.sunrise.spider.SpiderJob;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.ResponseBody;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
+import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import org.telegram.telegrambots.meta.updateshandlers.SentCallback;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @description: 信息推送
+ * @version: 1.00
+ * @author: lzhaoyang
+ * @date: 2021/4/24 12:55 PM
+ */
+public class JavbusInfoPushBot extends TelegramLongPollingBot {
+    private String chatId = "-1001371132897";
+
+    //private String chatId = "-493244777";
+
+    private boolean isPrivateChannel = true;
+
+    public JavbusInfoPushBot(DefaultBotOptions options, String chatId, boolean isPrivateChannel) {
+        new JavbusInfoPushBot(options);
+        this.chatId = chatId;
+        this.isPrivateChannel = isPrivateChannel;
+    }
+
+    public JavbusInfoPushBot(DefaultBotOptions options) {
+        super(options);
+    }
+
+    @Override
+    public String getBotUsername() {
+        return TgBotConfig.JAVBUS_BOT_NAME;
+    }
+
+    @Override
+    public String getBotToken() {
+        return TgBotConfig.JAVBUS_BOT_TOKEN;
+    }
+
+    @Override
+    public void onUpdateReceived(Update update) {
+        //文本消息
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            String text = update.getMessage().getText();
+            if (text.trim().startsWith("/code")) {
+                String[] strings = text.split(" ");
+                if (strings.length == 2) {
+                    SpiderJob.trigerJavbusTask(strings[1].trim());
+                    System.out.println("触发推Javbus任务, 查询 " + strings[1]);
+                    chatId = update.getMessage().getChatId().toString();
+                    return;
+                } else {
+                    SendMessage message = new SendMessage();
+                    message.setChatId(update.getMessage().getChatId().toString());
+                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                    try {
+                        // Call method to send the message
+                        execute(message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+            }
+
+            System.out.println(TgBotConfig.JAVBUS_BOT_NAME + " 收到消息： " + text);
+            // Create a SendMessage object with mandatory fields
+            SendMessage message = new SendMessage();
+            message.setChatId(update.getMessage().getChatId().toString());
+            message.setText("'" + text + "<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+            try {
+                // Call method to send the message
+                execute(message);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    @Override
+    public void onRegister() {
+        super.onRegister();
+        JobExcutor.doTgJob(() -> this.startJavbusPushTask(chatId));
+    }
+
+    public void startJavbusPushTask(String chatId) {
+        ConcurrentLinkedDeque<JavbusDataItem> linkedDeque = JobExcutor.concurrentLinkedDeque;
+
+        while (true) {
+            //Response{protocol=http/1.1, code=200, message=OK, url=https://api.telegram.org/bot1795760173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o/sendMessage?chat_id=@sunrisechannel_8888&text=hello}
+            //{"ok":true,"result":{"message_id":38,"sender_chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"date":1619242901,"text":"hello"}}
+            System.out.println("--------------------------------睡眠2秒--------------------------------" + System.currentTimeMillis());
+            System.out.println("--------------------------------当前还有" + linkedDeque.size() + "个任务没有被推入执行器--------------------------------");
+            try {
+
+                if (!linkedDeque.isEmpty()) {
+                    JavbusDataItem javbusDataItem = linkedDeque.pollFirst();
+                    //Runnable tgPushTask = new JavbusPushInfoJob(javbusDataItem);
+
+                    JavbusPushInfoPipelineJob tgPushTask = new JavbusPushInfoPipelineJob(javbusDataItem);
+
+                    JobExcutor.doTgJob(tgPushTask);
+
+                    //SendPhoto.SendPhotoBuilder builder = SendPhoto.builder();
+                    //builder.caption("cccccc");
+                    //builder.photo(new InputFile(new FileInputStream("abc.jpg"),"ceshi"));
+                    //builder.chatId("-1001371132897");
+                    //builder.parseMode("Markdown");
+                    //SendPhoto sendPhoto = builder.build();
+
+                    //execute(sendPhoto);
+                } else {
+                    System.out.println("--------------------------------当前爬虫数据已经推送完毕--------------------------------");
+                }
+                TimeUnit.SECONDS.sleep(5);
+
+                //SendDocument.SendDocumentBuilder builder = SendDocument.builder();
+                //builder.chatId("-1001371132897");
+                //builder.caption("这是一个标题");
+                //builder.parseMode("Markdown");
+                //InputFile inputFile = new InputFile();
+                //inputFile.setMedia(new FileInputStream("abc.jpg"),"测试图票");
+                //builder.thumb(inputFile);
+                //
+                //InputFile inputFile2 = new InputFile();
+                //inputFile2.setMedia(new FileInputStream("abc.jpg"),"测试图票");
+                //builder.document(inputFile2);
+                //SendDocument sendDocument = builder.build();
+                //execute(sendDocument);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class JavbusPushInfoPipelineJob implements Runnable {
+        private JavbusDataItem javbusDataItem = null;
+
+
+        public JavbusPushInfoPipelineJob(JavbusDataItem javbusDataItem) {
+            this.javbusDataItem = javbusDataItem;
+        }
+
+        @Override
+        public void run() {
+            try {
+
+                CompletableFuture<Message> stage1 = CompletableFuture.supplyAsync(() -> {
+                    String prettyStr = javbusDataItem.toPrettyStr();
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText(prettyStr);
+                    sendMessage.enableHtml(true);
+                    sendMessage.enableMarkdown(false);
+                    sendMessage.enableNotification();
+                    try {
+                        Message backMessage = execute(sendMessage);
+                        return backMessage;
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                });
+
+                stage1.whenCompleteAsync((message, throwable) -> System.out.println("推送简介完成：" + javbusDataItem.getCode()));
+
+                CompletableFuture<Message> stage2 = CompletableFuture.supplyAsync(() -> {
+                    String magnetStrs = javbusDataItem.toPrettyMagnetStrs();
+                    SendMessage magnetMessage = new SendMessage();
+                    magnetMessage.setChatId(chatId);
+                    magnetMessage.setText(magnetStrs);
+                    magnetMessage.enableHtml(true);
+                    magnetMessage.enableMarkdown(false);
+                    try {
+                        Message backMessage = execute(magnetMessage);
+                        return backMessage;
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                });
+
+                stage2.whenCompleteAsync((message, throwable) -> System.out.println("推送磁力链接完成：" + javbusDataItem.getCode()));
+
+                CompletableFuture<Message> stage3 = CompletableFuture.supplyAsync(() -> {
+                    List<String> sampleImgs = javbusDataItem.getSampleImgs();
+                    List<List<String>> listList = javbusDataItem.sliceSampleImgUrlForupload();
+                    if (null != sampleImgs && !sampleImgs.isEmpty()) {
+                        //发送图片组
+                        for (List<String> strings : listList) {
+                            List<InputMedia> inputMediaPhotoList = new ArrayList<>();
+                            boolean hasSetTag = true;
+                            for (String sampleImg : strings) {
+                                InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
+                                if (hasSetTag) {
+                                    inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
+                                    hasSetTag = false;
+                                }
+                                //下载图片
+                                OkHttpClient client = new OkHttpClient();
+                                //获取请求对象
+                                Request request = new Request.Builder().url(sampleImg.trim()).build();
+                                //获取响应体
+                                ResponseBody body = null;
+                                try {
+                                    body = client.newCall(request).execute().body();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                //获取流
+                                InputStream in = body.byteStream();
+                                inputMediaPhoto.setMedia(in, sampleImg.substring(sampleImg.lastIndexOf("/")));
+                                inputMediaPhoto.setParseMode("Markdown");
+                                inputMediaPhotoList.add(inputMediaPhoto);
+                            }
+
+                            SendMediaGroup sendMediaGroup = new SendMediaGroup();
+                            sendMediaGroup.setChatId(chatId);
+                            sendMediaGroup.setMedias(inputMediaPhotoList);
+                            try {
+                                execute(sendMediaGroup);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }
+                    return null;
+                });
+
+                stage3.whenCompleteAsync((message, throwable) -> System.out.println("推送样品图完成：" + javbusDataItem.getCode()));
+
+                CompletableFuture<Void> all = CompletableFuture.allOf(stage1, stage2,stage3);
+                //等待所有任务完成
+                all.join();
+
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("推送作品信息异常：" + e.getMessage());
+            }
+        }
+    }
+
+
+    class JavbusPushInfoJob implements Runnable {
+        private JavbusDataItem javbusDataItem;
+
+        public JavbusPushInfoJob(JavbusDataItem javbusDataItem) {
+            this.javbusDataItem = javbusDataItem;
+        }
+
+        @Override
+        public void run() {
+            try {
+                pushIntroduceInfo(javbusDataItem);
+                pushMagnentInfo(javbusDataItem);
+                pushSampleImagesInfo(javbusDataItem);
+
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void pushSampleImagesInfo(JavbusDataItem javbusDataItem) throws TelegramApiException {
+        try {
+            List<String> sampleImgs = javbusDataItem.getSampleImgs();
+
+            List<List<String>> listList = javbusDataItem.sliceSampleImgUrlForupload();
+
+            if (null != sampleImgs && !sampleImgs.isEmpty()) {
+                //发送图片组
+                for (List<String> strings : listList) {
+                    List<InputMedia> inputMediaPhotoList = new ArrayList<>();
+                    boolean hasSetTag = true;
+                    for (String sampleImg : strings) {
+                        InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
+                        if (hasSetTag) {
+                            inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
+                            hasSetTag = false;
+                        }
+
+                        //下载图片
+                        OkHttpClient client = new OkHttpClient();
+                        //获取请求对象
+                        Request request = new Request.Builder().url(sampleImg.trim()).build();
+                        //获取响应体
+                        ResponseBody body = null;
+                        try {
+                            body = client.newCall(request).execute().body();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        //获取流
+                        InputStream in = body.byteStream();
+                        inputMediaPhoto.setMedia(in, sampleImg.substring(sampleImg.lastIndexOf("/")));
+                        inputMediaPhoto.setParseMode("Markdown");
+                        inputMediaPhotoList.add(inputMediaPhoto);
+                    }
+
+                    SendMediaGroup sendMediaGroup = new SendMediaGroup();
+                    sendMediaGroup.setChatId(chatId);
+                    sendMediaGroup.setMedias(inputMediaPhotoList);
+                    CompletableFuture<List<Message>> listCompletableFuture = executeAsync(sendMediaGroup);
+                    while (!listCompletableFuture.isDone()) {
+                        TimeUnit.SECONDS.sleep(5);
+                        System.out.println("正在推送样品图" + javbusDataItem.getCode() + "，请稍等...: ");
+                    }
+                    System.out.println("推送样品图完成：" + javbusDataItem.getCode());
+
+                    //Thread.sleep(5000);
+                }
+
+            }
+        } catch (Exception e) {
+            System.out.println("推送样品图出现异常：" + e.getMessage());
+            //try {
+            //    Thread.sleep(15000);
+            //    pushSampleImagesInfo(javbusDataItem);
+            //} catch (InterruptedException interruptedException) {
+            //    interruptedException.printStackTrace();
+            //}
+        }
+
+    }
+
+    private void pushIntroduceInfo(JavbusDataItem javbusDataItem) throws TelegramApiException {
+        try {
+            String prettyStr = javbusDataItem.toPrettyStr();
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText(prettyStr);
+            sendMessage.enableHtml(true);
+            sendMessage.enableMarkdown(false);
+            sendMessage.enableNotification();
+            executeAsync(sendMessage, new SentCallback<Message>() {
+                @Override
+                public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
+                    System.out.println("推送简介完成：" + javbusDataItem.getCode());
+                }
+
+                @Override
+                public void onError(BotApiMethod<Message> botApiMethod, TelegramApiRequestException e) {
+                }
+
+                @Override
+                public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                }
+            });
+        } catch (Exception e) {
+            //e.printStackTrace();
+            System.out.println("推送简介出现异常：" + e.getMessage());
+            //try {
+            //    Thread.sleep(2000);
+            //} catch (InterruptedException interruptedException) {
+            //    interruptedException.printStackTrace();
+            //}
+            //pushSampleImagesInfo(javbusDataItem);
+        }
+
+    }
+
+    private void pushMagnentInfo(JavbusDataItem javbusDataItem) throws TelegramApiException {
+        try {
+            String magnetStrs = javbusDataItem.toPrettyMagnetStrs();
+            SendMessage magnetMessage = new SendMessage();
+            magnetMessage.setChatId(chatId);
+            magnetMessage.setText(magnetStrs);
+            magnetMessage.enableMarkdown(true);
+            executeAsync(magnetMessage, new SentCallback<Message>() {
+                @Override
+                public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
+                    System.out.println("磁力信息推送完成： " + javbusDataItem.getCode());
+                }
+
+                @Override
+                public void onError(BotApiMethod<Message> botApiMethod, TelegramApiRequestException e) {
+                }
+
+                @Override
+                public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                }
+            });
+        } catch (Exception e) {
+            //e.printStackTrace();
+            System.out.println("推送磁力信息出现异常：" + e.getMessage());
+            //try {
+            //    Thread.sleep(2000);
+            //} catch (InterruptedException interruptedException) {
+            //    interruptedException.printStackTrace();
+            //}
+            //pushMagnentInfo(javbusDataItem);
+        }
+    }
+}
