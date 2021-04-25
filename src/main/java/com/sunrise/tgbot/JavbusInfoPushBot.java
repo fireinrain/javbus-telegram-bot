@@ -1,6 +1,7 @@
 package com.sunrise.tgbot;
 
 import com.sunrise.spider.JavbusDataItem;
+import com.sunrise.spider.JavbusHelper;
 import com.sunrise.spider.JobExcutor;
 import com.sunrise.spider.SpiderJob;
 import okhttp3.OkHttpClient;
@@ -70,7 +71,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/code")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
-                    SpiderJob.trigerJavbusTask(strings[1].trim());
+                    SpiderJob.trigerJavbusTask(JavbusHelper.normalCode(strings[1].trim()));
                     System.out.println("触发推Javbus任务, 查询 " + strings[1]);
                     chatId = update.getMessage().getChatId().toString();
                     return;
@@ -321,9 +322,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                     //下载图片
                                     OkHttpClient client = new OkHttpClient.Builder()
                                             .retryOnConnectionFailure(true)
-                                            .connectTimeout(15, TimeUnit.SECONDS) //连接超时
-                                            .readTimeout(15, TimeUnit.SECONDS) //读取超时
-                                            .writeTimeout(15, TimeUnit.SECONDS) //写超时
+                                            .connectTimeout(60, TimeUnit.SECONDS) //连接超时
+                                            .readTimeout(60, TimeUnit.SECONDS) //读取超时
+                                            .writeTimeout(60, TimeUnit.SECONDS) //写超时
                                             .build();
                                     //获取请求对象
                                     Request request = new Request.Builder().url(el.trim()).build();

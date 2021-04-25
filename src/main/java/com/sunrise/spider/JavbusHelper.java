@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -18,8 +19,19 @@ import java.util.stream.Collectors;
  * @date: 2021/4/25 4:27 AM
  */
 public class JavbusHelper {
+    public static String normalCode(String code) {
+        if (!code.contains("-")) {
+            assert code.length() >= 3;
+            String number = code.substring(code.length() - 3);
+            String alpha = code.substring(0, code.length() - 3);
+            String s = alpha.trim() + "-" + number.trim();
+            return s.toUpperCase(Locale.ROOT);
+        }
+        return code.toUpperCase(Locale.ROOT);
 
-    public static List<String> getStarAllCodeNrFanHao(String url){
+    }
+
+    public static List<String> getStarAllCodeNrFanHao(String url) {
         OkHttpClient okHttpClient = new OkHttpClient();
 
         Request request = new Request.Builder().url(url).get().build();
@@ -47,5 +59,10 @@ public class JavbusHelper {
 
         return collect;
 
+    }
+
+
+    public static void main(String[] args) {
+        System.out.println(normalCode("abp334"));
     }
 }
