@@ -8,6 +8,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -60,9 +64,21 @@ public class JavbusHelper {
         return collect;
 
     }
+    public static String parseStrToUrlEncoder(String str){
+        String encode = null;
+        try {
+            encode = URLEncoder.encode(str, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return encode;
+    }
 
 
     public static void main(String[] args) {
         System.out.println(normalCode("abp334"));
+
+        //System.out.println(parseStrToUrlEncoder("つかさ"));
+
     }
 }

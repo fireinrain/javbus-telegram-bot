@@ -13,6 +13,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.text.ParseException;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -45,19 +48,99 @@ public class JavbusSpider {
         okHttpClient = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .retryOnConnectionFailure(true)
-                .connectTimeout(15, TimeUnit.SECONDS) //连接超时
-                .readTimeout(15, TimeUnit.SECONDS) //读取超时
-                .writeTimeout(15, TimeUnit.SECONDS) //写超时
+                //连接超时
+                .connectTimeout(15, TimeUnit.SECONDS)
+                //读取超时
+                .readTimeout(15, TimeUnit.SECONDS)
+                //写超时
+                .writeTimeout(15, TimeUnit.SECONDS)
                 .build();
     }
 
     public static List<JavbusDataItem> fetchFilmsInfoByName(String starName) {
+        String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
+        String starUrl = "https://www.javbus.com/search/"+starNameEncode + "&type=&parent=ce";
+        Request request = new Request.Builder()
+                .url(starUrl).get()
+                .headers(Headers.of(getStarSearchReqHeader(starUrl)))
+                .build();
 
-        return null;
+        Response execute = null;
+        try {
+            execute = okHttpClient.newCall(request).execute();
+            if (execute.code() != 200) {
+                System.out.println("无法查询：" + starName);
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            //重试次数
+            int retry = 0;
+            while (retry < 3) {
+                try {
+                    execute = okHttpClient.newCall(request).execute();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                if (execute.code() != 200) {
+                    System.out.println("无法查询：" + starName);
+                    return null;
+                }
+                if (execute.code() == 200) {
+                    break;
+                }
+                retry++;
+            }
+        }
+        String result = null;
+        try {
+            result = execute.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(result);
+
+        Document document = Jsoup.parse(result);
+        Elements elements = document.select("#waterfall > div > a");
+        ArrayList<String> filmUrls = new ArrayList<>();
+        for (Element element : elements) {
+            String text = element.attr("href").trim();
+            filmUrls.add(text);
+            //System.out.println(text);
+        }
+
+        CompletableFuture[] completableFutures = filmUrls.stream()
+                .map(e -> e.replace(baseUrl, "")).parallel()
+                .map(e -> {
+                    CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                        return fetchFilmInFoByCode(e);
+                    });
+                    return dataItemCompletableFuture;
+                }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(completableFutures).join();
+
+        List<JavbusDataItem> javbusDataItems = Arrays.stream(completableFutures).map(e -> {
+            JavbusDataItem javbusDataItem = null;
+            try {
+                javbusDataItem = (JavbusDataItem) e.get();
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            } catch (ExecutionException executionException) {
+                executionException.printStackTrace();
+            }
+            return javbusDataItem;
+        }).collect(Collectors.toList());
+
+        //StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+
+        return javbusDataItems;
     }
 
     /**
      * 按照番号获取该番号信息
+     * DV-1314
+     * TD-026
      *
      * @param fileCode
      * @return
@@ -128,18 +211,23 @@ public class JavbusSpider {
 
     private static void parsetSampleImgsContent(JavbusDataItem javbusDataItem, Elements contentContainer) {
         Elements sampleWall = contentContainer.select("#sample-waterfall");
-
-        Element sampleImgsEl = sampleWall.get(0);
-        List<Node> childNodes = sampleImgsEl.childNodes();
         ArrayList<String> sampleUrls = new ArrayList<>();
-        for (Node childNode : childNodes) {
-            if (childNode instanceof Element) {
-                Element node = (Element) childNode;
-                String href = node.attr("href");
-                sampleUrls.add(href);
-                //System.out.println(href);
+        try {
+            Element sampleImgsEl = sampleWall.get(0);
+            List<Node> childNodes = sampleImgsEl.childNodes();
+
+            for (Node childNode : childNodes) {
+                if (childNode instanceof Element) {
+                    Element node = (Element) childNode;
+                    String href = node.attr("href");
+                    sampleUrls.add(href);
+                    //System.out.println(href);
+                }
             }
+        }catch (Exception e){
+            //没找到图片
         }
+
         javbusDataItem.setSampleImgs(sampleUrls);
     }
 
@@ -439,16 +527,14 @@ public class JavbusSpider {
     }
 
     /**
-     * 获取磁力链接请求头
-     *
-     * @param filmreqUrl
-     * @param magnentReqUrl
+     * 从请求头模版获取请求头
+     * @param templatePath
      * @return
      */
-    public static HashMap<String, String> getMagentReqHeader(String filmreqUrl, String magnentReqUrl) {
+    public static HashMap<String,String> getRequestHeader(String templatePath){
         //需要主动替换header头中的 referer :path
         ///ajax/uncledatoolsbyajax.php?gid=46298156144&lang=zh&img=https://pics.javbus.com/cover/87y2_b.jpg&uc=0&floor=734
-        File file = new File("src/main/resources/reqHeaders.txt");
+        File file = new File(templatePath);
         BufferedReader fileReader = null;
         try {
             fileReader = new BufferedReader(new FileReader(file));
@@ -461,12 +547,39 @@ public class JavbusSpider {
             hashMap.put(split[0], split[1]);
             return e;
         }).collect(Collectors.toList());
-
-        //替换
-        hashMap.put("referer", filmreqUrl);
-        String replace = magnentReqUrl.replace("https://www.javbus.com", "");
-        hashMap.put(":path", replace);
         return hashMap;
+    }
+
+    /**
+     * 获取磁力链接请求头
+     *
+     * @param filmreqUrl
+     * @param magnentReqUrl
+     * @return
+     */
+    public static HashMap<String, String> getMagentReqHeader(String filmreqUrl, String magnentReqUrl) {
+
+        HashMap<String, String> requestHeader = getRequestHeader("src/main/resources/reqHeaders.txt");
+        //需要主动替换header头中的 referer :path
+        ///ajax/uncledatoolsbyajax.php?gid=46298156144&lang=zh&img=https://pics.javbus.com/cover/87y2_b.jpg&uc=0&floor=734
+        //替换
+        requestHeader.put("referer", filmreqUrl);
+        String replace = magnentReqUrl.replace("https://www.javbus.com", "");
+        requestHeader.put(":path", replace);
+        return requestHeader;
+    }
+
+    /**
+     * 获取演员搜索请求头
+     * @param starReqUrl
+     * @return
+     */
+    public static HashMap<String,String> getStarSearchReqHeader(String starReqUrl){
+        HashMap<String, String> requestHeader = getRequestHeader("src/main/resources/searchReqHeader.txt");
+        //替换
+        String replace = starReqUrl.replace("https://www.javbus.com", "");
+        requestHeader.put(":path", replace);
+        return requestHeader;
     }
 
     /**
@@ -477,9 +590,10 @@ public class JavbusSpider {
      */
     public static void main(String[] args) {
 
-        SpiderJob spiderJob = new SpiderJob("FSDSS-211", JobExcutor.concurrentLinkedDeque);
-        JobExcutor.doSpiderJob(spiderJob);
+        //SpiderJob spiderJob = new SpiderJob("FSDSS-211", JobExcutor.concurrentLinkedDeque);
+        //JobExcutor.doSpiderJob(spiderJob);
 
+        fetchFilmsInfoByName("葵つかさ");
 
     }
 

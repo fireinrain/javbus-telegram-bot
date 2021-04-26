@@ -15,10 +15,13 @@ public class JobExcutor {
 
     public static volatile ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque = null;
 
+    public static volatile DelayQueue<DelaySampleImgPush> delaySampleImgPushes = null;
+
     static {
         spiderExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
-        tgBotExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        tgBotExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
         concurrentLinkedDeque = new ConcurrentLinkedDeque<>();
+        delaySampleImgPushes = new DelayQueue<>();
     }
 
     public static void doSpiderJob(Runnable runnable) {
@@ -26,6 +29,15 @@ public class JobExcutor {
     }
 
     public static void doTgJob(Runnable runnable) {
+        tgBotExcutorService.submit(runnable);
+    }
+
+    public static void doDelayPushImgEnqueue(JavbusDataItem javbusDataItem){
+        int size = JobExcutor.delaySampleImgPushes.size();
+        delaySampleImgPushes.put(new DelaySampleImgPush(javbusDataItem.getCode(),javbusDataItem,15*(size+1)*1000));
+    }
+
+    public static void doDelayPushImgJob(Runnable runnable){
         tgBotExcutorService.submit(runnable);
     }
 
