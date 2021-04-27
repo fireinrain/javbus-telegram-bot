@@ -115,6 +115,7 @@ public class Test {
                         try {
                             body = client.newCall(request).execute().body();
                         } catch (IOException exception) {
+                            body.close();
                             exception.printStackTrace();
                         }
                         return body.byteStream();

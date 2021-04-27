@@ -274,6 +274,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                             try {
                                                 body = client.newCall(request).execute().body();
                                             } catch (IOException exception) {
+                                                body.close();
                                                 exception.printStackTrace();
                                             }
                                             Object[] objects = new Object[2];
@@ -437,6 +438,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                     try {
                                         body = client.newCall(request).execute().body();
                                     } catch (IOException exception) {
+                                        body.close();
                                         exception.printStackTrace();
                                     }
                                     Object[] objects = new Object[2];
