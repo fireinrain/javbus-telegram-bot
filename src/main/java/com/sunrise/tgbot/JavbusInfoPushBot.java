@@ -380,6 +380,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     /**
      * #ABW016 11张回出错
+     *
      * @param javbusDataItem
      * @throws TelegramApiException
      */
@@ -489,7 +490,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     }).exceptionally(new Function<Throwable, List<Message>>() {
                         @Override
                         public List<Message> apply(Throwable throwable) {
-                            System.out.println("推送样品图出现异常：" + throwable.getMessage());
+                            System.out.println("推送样品图CompleteFuture出现异常：" + throwable.getMessage());
+                            //尝试重新加入延迟队列的最末端
+                            System.out.println("正在尝试重新加入延迟队列......");
+                            if (javbusDataItem.getFetchRetry() >= 2) {
+                                System.out.println("推送样品图尝试次数超过限制(3次),丢弃：" + javbusDataItem.getCode());
+                                return null;
+                            }
+                            int fetchCount = javbusDataItem.getFetchRetry() + 1;
+                            javbusDataItem.setFetchRetry(fetchCount);
+                            JobExcutor.doDelayPushImgEnqueue(javbusDataItem);
                             return null;
                         }
                     });
@@ -497,7 +507,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             }
         } catch (Exception e) {
-            System.out.println("推送样品图出现异常：" + e.getMessage());
+            System.out.println("推送样品图Try出现异常：" + e.getMessage());
         }
 
     }
@@ -523,6 +533,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                    System.out.println("推送简介出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {
@@ -557,6 +568,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                    System.out.println("推送磁力信息出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {

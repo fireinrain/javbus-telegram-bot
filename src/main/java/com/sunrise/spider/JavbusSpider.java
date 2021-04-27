@@ -363,7 +363,7 @@ public class JavbusSpider {
         for (Element element : elements) {
             String text = element.text();
             //System.out.println(text);
-            if (isValidDate(text)) {
+            if (JavbusHelper.isValidDate(text)) {
                 listSize++;
             }
         }
@@ -374,7 +374,7 @@ public class JavbusSpider {
 
             for (int j = 0; j < elements.size(); j++) {
                 Element e = elements.get(j);
-                if (isValidDate(e.text())) {
+                if (JavbusHelper.isValidDate(e.text())) {
                     elements.remove(j);
                     strings.add(e);
                     j--;
@@ -474,25 +474,7 @@ public class JavbusSpider {
         return magnentItem;
     }
 
-    /**
-     * 判断是否是日期
-     *
-     * @param str
-     * @return
-     */
-    public static boolean isValidDate(String str) {
-        boolean convertSuccess = true;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        try {
-            format.setLenient(false);
-            format.parse(str);
-        } catch (ParseException e) {
-            // e.printStackTrace();
-            convertSuccess = false;
-        }
-        return convertSuccess;
 
-    }
 
     /**
      * 组装磁力内容请求

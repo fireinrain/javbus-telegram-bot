@@ -1,5 +1,7 @@
 package com.sunrise.spider;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +57,10 @@ public class JavbusDataItem {
     //磁力连接地址
     private List<MagnentItem> magnents;
 
+    //重试次数
+    @JsonIgnore
+    private volatile int fetchRetry;
+
     public JavbusDataItem() {
         this.bigImgUrl = "";
         this.titleStr = "";
@@ -67,6 +73,7 @@ public class JavbusDataItem {
         this.series = "";
         this.types = "";
         this.stars = "";
+        this.fetchRetry = 0;
     }
 
     //拆分类型
@@ -197,6 +204,14 @@ public class JavbusDataItem {
 
     public void setVisitUrl(String visitUrl) {
         this.visitUrl = visitUrl;
+    }
+
+    public int getFetchRetry() {
+        return fetchRetry;
+    }
+
+    public void setFetchRetry(int fetchRetry) {
+        this.fetchRetry = fetchRetry;
     }
 
     @Override

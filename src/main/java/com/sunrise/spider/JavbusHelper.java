@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -72,6 +74,26 @@ public class JavbusHelper {
             e.printStackTrace();
         }
         return encode;
+    }
+
+    /**
+     * 判断是否是日期
+     *
+     * @param str
+     * @return
+     */
+    public static boolean isValidDate(String str) {
+        boolean convertSuccess = true;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            format.setLenient(false);
+            format.parse(str);
+        } catch (ParseException e) {
+            // e.printStackTrace();
+            convertSuccess = false;
+        }
+        return convertSuccess;
+
     }
 
 
