@@ -51,6 +51,12 @@ public class JavbusDataItem {
     //演员
     private String stars;
 
+    //演员首页
+    private List<JavbusStarUrlItem> starsPageUrls;
+
+    //主演首页
+    private JavbusStarUrlItem mainStarPageUrl;
+
     //样品图地址
     private List<String> sampleImgs;
 
@@ -92,6 +98,22 @@ public class JavbusDataItem {
             return Arrays.stream(stars.split(" ")).collect(Collectors.toList());
         }
         return new ArrayList<>(0);
+    }
+
+    public List<JavbusStarUrlItem> getStarsPageUrls() {
+        return starsPageUrls;
+    }
+
+    public void setStarsPageUrls(List<JavbusStarUrlItem> starsPageUrls) {
+        this.starsPageUrls = starsPageUrls;
+    }
+
+    public JavbusStarUrlItem getMainStarPageUrl() {
+        return mainStarPageUrl;
+    }
+
+    public void setMainStarPageUrl(JavbusStarUrlItem mainStarPageUrl) {
+        this.mainStarPageUrl = mainStarPageUrl;
     }
 
     public String getBigImgUrl() {
@@ -229,17 +251,27 @@ public class JavbusDataItem {
                 ", series='" + series + '\'' +
                 ", types='" + types + '\'' +
                 ", stars='" + stars + '\'' +
+                ", starsPageUrls=" + starsPageUrls +
+                ", mainStarPageUrl='" + mainStarPageUrl + '\'' +
                 ", sampleImgs=" + sampleImgs +
                 ", magnents=" + magnents +
+                ", fetchRetry=" + fetchRetry +
                 '}';
     }
 
     public String toPrettyStr() {
         StringBuilder stringBuilder = new StringBuilder();
+        String startPageUrl = null;
+        if (null == mainStarPageUrl) {
+            startPageUrl = "多演员作品，暂无主演作品主页";
+        } else {
+            startPageUrl = mainStarPageUrl.getStartPageUrl();
+        }
 
         stringBuilder
                 .append("封面：").append(bigImgUrl).append("\n")
                 .append("访问链接：").append(visitUrl).append("\n")
+                .append("演员作品主页：").append(startPageUrl).append("\n")
                 .append("标题：").append(titleStr).append("\n")
                 .append("识别码：").append(code).append("\n")
                 .append("发布时间：").append(publishDate).append("\n")
@@ -279,7 +311,7 @@ public class JavbusDataItem {
         } else {
             stringBuilder.append("暂无\n");
         }
-        return stringBuilder.append("#").append(code.replace("-","")).toString();
+        return stringBuilder.append("#").append(code.replace("-", "")).toString();
     }
 
     public List<List<String>> sliceSampleImgUrlForupload() {

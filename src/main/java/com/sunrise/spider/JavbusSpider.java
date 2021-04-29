@@ -13,11 +13,8 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -57,9 +54,16 @@ public class JavbusSpider {
                 .build();
     }
 
+    /**
+     * 该方法只能获取到查询页面最多30个作品，远远低于点击个人主页进去所找到的
+     * 条目数量
+     *
+     * @param starName
+     * @return
+     */
     public static List<JavbusDataItem> fetchFilmsInfoByName(String starName) {
         String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
-        String starUrl = "https://www.javbus.com/search/"+starNameEncode + "&type=&parent=ce";
+        String starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
         Request request = new Request.Builder()
                 .url(starUrl).get()
                 .headers(Headers.of(getStarSearchReqHeader(starUrl)))
@@ -98,7 +102,7 @@ public class JavbusSpider {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(result);
+        System.out.println("查询搜索页成功，正在解析页面......");
 
         Document document = Jsoup.parse(result);
         Elements elements = document.select("#waterfall > div > a");
@@ -224,7 +228,7 @@ public class JavbusSpider {
                     //System.out.println(href);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             //没找到图片
         }
 
@@ -255,6 +259,7 @@ public class JavbusSpider {
         Elements introductionEl = elements.select("div.row.movie > div.col-md-3.info");
 
         Elements pEls = introductionEl.select("p");
+
 
         List<String> contents = new ArrayList<>();
 
@@ -310,6 +315,38 @@ public class JavbusSpider {
                             return e;
                         }
                 ).count();
+
+        //解析主演 作品集合地址
+        Elements startUrls = introductionEl.select("p > span > a");
+
+        if (startUrls.size() == 1) {
+            Element element = startUrls.get(0);
+            String href = element.attr("href");
+            String starName = element.text().trim();
+            JavbusStarUrlItem starUrlItem = new JavbusStarUrlItem(starName, href);
+            javbusDataItem.setMainStarPageUrl(starUrlItem);
+            ArrayList<JavbusStarUrlItem> javbusStarUrlItems = new ArrayList<>();
+            javbusStarUrlItems.add(starUrlItem);
+            javbusDataItem.setStarsPageUrls(javbusStarUrlItems);
+            return;
+        }
+        if (startUrls.size() <= 0) {
+            return;
+        }
+        ArrayList<JavbusStarUrlItem> strings = new ArrayList<>();
+        boolean hasSetMainStar = false;
+        for (Element startUrl : startUrls) {
+            String href = startUrl.attr("href");
+            String starName = startUrl.text().trim();
+            JavbusStarUrlItem starUrlItem = new JavbusStarUrlItem(starName, href);
+            strings.add(starUrlItem);
+            //判断如果链接字符出现在标题里面 那么可以判定是主演
+            if (javbusDataItem.getTitleStr().contains(starName) && !hasSetMainStar){
+                javbusDataItem.setMainStarPageUrl(starUrlItem);
+                hasSetMainStar = true;
+            }
+        }
+        javbusDataItem.setStarsPageUrls(strings);
 
     }
 
@@ -475,7 +512,6 @@ public class JavbusSpider {
     }
 
 
-
     /**
      * 组装磁力内容请求
      *
@@ -510,10 +546,11 @@ public class JavbusSpider {
 
     /**
      * 从请求头模版获取请求头
+     *
      * @param templatePath
      * @return
      */
-    public static HashMap<String,String> getRequestHeader(String templatePath){
+    public static HashMap<String, String> getRequestHeader(String templatePath) {
         //需要主动替换header头中的 referer :path
         ///ajax/uncledatoolsbyajax.php?gid=46298156144&lang=zh&img=https://pics.javbus.com/cover/87y2_b.jpg&uc=0&floor=734
         File file = new File(templatePath);
@@ -553,10 +590,11 @@ public class JavbusSpider {
 
     /**
      * 获取演员搜索请求头
+     *
      * @param starReqUrl
      * @return
      */
-    public static HashMap<String,String> getStarSearchReqHeader(String starReqUrl){
+    public static HashMap<String, String> getStarSearchReqHeader(String starReqUrl) {
         HashMap<String, String> requestHeader = getRequestHeader("src/main/resources/searchReqHeader.txt");
         //替换
         String replace = starReqUrl.replace("https://www.javbus.com", "");
