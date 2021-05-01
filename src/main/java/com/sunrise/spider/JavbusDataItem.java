@@ -302,6 +302,9 @@ public class JavbusDataItem {
                 .append("类别：").append(series).append("\n")
                 .append("演员：").append(stars).append("\n")
                 .append("#").append(code.replace("-", ""));
+        if (null != mainStarPageUrl && null!= mainStarPageUrl.getStartPageUrl()){
+            stringBuilder.append(" ").append("#").append(stars);
+        }
 
         return stringBuilder.toString();
 
@@ -331,7 +334,11 @@ public class JavbusDataItem {
         } else {
             stringBuilder.append("暂无\n");
         }
-        return stringBuilder.append("#").append(code.replace("-", "")).toString();
+        stringBuilder.append("#").append(code.replace("-", ""));
+        if (null != mainStarPageUrl && null!= mainStarPageUrl.getStartPageUrl()){
+            stringBuilder.append(" ").append("#").append(stars);
+        }
+        return stringBuilder.toString();
     }
 
     public List<List<String>> sliceSampleImgUrlForupload() {

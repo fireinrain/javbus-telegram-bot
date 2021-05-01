@@ -503,7 +503,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     for (int i = 0; i < completableFutures.length; i++) {
                         InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                         if (hasSetTag) {
-                            inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.append("#").append(javbusDataItem.getCode().replace("-", ""));
+                            if (null != javbusDataItem.getMainStarPageUrl() && null!= javbusDataItem.getMainStarPageUrl().getStartPageUrl()){
+                                stringBuilder.append(" ").append("#").append(javbusDataItem.getStars());
+                            }
+                            inputMediaPhoto.setCaption(stringBuilder.toString());
                             hasSetTag = false;
                         }
                         CompletableFuture completableFuture = completableFutures[i];
