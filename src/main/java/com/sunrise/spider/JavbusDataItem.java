@@ -345,7 +345,11 @@ public class JavbusDataItem {
         ArrayList<List<String>> lists = new ArrayList<>();
         if (null != sampleImgs && !sampleImgs.isEmpty()) {
             //(先计算出余数)
-            //int remainder = sampleImgs.size() % 10;
+            int remainder = sampleImgs.size() % 10;
+            if (remainder==1){
+                String s = sampleImgs.get(sampleImgs.size() - 1);
+                sampleImgs.add(s);
+            }
             //然后是商
             int number = (int) Math.ceil((float) sampleImgs.size() / 10);
 
@@ -367,6 +371,14 @@ public class JavbusDataItem {
             }
 
         }
+        ////针对推送图片必须是2-10 所以如果长度为1 或者是
+        // 该段代码回造成并发修改错误
+        //List<String> left = lists.get(lists.size() - 1);
+        //if (left.size()==1){
+        //    String s = left.get(0);
+        //    left.add(s);
+        //}
+        //lists.set(lists.size()-1,left);
 
         return lists;
     }

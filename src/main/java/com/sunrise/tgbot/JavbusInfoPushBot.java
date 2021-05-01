@@ -3,6 +3,7 @@ package com.sunrise.tgbot;
 import com.sunrise.spider.*;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -429,7 +430,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     /**
      * #ABW016 11张回出错
-     *
+     * Number of media should be between 2 and 10 in method: SendMediaGroup
      * @param javbusDataItem
      * @throws TelegramApiException
      */
@@ -483,10 +484,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                     Request request = new Request.Builder().url(el.trim()).build();
                                     //获取响应体
                                     ResponseBody body = null;
+                                    Response execute = null;
                                     try {
-                                        body = client.newCall(request).execute().body();
+                                        execute = client.newCall(request).execute();
+                                        body = execute.body();
                                     } catch (IOException exception) {
-                                        body.close();
+                                        if (null != body){
+                                            body.close();
+                                        }
                                         exception.printStackTrace();
                                     }
                                     Object[] objects = new Object[2];
@@ -563,6 +568,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
         } catch (Exception e) {
             System.out.println("推送样品图Try出现异常：" + e.getMessage());
+            e.printStackTrace();
         }
 
     }
@@ -594,6 +600,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         } catch (Exception e) {
             //e.printStackTrace();
             System.out.println("推送简介出现异常：" + e.getMessage());
+            e.printStackTrace();
             //try {
             //    Thread.sleep(2000);
             //} catch (InterruptedException interruptedException) {
