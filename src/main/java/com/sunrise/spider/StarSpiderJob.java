@@ -6,7 +6,6 @@ import com.mongodb.client.MongoCollection;
 import com.sunrise.storege.MongodbStorege;
 import org.bson.Document;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -70,7 +69,7 @@ public class StarSpiderJob implements Runnable{
     }
 
     public static void trigerStarJavbusTask(List<JavbusDataItem> javbusDataItems){
-        StarSpiderJob starSpiderJob = new StarSpiderJob(javbusDataItems,JobExcutor.concurrentLinkedDeque);
+        StarSpiderJob starSpiderJob = new StarSpiderJob(javbusDataItems,JobExcutor.javbusDataItemConcurrentLinkedDeque);
         JobExcutor.doTgJob(starSpiderJob);
     }
 }

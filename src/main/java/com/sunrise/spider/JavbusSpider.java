@@ -3,6 +3,7 @@ package com.sunrise.spider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
@@ -47,6 +48,100 @@ public class JavbusSpider {
                 //写超时
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .build();
+    }
+
+    public static JavbusStarInfo fetchStarInfoByName(String starName) {
+        System.out.println("正在查找信息：" + starName);
+        JavbusStarInfo javbusStarInfo = new JavbusStarInfo();
+        List<JavbusDataItem> javbusDataItems = fetchFilmsInfoByName(starName);
+        //找到mainStarUrl为1的就是主演了
+        if (null == javbusDataItems || javbusDataItems.size() <= 0) {
+            return javbusStarInfo;
+        }
+        JavbusDataItem javbusDataItem = javbusDataItems.stream()
+                .filter(e -> null != e.getMainStarPageUrl())
+                .findFirst().get();
+
+        OkHttpClient okHttpClient = getCookiedOkHttpClient();
+
+        String pageUrl = javbusDataItem.getMainStarPageUrl().getStartPageUrl();
+
+        Request request = new Request.Builder()
+                .url(pageUrl).get()
+                .headers(Headers.of(getStarSearchReqHeader(pageUrl)))
+                .build();
+
+        Response execute = null;
+        execute = getResponse(pageUrl, okHttpClient, request, execute);
+        if (execute == null) {
+            return null;
+        }
+        String result = null;
+        try {
+            result = execute.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("请求作品页，正在解析页面......");
+
+        Document document = Jsoup.parse(result);
+
+        Elements elements = document.select("#waterfall");
+
+        Element info = elements.get(0);
+
+        Element infoEl = (Element) info.childNodes().get(1);
+
+        Elements img = infoEl.select("img");
+        String src = img.attr("src");
+        javbusStarInfo.setHeadPhoto(src);
+        String title = img.attr("title");
+        javbusStarInfo.setStarName(title);
+
+        Elements p = infoEl.select("p");
+
+        for (Element element : p) {
+            String text = element.text();
+            String[] split = text.split(":");
+            String key = split[0].trim();
+            String value = split[1].trim();
+            switch (key) {
+                case "生日":
+                    javbusStarInfo.setBirthday(value);
+                    break;
+                case "年齡":
+                    javbusStarInfo.setAge(value);
+                    break;
+                case "身高":
+                    javbusStarInfo.setHeight(value);
+                case "罩杯":
+                    javbusStarInfo.setCup(value);
+                    break;
+                case "胸圍":
+                    javbusStarInfo.setChestCircumference(value);
+                    break;
+                case "腰圍":
+                    javbusStarInfo.setWaistline(value);
+                    break;
+                case "臀圍":
+                    javbusStarInfo.setHips(value);
+                    break;
+                case "出生地":
+                    javbusStarInfo.setBirthPlace(value);
+                    break;
+                case "愛好":
+                    javbusStarInfo.setHobby(value);
+                    break;
+                default:
+                    System.out.println("无法抽取个人信息：" + key + " " + value);
+
+
+            }
+        }
+        //System.out.println(javbusStarInfo.toPrettyStr());
+        //close http
+        execute.body().close();
+        return javbusStarInfo;
     }
 
     /**
@@ -181,7 +276,7 @@ public class JavbusSpider {
                         @Override
                         public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
                             int lastIndexOfSlash = httpUrl.url().toString().lastIndexOf("/");
-                            if (lastIndexOfSlash <= 27){
+                            if (lastIndexOfSlash <= 27) {
                                 List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
                                 return cookies != null ? cookies : new ArrayList<Cookie>();
                             }
@@ -212,7 +307,7 @@ public class JavbusSpider {
                         @Override
                         public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
                             int lastIndexOfSlash = httpUrl.url().toString().lastIndexOf("/");
-                            if (lastIndexOfSlash <= 27){
+                            if (lastIndexOfSlash <= 27) {
                                 List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
 
                                 List<Cookie> newCookies = new ArrayList<Cookie>();
@@ -225,9 +320,9 @@ public class JavbusSpider {
                                         .expiresAt(cookie1.expiresAt())
                                         .httpOnly()
                                         .build();
-                                newCookies.add(0,cookies.get(0));
-                                newCookies.add(1,cookies.get(1));
-                                newCookies.add(2,cookie);
+                                newCookies.add(0, cookies.get(0));
+                                newCookies.add(1, cookies.get(1));
+                                newCookies.add(2, cookie);
                                 return newCookies;
                             }
                             String substring = httpUrl.url().toString().substring(0, lastIndexOfSlash);
@@ -242,9 +337,9 @@ public class JavbusSpider {
                                     .path(cookie2.path())
                                     .expiresAt(cookie2.expiresAt())
                                     .build();
-                            newCookies.add(0,cookies.get(0));
-                            newCookies.add(1,cookies.get(1));
-                            newCookies.add(2,cookie);
+                            newCookies.add(0, cookies.get(0));
+                            newCookies.add(1, cookies.get(1));
+                            newCookies.add(2, cookie);
                             return newCookies;
                         }
                     })
@@ -358,30 +453,7 @@ public class JavbusSpider {
      * @return
      */
     public static String[] fetchFilmsCountsByUrlPage(String pageUrl) {
-        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
-        OkHttpClient okHttpClient = null;
-        okHttpClient = new OkHttpClient.Builder()
-                .proxy(proxy)
-                .retryOnConnectionFailure(true)
-                //连接超时
-                .connectTimeout(60, TimeUnit.SECONDS)
-                //读取超时
-                .readTimeout(60, TimeUnit.SECONDS)
-                //写超时
-                .writeTimeout(60, TimeUnit.SECONDS).cookieJar(new CookieJar() {
-            @Override
-            public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
-                cookieStore.put(httpUrl.url().toString(), list);
-            }
-
-            @NotNull
-            @Override
-            public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-                List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
-                return cookies != null ? cookies : new ArrayList<Cookie>();
-            }
-        }).build();
+        OkHttpClient okHttpClient = getCookiedOkHttpClient();
 
         Request request = new Request.Builder()
                 .url(pageUrl).get()
@@ -389,31 +461,9 @@ public class JavbusSpider {
                 .build();
 
         Response execute = null;
-        try {
-            execute = okHttpClient.newCall(request).execute();
-            if (execute.code() != 200) {
-                System.out.println("无法获取作品页面数据......: " + pageUrl);
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            //重试次数
-            int retry = 0;
-            while (retry < 3) {
-                try {
-                    execute = okHttpClient.newCall(request).execute();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-                if (execute.code() != 200) {
-                    System.out.println("无法获取作品页面数据......:" + pageUrl);
-                    return null;
-                }
-                if (execute.code() == 200) {
-                    break;
-                }
-                retry++;
-            }
+        execute = getResponse(pageUrl, okHttpClient, request, execute);
+        if (execute == null) {
+            return null;
         }
         String result = null;
         try {
@@ -447,6 +497,66 @@ public class JavbusSpider {
         //close http
         execute.body().close();
         return strings;
+    }
+
+    @Nullable
+    private static Response getResponse(String pageUrl, OkHttpClient okHttpClient, Request request, Response execute) {
+        try {
+            execute = okHttpClient.newCall(request).execute();
+            if (execute.code() != 200) {
+                System.out.println("无法获取作品页面数据......: " + pageUrl);
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            //重试次数
+            int retry = 0;
+            while (retry < 3) {
+                try {
+                    execute = okHttpClient.newCall(request).execute();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                if (execute.code() != 200) {
+                    System.out.println("无法获取作品页面数据......:" + pageUrl);
+                    return null;
+                }
+                if (execute.code() == 200) {
+                    break;
+                }
+                retry++;
+            }
+        }
+        return execute;
+    }
+
+    @NotNull
+    private static OkHttpClient getCookiedOkHttpClient() {
+        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
+        OkHttpClient okHttpClient = null;
+        okHttpClient = new OkHttpClient.Builder()
+                .proxy(proxy)
+                .retryOnConnectionFailure(true)
+                //连接超时
+                .connectTimeout(60, TimeUnit.SECONDS)
+                //读取超时
+                .readTimeout(60, TimeUnit.SECONDS)
+                //写超时
+                .writeTimeout(60, TimeUnit.SECONDS).cookieJar(new CookieJar() {
+                    @Override
+                    public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
+                        cookieStore.put(httpUrl.url().toString(), list);
+                    }
+
+                    @NotNull
+                    @Override
+                    public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+                        List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
+                        return cookies != null ? cookies : new ArrayList<Cookie>();
+                    }
+                }).build();
+        return okHttpClient;
     }
 
     /**
@@ -791,11 +901,11 @@ public class JavbusSpider {
         Response execute = null;
         try {
             execute = okHttpClient.newCall(magnentReq).execute();
-            if (null != execute){
+            if (null != execute) {
                 magnentStrs = execute.body().string();
             }
         } catch (IOException e) {
-            System.out.println("请求磁力失败......"+javbusDataItem.getCode());
+            System.out.println("请求磁力失败......" + javbusDataItem.getCode());
             return;
             //e.printStackTrace();
         }
@@ -1044,10 +1154,14 @@ public class JavbusSpider {
 
         //fetchFilmsInfoByName("葵つかさ");
 
-        fetchAllFilmsInfoByName("葵つかさ", false);
+        //fetchAllFilmsInfoByName("葵つかさ", false);
+
         //fetchFilmsCountsByUrlPage("https://www.javbus.com/star/2jv");
 
         //fetchFilmsInfoByEachPageUrl("https://www.javbus.com/star/2jv");
+
+        //fetchStarInfoByName("永瀬みなも");
+        fetchStarInfoByName("天音まひな");
 
 
     }

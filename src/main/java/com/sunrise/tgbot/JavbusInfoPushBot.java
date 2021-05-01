@@ -21,7 +21,6 @@ import org.telegram.telegrambots.meta.updateshandlers.SentCallback;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Function;
@@ -86,10 +85,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             }
 
-            //查询首页最多30个作品
             if (text.trim().startsWith("/star")) {
                 //查询所有
-                if (text.trim().startsWith("/star all")){
+                if (text.trim().startsWith("/star all")) {
                     String[] strings = text.split(" ");
                     if (strings.length == 3) {
                         List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(strings[2].trim());
@@ -112,7 +110,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     }
                 }
                 //查询已有磁力
-                if (text.trim().startsWith("/star mag")){
+                if (text.trim().startsWith("/star mag")) {
                     String[] strings = text.split(" ");
                     if (strings.length == 3) {
                         List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[2].trim());
@@ -134,25 +132,63 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         return;
                     }
                 }
-                String[] strings = text.split(" ");
-                if (strings.length == 2) {
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(strings[1].trim());
-                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    System.out.println("触发推StarJavbus任务, 查询 " + strings[1]);
-                    chatId = update.getMessage().getChatId().toString();
-                    return;
-                } else {
-                    SendMessage message = new SendMessage();
-                    message.setChatId(update.getMessage().getChatId().toString());
-                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
 
-                    try {
-                        // Call method to send the message
-                        execute(message);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                //查询个人信息
+                if (text.trim().startsWith("/star info")) {
+                    String[] strings = text.split(" ");
+                    if (strings.length == 3) {
+                        System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[2]);
+
+                        JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[2].trim());
+
+                        String javStarInfo = javbusStarInfo.toPrettyStr();
+                        SendMessage magnetMessage = new SendMessage();
+                        magnetMessage.setChatId(update.getMessage().getChatId().toString());
+                        magnetMessage.setText(javStarInfo);
+                        magnetMessage.enableHtml(true);
+                        magnetMessage.enableMarkdown(false);
+                        try {
+                            executeAsync(magnetMessage).whenCompleteAsync((message, throwable) -> System.out.println("推送演员信息完成：" + javbusStarInfo.getStarName()));
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        return;
+                    } else {
+                        SendMessage message = new SendMessage();
+                        message.setChatId(update.getMessage().getChatId().toString());
+                        message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                        try {
+                            // Call method to send the message
+                            execute(message);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        return;
                     }
-                    return;
+                }
+                //查询首页最多30个作品
+                if (text.trim().startsWith("/star")) {
+                    String[] queryStrs = text.split(" ");
+                    if (queryStrs.length == 2) {
+                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(queryStrs[1].trim());
+                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                        System.out.println("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                        chatId = update.getMessage().getChatId().toString();
+                        return;
+                    } else {
+                        SendMessage message = new SendMessage();
+                        message.setChatId(update.getMessage().getChatId().toString());
+                        message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                        try {
+                            // Call method to send the message
+                            execute(message);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        return;
+                    }
                 }
             }
 
@@ -173,6 +209,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     }
 
+
     @Override
     public void onRegister() {
         super.onRegister();
@@ -180,8 +217,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         JobExcutor.doDelayPushImgJob(() -> this.startDelaySamplePushJob(chatId));
     }
 
+    public void startJavbusStarInfoPushTask(String chatId){
+
+    }
+
     public void startJavbusPushTask(String chatId) {
-        ConcurrentLinkedDeque<JavbusDataItem> linkedDeque = JobExcutor.concurrentLinkedDeque;
+        ConcurrentLinkedDeque<JavbusDataItem> linkedDeque = JobExcutor.javbusDataItemConcurrentLinkedDeque;
 
         while (true) {
             //Response{protocol=http/1.1, code=200, message=OK, url=https://api.telegram.org/bot1795760173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o/sendMessage?chat_id=@sunrisechannel_8888&text=hello}
@@ -426,11 +467,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         }
+
     }
 
     /**
      * #ABW016 11张回出错
      * Number of media should be between 2 and 10 in method: SendMediaGroup
+     *
      * @param javbusDataItem
      * @throws TelegramApiException
      */
@@ -470,7 +513,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     //    inputMediaPhotoList.add(inputMediaPhoto);
                     //}
 
-                    CompletableFuture[] completableFutures = strings.stream()
+                    CompletableFuture[] completableFutures = strings.stream().parallel()
                             .map(el -> {
                                 CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
                                     //下载图片
@@ -489,7 +532,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                         execute = client.newCall(request).execute();
                                         body = execute.body();
                                     } catch (IOException exception) {
-                                        if (null != body){
+                                        if (null != body) {
                                             body.close();
                                         }
                                         exception.printStackTrace();
@@ -510,7 +553,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         if (hasSetTag) {
                             StringBuilder stringBuilder = new StringBuilder();
                             stringBuilder.append("#").append(javbusDataItem.getCode().replace("-", ""));
-                            if (null != javbusDataItem.getMainStarPageUrl() && null!= javbusDataItem.getMainStarPageUrl().getStartPageUrl()){
+                            if (null != javbusDataItem.getMainStarPageUrl() && null != javbusDataItem.getMainStarPageUrl().getStartPageUrl()) {
                                 stringBuilder.append(" ").append("#").append(javbusDataItem.getStars());
                             }
                             inputMediaPhoto.setCaption(stringBuilder.toString());

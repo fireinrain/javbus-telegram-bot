@@ -52,7 +52,7 @@ public class SpiderJob implements Runnable{
     }
 
     public static void trigerJavbusTask(String code){
-        SpiderJob spiderJob = new SpiderJob(code,JobExcutor.concurrentLinkedDeque);
+        SpiderJob spiderJob = new SpiderJob(code,JobExcutor.javbusDataItemConcurrentLinkedDeque);
         JobExcutor.doTgJob(spiderJob);
     }
 }

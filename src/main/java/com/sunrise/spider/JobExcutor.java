@@ -13,14 +13,17 @@ public class JobExcutor {
 
     public static volatile ThreadPoolExecutor tgBotExcutorService = null;
 
-    public static volatile ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque = null;
+    public static volatile ConcurrentLinkedDeque<JavbusDataItem> javbusDataItemConcurrentLinkedDeque = null;
+
+    public static volatile ConcurrentLinkedDeque<JavbusStarInfo> javbusStarInfoConcurrentLinkedDeque = null;
 
     public static volatile DelayQueue<DelaySampleImgPush> delaySampleImgPushes = null;
 
     static {
         spiderExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
         tgBotExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
-        concurrentLinkedDeque = new ConcurrentLinkedDeque<>();
+        javbusDataItemConcurrentLinkedDeque = new ConcurrentLinkedDeque<>();
+        javbusStarInfoConcurrentLinkedDeque = new ConcurrentLinkedDeque<>();
         delaySampleImgPushes = new DelayQueue<>();
     }
 
@@ -29,6 +32,9 @@ public class JobExcutor {
     }
 
     public static void doTgJob(Runnable runnable) {
+        tgBotExcutorService.submit(runnable);
+    }
+    public static void doJavbusStarInfoJob(Runnable runnable){
         tgBotExcutorService.submit(runnable);
     }
 
