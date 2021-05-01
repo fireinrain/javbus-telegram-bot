@@ -140,18 +140,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[2]);
 
                         JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[2].trim());
+                        StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
 
-                        String javStarInfo = javbusStarInfo.toPrettyStr();
-                        SendMessage magnetMessage = new SendMessage();
-                        magnetMessage.setChatId(update.getMessage().getChatId().toString());
-                        magnetMessage.setText(javStarInfo);
-                        magnetMessage.enableHtml(true);
-                        magnetMessage.enableMarkdown(false);
-                        try {
-                            executeAsync(magnetMessage).whenCompleteAsync((message, throwable) -> System.out.println("推送演员信息完成：" + javbusStarInfo.getStarName()));
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
                         return;
                     } else {
                         SendMessage message = new SendMessage();
@@ -215,10 +205,25 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         super.onRegister();
         JobExcutor.doTgJob(() -> this.startJavbusPushTask(chatId));
         JobExcutor.doDelayPushImgJob(() -> this.startDelaySamplePushJob(chatId));
+        JobExcutor.doJavbusStarInfoJob(()->this.startJavbusStarInfoPushTask(chatId));
     }
 
     public void startJavbusStarInfoPushTask(String chatId){
+        ConcurrentLinkedDeque<JavbusStarInfo> linkedDeque = JobExcutor.javbusStarInfoConcurrentLinkedDeque;
 
+        while (true) {
+            try {
+                if (!linkedDeque.isEmpty()) {
+                    JavbusStarInfo javbusDataItem = linkedDeque.pollFirst();
+                    Runnable tgPushTask = new JavbusStarInfoJob(javbusDataItem);
+                    JobExcutor.doTgJob(tgPushTask);
+                }
+                TimeUnit.SECONDS.sleep(5);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void startJavbusPushTask(String chatId) {
@@ -227,7 +232,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         while (true) {
             //Response{protocol=http/1.1, code=200, message=OK, url=https://api.telegram.org/bot1795760173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o/sendMessage?chat_id=@sunrisechannel_8888&text=hello}
             //{"ok":true,"result":{"message_id":38,"sender_chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"date":1619242901,"text":"hello"}}
-            System.out.println("--------------------------------睡眠2秒--------------------------------" + System.currentTimeMillis());
+            System.out.println("--------------------------------睡眠5秒--------------------------------" + System.currentTimeMillis());
             System.out.println("--------------------------------当前还有" + linkedDeque.size() + "个任务没有被推入执行器--------------------------------");
             try {
 
@@ -447,7 +452,56 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
         }
     }
+    public  void pushJavbusStarInfo(JavbusStarInfo javbusStarInfo){
+        try {
+            String javStarInfo = javbusStarInfo.toPrettyStr();
+            SendMessage selfInfoMessage = new SendMessage();
+            selfInfoMessage.setChatId(chatId);
+            selfInfoMessage.setText(javStarInfo);
+            selfInfoMessage.enableHtml(true);
+            selfInfoMessage.enableMarkdown(false);
 
+            executeAsync(selfInfoMessage, new SentCallback<Message>() {
+                @Override
+                public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
+                    System.out.println("个人信息推送完成： " + javbusStarInfo.getStarName());
+                }
+
+                @Override
+                public void onError(BotApiMethod<Message> botApiMethod, TelegramApiRequestException e) {
+                }
+
+                @Override
+                public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                    System.out.println("推送个人信息出现异常：" + e.getMessage());
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("推送个人信息出现异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 推送个人信息任务
+     */
+    class JavbusStarInfoJob implements Runnable{
+
+        private JavbusStarInfo javbusStarInfo;
+
+        public JavbusStarInfoJob(JavbusStarInfo javbusStarInfo) {
+            this.javbusStarInfo = javbusStarInfo;
+        }
+
+        @Override
+        public void run() {
+            try {
+                pushJavbusStarInfo(javbusStarInfo);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
 
     class JavbusPushInfoJob implements Runnable {
         private JavbusDataItem javbusDataItem;
