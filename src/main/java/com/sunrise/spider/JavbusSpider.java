@@ -86,6 +86,20 @@ public class JavbusSpider {
 
         Document document = Jsoup.parse(result);
 
+        Elements allFilmCount = document.select("#resultshowall");
+        Element allFilmNode = allFilmCount.get(0);
+        TextNode node = (TextNode) allFilmNode.childNodes().get(2);
+        String text1 = node.text();
+        String allCounts = text1.trim().split(" ")[1].trim();
+        javbusStarInfo.setAllFilmNum(allCounts);
+
+        Elements haveMagnentCount = document.select("#resultshowmag");
+        Element haveMagnentFilmNode = haveMagnentCount.get(0);
+        TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
+        String text2 = node2.text();
+        String haveMagnents = text2.trim().split(" ")[1].trim();
+        javbusStarInfo.setHasMagNum(haveMagnents);
+
         Elements elements = document.select("#waterfall");
 
         Element info = elements.get(0);

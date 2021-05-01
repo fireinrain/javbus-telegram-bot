@@ -8,6 +8,14 @@ package com.sunrise.spider;
  */
 public class JavbusStarInfo {
     /**
+     * 所有作品数量
+     */
+    private String allFilmNum;
+    /**
+     * 有磁力作品数量
+     */
+    private String hasMagNum;
+    /**
      * 头像
      */
     private String headPhoto;
@@ -55,6 +63,21 @@ public class JavbusStarInfo {
      */
     private String hobby;
 
+    public String getAllFilmNum() {
+        return allFilmNum;
+    }
+
+    public void setAllFilmNum(String allFilmNum) {
+        this.allFilmNum = allFilmNum;
+    }
+
+    public String getHasMagNum() {
+        return hasMagNum;
+    }
+
+    public void setHasMagNum(String hasMagNum) {
+        this.hasMagNum = hasMagNum;
+    }
 
     public String getStarName() {
         return starName;
@@ -164,6 +187,8 @@ public class JavbusStarInfo {
         stringBuilder
                 .append("大头贴：").append(headPhoto).append("\n")
                 .append("演员：").append(starName).append("\n")
+                .append("所有作品数量：").append(allFilmNum).append("\n")
+                .append("已有磁力作品数量：").append(hasMagNum).append("\n")
                 .append("生日：").append(birthday).append("\n")
                 .append("年龄：").append(age).append("\n")
                 .append("身高：").append(height).append("\n")
@@ -181,7 +206,9 @@ public class JavbusStarInfo {
     @Override
     public String toString() {
         return "JavbusStarInfo{" +
-                "headPhoto='" + headPhoto + '\'' +
+                "allFilmNum='" + allFilmNum + '\'' +
+                ", hasMagNum='" + hasMagNum + '\'' +
+                ", headPhoto='" + headPhoto + '\'' +
                 ", starName='" + starName + '\'' +
                 ", birthday='" + birthday + '\'' +
                 ", age='" + age + '\'' +

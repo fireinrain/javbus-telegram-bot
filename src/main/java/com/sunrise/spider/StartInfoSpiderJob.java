@@ -28,7 +28,7 @@ public class StartInfoSpiderJob implements Runnable {
 
     @Override
     public void run() {
-        if (null == javbusStarInfo) {
+        if (null == javbusStarInfo || (null != javbusStarInfo && javbusStarInfo.getStarName().equals(""))) {
             return;
         }
         this.concurrentLinkedDeque.offer(javbusStarInfo);
