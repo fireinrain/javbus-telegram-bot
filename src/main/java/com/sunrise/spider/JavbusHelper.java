@@ -9,11 +9,9 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -25,6 +23,8 @@ import java.util.stream.Collectors;
  * @date: 2021/4/25 4:27 AM
  */
 public class JavbusHelper {
+    public static int defaultPageSize = 30;
+
     public static String normalCode(String code) {
         if (!code.contains("-")) {
             assert code.length() >= 3;
@@ -66,7 +66,8 @@ public class JavbusHelper {
         return collect;
 
     }
-    public static String parseStrToUrlEncoder(String str){
+
+    public static String parseStrToUrlEncoder(String str) {
         String encode = null;
         try {
             encode = URLEncoder.encode(str, "utf-8");
@@ -96,9 +97,23 @@ public class JavbusHelper {
 
     }
 
+    public static int[] caculatePageInfo(int total, int pageSize) {
+        int totalPageNum = (total + pageSize - 1) / pageSize;
+        int left = total - (totalPageNum - 1) * pageSize;
+        int[] ints = new int[2];
+        ints[0] = totalPageNum;
+        ints[1] = left;
+        return ints;
+    }
+
+    public static int[] caculatePageInfo(int total) {
+       return caculatePageInfo(total, defaultPageSize);
+    }
+
 
     public static void main(String[] args) {
         System.out.println(normalCode("abp334"));
+        caculatePageInfo(10, 30);
 
         //System.out.println(parseStrToUrlEncoder("つかさ"));
 

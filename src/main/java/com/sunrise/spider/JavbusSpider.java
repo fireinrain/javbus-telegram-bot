@@ -1,24 +1,16 @@
 package com.sunrise.spider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import okhttp3.Headers;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
+import org.jsoup.nodes.*;
 import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +31,9 @@ public class JavbusSpider {
 
     private static OkHttpClient okHttpClient;
 
+    private static final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
+
+
     static {
         InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
         Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
@@ -46,12 +41,412 @@ public class JavbusSpider {
                 .proxy(proxy)
                 .retryOnConnectionFailure(true)
                 //连接超时
-                .connectTimeout(15, TimeUnit.SECONDS)
+                .connectTimeout(60, TimeUnit.SECONDS)
                 //读取超时
-                .readTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
                 //写超时
-                .writeTimeout(15, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
                 .build();
+    }
+
+    /**
+     * 获取所有含有磁力链接的作品集合
+     *
+     * @param starName
+     * @return
+     */
+    public static List<JavbusDataItem> fetchAllFilmsInfoByNameHasMagnent(String starName) {
+        return fetchAllFilmsInfoByName(starName, true);
+    }
+
+    /**
+     * 获取所有的作品集合
+     *
+     * @param starName
+     * @return
+     */
+    public static List<JavbusDataItem> fetchAllFilmsInfoByNameAll(String starName) {
+        return fetchAllFilmsInfoByName(starName, false);
+    }
+
+    /**
+     * 获取所有作品信息
+     *
+     * @param starName
+     * @param hasMagnentOrAll
+     * @return
+     */
+    public static List<JavbusDataItem> fetchAllFilmsInfoByName(String starName, boolean hasMagnentOrAll) {
+        String info = hasMagnentOrAll == true ? "(磁力)" : "";
+        System.out.println("正在查找： " + starName + "所有作品" + info + " ,请稍等......");
+        List<JavbusDataItem> javbusDataItems = fetchFilmsInfoByName(starName);
+        //找到mainStarUrl为1的就是主演了
+        if (null == javbusDataItems || javbusDataItems.size() <= 0) {
+            return new ArrayList<>();
+        }
+        JavbusDataItem javbusDataItem = javbusDataItems.stream()
+                .filter(e -> null != e.getMainStarPageUrl())
+                .findFirst().get();
+
+        System.out.println("找到主演首页地址：" + javbusDataItem.getMainStarPageUrl());
+
+        String[] filmsInfoByUrlPage = fetchFilmsCountsByUrlPage(javbusDataItem.getMainStarPageUrl().getStartPageUrl());
+
+        List<JavbusDataItem> collects = null;
+        //fetch has magnent films
+        if (hasMagnentOrAll) {
+            Integer hasMagnent = Integer.valueOf(filmsInfoByUrlPage[1]);
+            return visitAllFilmsByPageNum(javbusDataItem, hasMagnent, true);
+        }
+
+        //fetch all
+        Integer allFilms = Integer.valueOf(filmsInfoByUrlPage[0]);
+
+        return visitAllFilmsByPageNum(javbusDataItem, allFilms, false);
+
+    }
+
+    /**
+     * 按照计算好的分页依次访问页面爬取数据
+     *
+     * @param javbusDataItem
+     * @param pageNum
+     * @return
+     */
+    public static List<JavbusDataItem> visitAllFilmsByPageNum(JavbusDataItem javbusDataItem, int pageNum, boolean hasMagnentOrAll) {
+        List<JavbusDataItem> collects = null;
+        Integer hasMagnentCount = Integer.valueOf(pageNum);
+
+        int[] caculatePageInfo = JavbusHelper.caculatePageInfo(hasMagnentCount);
+        int totalPage = caculatePageInfo[0];
+        ArrayList<String> urls = new ArrayList<>();
+        for (int i = 1; i <= totalPage; i++) {
+            String reqUrl = javbusDataItem.getMainStarPageUrl().getStartPageUrl() + "/" + i;
+            urls.add(reqUrl);
+        }
+
+        CompletableFuture[] completableFutures = urls.stream()
+                .parallel()
+                .map(e -> {
+                    CompletableFuture<List<JavbusDataItem>> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                        return fetchFilmsInfoByEachPageUrl(e, hasMagnentOrAll);
+                    });
+                    return dataItemCompletableFuture;
+                }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(completableFutures).join();
+
+        collects = Arrays.stream(completableFutures).map(e -> {
+            List<JavbusDataItem> javbusDataItemList = null;
+            try {
+                javbusDataItemList = (List<JavbusDataItem>) e.get();
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            } catch (ExecutionException executionException) {
+                executionException.printStackTrace();
+            }
+            return javbusDataItemList;
+        }).flatMap(Collection::stream).collect(Collectors.toList());
+
+        return collects;
+    }
+
+    /**
+     * 获取每一页的作品信息
+     *
+     * @param pageUrl
+     * @return
+     */
+    public static List<JavbusDataItem> fetchFilmsInfoByEachPageUrl(String pageUrl, boolean hasMagnentOrAll) {
+        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
+        OkHttpClient okHttpClient = null;
+        if (hasMagnentOrAll) {
+            okHttpClient = new OkHttpClient.Builder()
+                    .proxy(proxy)
+                    .retryOnConnectionFailure(true)
+                    //连接超时
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    //读取超时
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    //写超时
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .cookieJar(new CookieJar() {
+                        @Override
+                        public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
+                            //cookieStore.put(httpUrl.host(), list);
+                        }
+
+                        @NotNull
+                        @Override
+                        public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+                            int lastIndexOfSlash = httpUrl.url().toString().lastIndexOf("/");
+                            if (lastIndexOfSlash <= 27){
+                                List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
+                                return cookies != null ? cookies : new ArrayList<Cookie>();
+                            }
+                            String substring = httpUrl.url().toString().substring(0, lastIndexOfSlash);
+
+                            List<Cookie> cookies = cookieStore.get(substring);
+                            return cookies != null ? cookies : new ArrayList<Cookie>();
+                        }
+                    })
+                    .build();
+        } else {
+            okHttpClient = new OkHttpClient.Builder()
+                    .proxy(proxy)
+                    .retryOnConnectionFailure(true)
+                    //连接超时
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    //读取超时
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    //写超时
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .cookieJar(new CookieJar() {
+                        @Override
+                        public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
+                            //ignore
+                        }
+
+                        @NotNull
+                        @Override
+                        public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+                            int lastIndexOfSlash = httpUrl.url().toString().lastIndexOf("/");
+                            if (lastIndexOfSlash <= 27){
+                                List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
+
+                                List<Cookie> newCookies = new ArrayList<Cookie>();
+                                Cookie cookie1 = cookies.get(2);
+                                Cookie cookie = new Cookie.Builder()
+                                        .name(cookie1.name())
+                                        .value("all")
+                                        .domain(cookie1.domain())
+                                        .path(cookie1.path())
+                                        .expiresAt(cookie1.expiresAt())
+                                        .httpOnly()
+                                        .build();
+                                newCookies.add(0,cookies.get(0));
+                                newCookies.add(1,cookies.get(1));
+                                newCookies.add(2,cookie);
+                                return newCookies;
+                            }
+                            String substring = httpUrl.url().toString().substring(0, lastIndexOfSlash);
+
+                            List<Cookie> cookies = cookieStore.get(substring);
+                            List<Cookie> newCookies = new ArrayList<Cookie>();
+                            Cookie cookie2 = cookies.get(2);
+                            Cookie cookie = new Cookie.Builder()
+                                    .name(cookie2.name())
+                                    .value("all")
+                                    .domain(cookie2.domain())
+                                    .path(cookie2.path())
+                                    .expiresAt(cookie2.expiresAt())
+                                    .build();
+                            newCookies.add(0,cookies.get(0));
+                            newCookies.add(1,cookies.get(1));
+                            newCookies.add(2,cookie);
+                            return newCookies;
+                        }
+                    })
+                    .build();
+
+        }
+        Request request = new Request.Builder()
+                .url(pageUrl).get()
+                .headers(Headers.of(getStarSearchReqHeader(pageUrl)))
+                .build();
+        Response execute = null;
+        try {
+            execute = okHttpClient.newCall(request).execute();
+            if (execute.code() != 200) {
+                System.out.println("无法获取作品页面数据......: " + pageUrl);
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            //重试次数
+            int retry = 0;
+            while (retry < 3) {
+                try {
+                    execute = okHttpClient.newCall(request).execute();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                if (execute.code() != 200) {
+                    System.out.println("无法获取作品页面数据......: " + pageUrl);
+                    return null;
+                }
+                if (execute.code() == 200) {
+                    break;
+                }
+                retry++;
+            }
+        }
+        String result = null;
+        try {
+            result = execute.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("查询数据页成功，正在解析页面......");
+
+        Document document = Jsoup.parse(result);
+        Elements elements = document.select("#waterfall > div > a");
+
+        Elements allFilmCount = document.select("#resultshowall");
+        Element allFilmNode = allFilmCount.get(0);
+        TextNode node = (TextNode) allFilmNode.childNodes().get(2);
+        String text1 = node.text();
+        //System.out.println(text1);
+        String allFilmCountStr = text1.trim().split(" ")[1].trim();
+
+        Elements haveMagnentCount = document.select("#resultshowmag");
+        Element haveMagnentFilmNode = haveMagnentCount.get(0);
+        TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
+        String text2 = node2.text();
+        String haveMagnentCountStr = text2.trim().split(" ")[1].trim();
+
+        //System.out.println(text2);
+
+
+        ArrayList<String> filmUrls = new ArrayList<>();
+        for (Element element : elements) {
+            String text = element.attr("href").trim();
+            filmUrls.add(text);
+            //System.out.println(text);
+        }
+
+        CompletableFuture[] completableFutures = filmUrls.stream()
+                .map(e -> e.replace(baseUrl, ""))
+                .map(e -> {
+                    CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                        return fetchFilmInFoByCode(e);
+                    });
+                    return dataItemCompletableFuture;
+                }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(completableFutures).join();
+
+        List<JavbusDataItem> javbusDataItems = Arrays.stream(completableFutures).map(e -> {
+            JavbusDataItem javbusDataItem = null;
+            try {
+                javbusDataItem = (JavbusDataItem) e.get();
+            } catch (InterruptedException interruptedException) {
+                interruptedException.printStackTrace();
+            } catch (ExecutionException executionException) {
+                executionException.printStackTrace();
+            }
+            return javbusDataItem;
+        }).collect(Collectors.toList());
+
+        //StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+        javbusDataItems.stream()
+                .forEach(e -> {
+                    e.setAllFilmCount(allFilmCountStr);
+                    e.setHaveMagnentCount(haveMagnentCountStr);
+                });
+
+        //close http
+        execute.body().close();
+        return javbusDataItems;
+    }
+
+    /**
+     * 获取作品数量
+     *
+     * @param pageUrl
+     * @return
+     */
+    public static String[] fetchFilmsCountsByUrlPage(String pageUrl) {
+        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
+        OkHttpClient okHttpClient = null;
+        okHttpClient = new OkHttpClient.Builder()
+                .proxy(proxy)
+                .retryOnConnectionFailure(true)
+                //连接超时
+                .connectTimeout(60, TimeUnit.SECONDS)
+                //读取超时
+                .readTimeout(60, TimeUnit.SECONDS)
+                //写超时
+                .writeTimeout(60, TimeUnit.SECONDS).cookieJar(new CookieJar() {
+            @Override
+            public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
+                cookieStore.put(httpUrl.url().toString(), list);
+            }
+
+            @NotNull
+            @Override
+            public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+                List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
+                return cookies != null ? cookies : new ArrayList<Cookie>();
+            }
+        }).build();
+
+        Request request = new Request.Builder()
+                .url(pageUrl).get()
+                .headers(Headers.of(getStarSearchReqHeader(pageUrl)))
+                .build();
+
+        Response execute = null;
+        try {
+            execute = okHttpClient.newCall(request).execute();
+            if (execute.code() != 200) {
+                System.out.println("无法获取作品页面数据......: " + pageUrl);
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            //重试次数
+            int retry = 0;
+            while (retry < 3) {
+                try {
+                    execute = okHttpClient.newCall(request).execute();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                if (execute.code() != 200) {
+                    System.out.println("无法获取作品页面数据......:" + pageUrl);
+                    return null;
+                }
+                if (execute.code() == 200) {
+                    break;
+                }
+                retry++;
+            }
+        }
+        String result = null;
+        try {
+            result = execute.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("请求作品页，正在解析页面......");
+
+        Document document = Jsoup.parse(result);
+
+        Elements allFilmCount = document.select("#resultshowall");
+        Element allFilmNode = allFilmCount.get(0);
+        TextNode node = (TextNode) allFilmNode.childNodes().get(2);
+        String text1 = node.text();
+        String allCounts = text1.trim().split(" ")[1].trim();
+        System.out.println(text1);
+
+        Elements haveMagnentCount = document.select("#resultshowmag");
+        Element haveMagnentFilmNode = haveMagnentCount.get(0);
+        TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
+        String text2 = node2.text();
+        String haveMagnents = text2.trim().split(" ")[1].trim();
+
+        System.out.println(text2);
+
+        String[] strings = new String[2];
+        strings[0] = allCounts;
+        strings[1] = haveMagnents;
+
+        //close http
+        execute.body().close();
+        return strings;
     }
 
     /**
@@ -84,13 +479,14 @@ public class JavbusSpider {
                 try {
                     execute = okHttpClient.newCall(request).execute();
                 } catch (IOException ioException) {
-                    ioException.printStackTrace();
+                    //ioException.printStackTrace();
+                    System.out.println("请求页面失败，正在重试......");
                 }
-                if (execute.code() != 200) {
+                if (null != execute && execute.code() != 200) {
                     System.out.println("无法查询：" + starName);
                     return null;
                 }
-                if (execute.code() == 200) {
+                if (null != execute && execute.code() == 200) {
                     break;
                 }
                 retry++;
@@ -106,6 +502,23 @@ public class JavbusSpider {
 
         Document document = Jsoup.parse(result);
         Elements elements = document.select("#waterfall > div > a");
+
+        Elements allFilmCount = document.select("#resultshowall");
+        Element allFilmNode = allFilmCount.get(0);
+        TextNode node = (TextNode) allFilmNode.childNodes().get(2);
+        String text1 = node.text();
+        //System.out.println(text1);
+        String allFilmCountStr = text1.trim().split(" ")[1].trim();
+
+        Elements haveMagnentCount = document.select("#resultshowmag");
+        Element haveMagnentFilmNode = haveMagnentCount.get(0);
+        TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
+        String text2 = node2.text();
+        String haveMagnentCountStr = text2.trim().split(" ")[1].trim();
+
+        //System.out.println(text2);
+
+
         ArrayList<String> filmUrls = new ArrayList<>();
         for (Element element : elements) {
             String text = element.attr("href").trim();
@@ -137,7 +550,13 @@ public class JavbusSpider {
         }).collect(Collectors.toList());
 
         //StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+        javbusDataItems.stream()
+                .forEach(e -> {
+                    e.setAllFilmCount(allFilmCountStr);
+                    e.setHaveMagnentCount(haveMagnentCountStr);
+                });
 
+        execute.body().close();
         return javbusDataItems;
     }
 
@@ -173,11 +592,11 @@ public class JavbusSpider {
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
-                if (execute.code() != 200) {
+                if (null != execute && execute.code() != 200) {
                     System.out.println("无法查询：" + filmReqUrl);
                     return javbusDataItem;
                 }
-                if (execute.code() == 200) {
+                if (null != execute && execute.code() == 200) {
                     break;
                 }
                 retry++;
@@ -210,6 +629,7 @@ public class JavbusSpider {
         //抽取磁力链接
         parseMagnentContent(javbusDataItem, body, filmReqUrl);
 
+        execute.body().close();
         return javbusDataItem;
     }
 
@@ -341,7 +761,7 @@ public class JavbusSpider {
             JavbusStarUrlItem starUrlItem = new JavbusStarUrlItem(starName, href);
             strings.add(starUrlItem);
             //判断如果链接字符出现在标题里面 那么可以判定是主演
-            if (javbusDataItem.getTitleStr().contains(starName) && !hasSetMainStar){
+            if (javbusDataItem.getTitleStr().contains(starName) && !hasSetMainStar) {
                 javbusDataItem.setMainStarPageUrl(starUrlItem);
                 hasSetMainStar = true;
             }
@@ -368,12 +788,19 @@ public class JavbusSpider {
 
         Request magnentReq = makeMagnentReq(fileReqUrl, magnetReqUrl);
         String magnentStrs = null;
+        Response execute = null;
         try {
-            magnentStrs = okHttpClient.newCall(magnentReq).execute().body().string();
+            execute = okHttpClient.newCall(magnentReq).execute();
+            if (null != execute){
+                magnentStrs = execute.body().string();
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("请求磁力失败......"+javbusDataItem.getCode());
+            return;
+            //e.printStackTrace();
         }
         //System.out.println(magnentStrs);
+
 
         Document magnentDom = Jsoup.parse(magnentStrs);
         Element node1 = (Element) magnentDom.childNodes().get(0);
@@ -384,6 +811,8 @@ public class JavbusSpider {
 
         //System.out.println(javbusDataItem);
         javbusDataItem.setMagnents(magnentItems);
+        //close http
+        execute.body().close();
     }
 
     /**
@@ -613,7 +1042,13 @@ public class JavbusSpider {
         //SpiderJob spiderJob = new SpiderJob("FSDSS-211", JobExcutor.concurrentLinkedDeque);
         //JobExcutor.doSpiderJob(spiderJob);
 
-        fetchFilmsInfoByName("葵つかさ");
+        //fetchFilmsInfoByName("葵つかさ");
+
+        fetchAllFilmsInfoByName("葵つかさ", false);
+        //fetchFilmsCountsByUrlPage("https://www.javbus.com/star/2jv");
+
+        //fetchFilmsInfoByEachPageUrl("https://www.javbus.com/star/2jv");
+
 
     }
 

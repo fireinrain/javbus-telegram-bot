@@ -15,6 +15,10 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 4:47 PM
  */
 public class JavbusDataItem {
+    //所有作品数量
+    private String allFilmCount;
+    //含有磁力作品数量
+    private String haveMagnentCount;
     //访问url
     private String visitUrl;
 
@@ -234,6 +238,22 @@ public class JavbusDataItem {
 
     public void setFetchRetry(int fetchRetry) {
         this.fetchRetry = fetchRetry;
+    }
+
+    public String getAllFilmCount() {
+        return allFilmCount;
+    }
+
+    public void setAllFilmCount(String allFilmCount) {
+        this.allFilmCount = allFilmCount;
+    }
+
+    public String getHaveMagnentCount() {
+        return haveMagnentCount;
+    }
+
+    public void setHaveMagnentCount(String haveMagnentCount) {
+        this.haveMagnentCount = haveMagnentCount;
     }
 
     @Override
