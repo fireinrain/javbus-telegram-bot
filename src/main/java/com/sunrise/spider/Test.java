@@ -1,22 +1,11 @@
 package com.sunrise.spider;
 
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import org.checkerframework.checker.units.qual.A;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import java.io.FileNotFoundException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @description:
@@ -87,49 +76,49 @@ public class Test {
         //System.out.println(JavbusSpider.isValidDate("2020-12\nxsxasasx"));
         //System.out.println("2020-12\nxsxasasx");
 
-        int number = (int) Math.ceil((float) 13 / 10);
-        System.out.println(number);
-
-        ArrayList<String> strings = new ArrayList<>();
-        String a = "https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-1.jpg";
-        String b ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-2.jpg";
-        String c ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-3.jpg";
-        String d ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-4.jpg";
-        String e ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-5.jpg";
-
-        strings.add(a);
-        strings.add(b);
-        strings.add(c);
-        strings.add(d);
-        strings.add(e);
-
-        CompletableFuture[] objects = strings.stream()
-                .map(el -> {
-                    CompletableFuture<InputStream> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
-                        //下载图片
-                        OkHttpClient client = new OkHttpClient();
-                        //获取请求对象
-                        Request request = new Request.Builder().url(el.trim()).build();
-                        //获取响应体
-                        ResponseBody body = null;
-                        try {
-                            body = client.newCall(request).execute().body();
-                        } catch (IOException exception) {
-                            body.close();
-                            exception.printStackTrace();
-                        }
-                        return body.byteStream();
-                    });
-
-                    return inputStreamCompletableFuture;
-                }).toArray(CompletableFuture[]::new);
-
-
-        CompletableFuture.allOf(objects).join();
-
-
-
-        System.out.println("");
+        //int number = (int) Math.ceil((float) 13 / 10);
+        //System.out.println(number);
+        //
+        //ArrayList<String> strings = new ArrayList<>();
+        //String a = "https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-1.jpg";
+        //String b ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-2.jpg";
+        //String c ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-3.jpg";
+        //String d ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-4.jpg";
+        //String e ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-5.jpg";
+        //
+        //strings.add(a);
+        //strings.add(b);
+        //strings.add(c);
+        //strings.add(d);
+        //strings.add(e);
+        //
+        //CompletableFuture[] objects = strings.stream()
+        //        .map(el -> {
+        //            CompletableFuture<InputStream> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
+        //                //下载图片
+        //                OkHttpClient client = new OkHttpClient();
+        //                //获取请求对象
+        //                Request request = new Request.Builder().url(el.trim()).build();
+        //                //获取响应体
+        //                ResponseBody body = null;
+        //                try {
+        //                    body = client.newCall(request).execute().body();
+        //                } catch (IOException exception) {
+        //                    body.close();
+        //                    exception.printStackTrace();
+        //                }
+        //                return body.byteStream();
+        //            });
+        //
+        //            return inputStreamCompletableFuture;
+        //        }).toArray(CompletableFuture[]::new);
+        //
+        //
+        //CompletableFuture.allOf(objects).join();
+        //
+        //
+        //
+        //System.out.println("");
 
         //OkHttpClient okHttpClient = new OkHttpClient();
         //
@@ -165,5 +154,24 @@ public class Test {
 
         //Thread.sleep(5000);
         //System.out.println("xxx");
+
+
+        String proxyHost = "127.0.0.1";
+
+        int proxyPort = 7891;
+        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
+        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .proxy(proxy)
+                .retryOnConnectionFailure(true)
+                //连接超时
+                .connectTimeout(60, TimeUnit.SECONDS)
+                //读取超时
+                .readTimeout(60, TimeUnit.SECONDS)
+                //写超时
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
+
+        //okHttpClient.newCall()
     }
 }

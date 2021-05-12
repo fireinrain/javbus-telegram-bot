@@ -9,11 +9,11 @@ package com.sunrise.tgbot;
 public class TgBotConfig {
     public static String REPLY_BOT_NAME = "howcanirename_a_bot";
 
-    public static String REPLY_BOT_TOKEN = "1795760173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o" ;
+    public static String REPLY_BOT_TOKEN = "1795760173:AAHTDUf2XsbW3Is2ZK04Zfo0luKEnyzaFIk";
 
     public static String JAVBUS_BOT_NAME = "howcanirename_a_javbus_bot";
 
-    public static String JAVBUS_BOT_TOKEN = "1679572267:AAFldHKVCxP4kIJd_b3S63tdTp1iUu60ar0" ;
+    public static String JAVBUS_BOT_TOKEN = "1679572267:AAFhQRlUyKCitLWp_Y2BdpPnlXGrnltLOIM";
 
 
 

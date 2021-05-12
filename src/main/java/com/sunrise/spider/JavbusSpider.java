@@ -325,7 +325,7 @@ public class JavbusSpider {
                                 List<Cookie> cookies = cookieStore.get(httpUrl.url().toString());
 
                                 List<Cookie> newCookies = new ArrayList<Cookie>();
-                                Cookie cookie1 = cookies.get(2);
+                                Cookie cookie1 = cookies.get(cookies.size() - 1);
                                 Cookie cookie = new Cookie.Builder()
                                         .name(cookie1.name())
                                         .value("all")
@@ -334,16 +334,17 @@ public class JavbusSpider {
                                         .expiresAt(cookie1.expiresAt())
                                         .httpOnly()
                                         .build();
-                                newCookies.add(0, cookies.get(0));
-                                newCookies.add(1, cookies.get(1));
-                                newCookies.add(2, cookie);
+                                for (int i = 0; i < cookies.size() - 1; i++) {
+                                    newCookies.add(i, cookies.get(i));
+                                }
+                                newCookies.add(cookies.size() - 1, cookie);
                                 return newCookies;
                             }
                             String substring = httpUrl.url().toString().substring(0, lastIndexOfSlash);
 
                             List<Cookie> cookies = cookieStore.get(substring);
                             List<Cookie> newCookies = new ArrayList<Cookie>();
-                            Cookie cookie2 = cookies.get(2);
+                            Cookie cookie2 = cookies.get(cookies.size() - 1);
                             Cookie cookie = new Cookie.Builder()
                                     .name(cookie2.name())
                                     .value("all")
@@ -351,9 +352,10 @@ public class JavbusSpider {
                                     .path(cookie2.path())
                                     .expiresAt(cookie2.expiresAt())
                                     .build();
-                            newCookies.add(0, cookies.get(0));
-                            newCookies.add(1, cookies.get(1));
-                            newCookies.add(2, cookie);
+                            for (int i = 0; i < cookies.size() - 1; i++) {
+                                newCookies.add(i, cookies.get(i));
+                            }
+                            newCookies.add(cookies.size() - 1, cookie);
                             return newCookies;
                         }
                     })
@@ -397,7 +399,7 @@ public class JavbusSpider {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("查询数据页成功，正在解析页面......");
+        System.out.println("查询数据页成功，正在解析页面......:" + pageUrl);
 
         Document document = Jsoup.parse(result);
         Elements elements = document.select("#waterfall > div > a");

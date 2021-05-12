@@ -1,19 +1,14 @@
 package com.sunrise;
 
-import com.sunrise.spider.JobExcutor;
-import com.sunrise.spider.SpiderJob;
-import com.sunrise.tgbot.ReplyMessageBot;
 import com.sunrise.tgbot.JavbusInfoPushBot;
+import com.sunrise.tgbot.ReplyMessageBot;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.sunrise.tgbot.TgBotConfig.*;
+import static com.sunrise.tgbot.TgBotConfig.PROXY_HOST;
+import static com.sunrise.tgbot.TgBotConfig.PROXY_PORT;
 
 /**
  * Hello world!
