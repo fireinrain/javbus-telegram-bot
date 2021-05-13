@@ -111,6 +111,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     System.out.println("触发推StarJavbus任务, 查询所有" + strings[1]);
                     return;
+                }
+                if (strings.length >= 3) {
+                    String starName = text.replaceAll("/starall", "").trim();
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(starName);
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    System.out.println("触发推StarJavbus任务, 查询所有" + starName);
+                    return;
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
@@ -132,6 +139,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[1].trim());
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     System.out.println("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
+                    return;
+                }
+                if (strings.length >= 3) {
+                    String starName = text.replace("/starmag", "").trim();
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starName);
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    System.out.println("触发推StarJavbus任务, 查询所有含有磁力" + starName);
                     return;
                 } else {
                     SendMessage message = new SendMessage();
@@ -158,6 +172,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
 
                     return;
+                }
+
+                if (strings.length >= 3) {
+                    String starName = text.replace("/starinfo", "").trim();
+                    System.out.println("触发推InfoJavbus任务, 查询个人信息" + starName);
+
+                    JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(starName);
+                    StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
+
+                    return;
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
@@ -179,6 +203,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(queryStrs[1].trim());
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     System.out.println("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                    return;
+                }
+
+                if (queryStrs.length >= 3) {
+                    String starName = text.replaceAll("/star", "").trim();
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starName);
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    System.out.println("触发推StarJavbus任务, 查询 " + starName);
                     return;
                 } else {
                     SendMessage message = new SendMessage();
@@ -620,10 +652,6 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         if (hasSetTag) {
                             StringBuilder stringBuilder = new StringBuilder();
                             String code = javbusDataItem.getCode();
-                            //针对无码作品的数字番号做处理
-                            if (JavbusHelper.startWithNumber(code)) {
-                                code = "A" + code;
-                            }
                             stringBuilder.append("#").append(code.replaceAll("-", "_"));
                             if (null != javbusDataItem.getMainStarPageUrl() && null != javbusDataItem.getMainStarPageUrl().getStartPageUrl()) {
                                 stringBuilder.append(" ").append("#").append(javbusDataItem.getStars());

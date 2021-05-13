@@ -302,8 +302,13 @@ public class JavbusDataItem {
                 .append("类别：").append(series).append("\n")
                 .append("演员：").append(stars).append("\n")
                 .append("#");
+        //无码
         if (JavbusHelper.startWithNumber(code)) {
             code = "A" + code;
+        }
+        //欧美
+        if (JavbusHelper.isforeignProduct(code)) {
+            code = code.replaceAll("\\.", "_");
         }
         stringBuilder.append(code.replaceAll("-", "_"));
         if (null != mainStarPageUrl && null != mainStarPageUrl.getStartPageUrl()) {
@@ -338,8 +343,13 @@ public class JavbusDataItem {
         } else {
             stringBuilder.append("暂无\n");
         }
+        //无码
         if (JavbusHelper.startWithNumber(code)) {
             code = "A" + code;
+        }
+        //欧美
+        if (JavbusHelper.isforeignProduct(code)) {
+            code = code.replaceAll("\\.", "_");
         }
         stringBuilder.append("#").append(code.replaceAll("-", "_"));
         if (null != mainStarPageUrl && null != mainStarPageUrl.getStartPageUrl()) {

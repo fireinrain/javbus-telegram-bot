@@ -198,7 +198,7 @@ public class JavbusStarInfo {
                 .append("臀围：").append(hips).append("\n")
                 .append("出生地：").append(birthPlace).append("\n")
                 .append("爱好：").append(hobby).append("\n")
-                .append("#").append(starName);
+                .append("#").append(starName.replaceAll(" ", "_"));
 
         return stringBuilder.toString();
     }

@@ -30,6 +30,8 @@ public class JavbusSpider {
 
     private static String baseUrl = "https://www.javbus.com/";
 
+    private static String foreignerBaseUrl = "https://www.javbus.org/";
+
     private static OkHttpClient okHttpClient;
 
     private static final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
@@ -432,7 +434,17 @@ public class JavbusSpider {
 
         CompletableFuture[] completableFutures = filmUrls.stream()
                 .parallel()
-                .map(e -> e.replace(baseUrl, ""))
+                .map(e -> {
+                    if (e.startsWith(baseUrl)) {
+                        e = e.replace(baseUrl, "");
+                        return e;
+                    }
+                    if (e.startsWith(foreignerBaseUrl)) {
+                        e = e.replace(foreignerBaseUrl, "");
+                        return e;
+                    }
+                    return e;
+                })
                 .map(e -> {
                     CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
                         return fetchFilmInFoByCode(e);
@@ -588,11 +600,21 @@ public class JavbusSpider {
      */
     public static List<JavbusDataItem> fetchFilmsInfoByName(String starName) {
         String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
-        String starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
-        Response execute = searchStarByName(starName, starUrl, "code");
-        if (execute == null) {
-            starUrl = "https://www.javbus.com/uncensored/search/" + starNameEncode + "&type=0&parent=uc";
-            execute = searchStarByName(starName, starUrl, "nocode");
+        String starUrl = "";
+        Response execute = null;
+        if (JavbusHelper.startWithAlpha(starName)) {
+            starUrl = "https://www.javbus.org/search/" + starNameEncode;
+            execute = searchStarByName(starName, starUrl, "occident");
+        } else {
+            starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
+            execute = searchStarByName(starName, starUrl, "code");
+            if (execute == null) {
+                starUrl = "https://www.javbus.com/uncensored/search/" + starNameEncode + "&type=0&parent=uc";
+                execute = searchStarByName(starName, starUrl, "nocode");
+            }
+        }
+        if (null == execute) {
+            return null;
         }
         String result = null;
         try {
@@ -628,7 +650,17 @@ public class JavbusSpider {
         }
 
         CompletableFuture[] completableFutures = filmUrls.stream()
-                .map(e -> e.replace(baseUrl, "")).parallel()
+                .map(e -> {
+                    if (e.startsWith(baseUrl)) {
+                        e = e.replace(baseUrl, "");
+                        return e;
+                    }
+                    if (e.startsWith(foreignerBaseUrl)) {
+                        e = e.replace(foreignerBaseUrl, "");
+                        return e;
+                    }
+                    return e;
+                }).parallel()
                 .map(e -> {
                     CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
                         return fetchFilmInFoByCode(e);
@@ -722,7 +754,13 @@ public class JavbusSpider {
      * @return
      */
     public static JavbusDataItem fetchFilmInFoByCode(String fileCode) {
-        String filmReqUrl = baseUrl + fileCode;
+        String filmReqUrl = "";
+        //判断fileCode类型
+        if (JavbusHelper.isforeignProduct(fileCode)) {
+            filmReqUrl = foreignerBaseUrl + fileCode;
+        } else {
+            filmReqUrl = baseUrl + fileCode;
+        }
 
         JavbusDataItem javbusDataItem = new JavbusDataItem();
 
@@ -937,10 +975,11 @@ public class JavbusSpider {
         //获取磁力连接
         Elements params = body.select("script:nth-child(9)");
         // https://www.javbus.com/ajax/uncledatoolsbyajax.php?gid=46298156144&lang=zh&img=https://pics.javbus.com/cover/87y2_b.jpg&uc=0&floor=734
+        // https://www.javbus.org/ajax/uncledatoolsbyajax.php?gid=3622821095&lang=zh&img=https://images.javbus.org/cover/g1q_b.jpg&uc=0&floor=54
         DataNode node = (DataNode) params.get(0).childNodes().get(0);
         String wholeData = node.getWholeData();
         //System.out.println(wholeData);
-        String magnetReqUrl = getMagnetReqUrl(wholeData);
+        String magnetReqUrl = getMagnetReqUrl(wholeData, fileReqUrl);
 
         Request magnentReq = makeMagnentReq(fileReqUrl, magnetReqUrl);
         String magnentStrs = null;
@@ -1103,8 +1142,13 @@ public class JavbusSpider {
      * @param dataStr
      * @return
      */
-    public static String getMagnetReqUrl(String dataStr) {
-        String requestBase = "https://www.javbus.com/ajax/uncledatoolsbyajax.php?";
+    public static String getMagnetReqUrl(String dataStr, String fileReqUrl) {
+        String requestBase = "";
+        if (fileReqUrl.startsWith("https://www.javbus.org")) {
+            requestBase = "https://www.javbus.org/ajax/uncledatoolsbyajax.php?";
+        } else {
+            requestBase = "https://www.javbus.com/ajax/uncledatoolsbyajax.php?";
+        }
         List<String> vars = Arrays.stream(dataStr.trim()
                 .replaceAll("var", "")
                 .replaceAll("'", "")

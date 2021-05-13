@@ -28,6 +28,18 @@ public class JavbusHelper {
     public static int defaultPageSize = 30;
 
     public static String normalCode(String code) {
+        //欧美番号
+        if (code.length() >= 8) {
+            code = code.replaceAll("\\.", "-");
+            return code.toUpperCase(Locale.ROOT);
+        }
+        //无码
+        if (startWithNumber(code)) {
+            code = code.replaceAll("_", "-");
+            return code.toUpperCase(Locale.ROOT);
+        }
+
+        //日本
         if (!code.contains("-")) {
             assert code.length() >= 3;
             String number = code.substring(code.length() - 3);
@@ -150,9 +162,40 @@ public class JavbusHelper {
      * @return
      */
     public static boolean startWithNumber(String code) {
-        Pattern pattern = Pattern.compile("[0-9]*");
-        Matcher isNum = pattern.matcher(code.charAt(0) + "");
+        if (code.length() <= 9) {
+            Pattern pattern = Pattern.compile("[0-9]*");
+            Matcher isNum = pattern.matcher(code.charAt(0) + "");
+            if (!isNum.matches()) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断字符为字母开头
+     *
+     * @param starName
+     * @return
+     */
+    public static boolean startWithAlpha(String starName) {
+        Pattern pattern = Pattern.compile("[a-zA-Z]*");
+        Matcher isNum = pattern.matcher(starName.charAt(0) + "");
         if (!isNum.matches()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 判断是否是英语作品
+     *
+     * @param code
+     * @return
+     */
+    public static boolean isforeignProduct(String code) {
+        if (code.length() <= 8) {
             return false;
         }
         return true;
@@ -166,6 +209,9 @@ public class JavbusHelper {
         //System.out.println(parseStrToUrlEncoder("つかさ"));
 
         System.out.println(startWithNumber("123434-1"));
+        System.out.println(startWithAlpha("我是sads"));
+        System.out.println(isforeignProduct("DayWithAPornstar.20.04.21"));
+        System.out.println(normalCode("DDFBusty.16.10.25"));
 
     }
 }
