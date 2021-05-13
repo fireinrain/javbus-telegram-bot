@@ -32,6 +32,7 @@ import java.util.function.Function;
  * @date: 2021/4/24 12:55 PM
  */
 public class JavbusInfoPushBot extends TelegramLongPollingBot {
+    //Q&A private chatid
     private String chatId = "-1001371132897";
 
     //private String chatId = "-493244777";
@@ -60,6 +61,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        //设置chatId
+        chatId = update.getMessage().getChatId().toString();
         //文本消息
         if (update.hasMessage() && update.getMessage().hasText()) {
             String text = update.getMessage().getText();
@@ -68,7 +71,6 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 if (strings.length == 2) {
                     SpiderJob.trigerJavbusTask(JavbusHelper.normalCode(strings[1].trim()));
                     System.out.println("触发推Javbus任务, 查询 " + strings[1]);
-                    chatId = update.getMessage().getChatId().toString();
                     return;
                 } else {
                     SendMessage message = new SendMessage();
@@ -87,12 +89,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
             if (text.trim().startsWith("/star")) {
                 //查询所有
-                if (text.trim().startsWith("/star all")) {
+                if (text.trim().startsWith("/starall")) {
                     String[] strings = text.split(" ");
-                    if (strings.length == 3) {
-                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(strings[2].trim());
+                    if (strings.length == 2) {
+                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(strings[1].trim());
                         StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                        System.out.println("触发推StarJavbus任务, 查询所有" + strings[2]);
+                        System.out.println("触发推StarJavbus任务, 查询所有" + strings[1]);
                         chatId = update.getMessage().getChatId().toString();
                         return;
                     } else {
@@ -110,12 +112,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     }
                 }
                 //查询已有磁力
-                if (text.trim().startsWith("/star mag")) {
+                if (text.trim().startsWith("/starmag")) {
                     String[] strings = text.split(" ");
-                    if (strings.length == 3) {
-                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[2].trim());
+                    if (strings.length == 2) {
+                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[1].trim());
                         StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                        System.out.println("触发推StarJavbus任务, 查询所有含有磁力" + strings[2]);
+                        System.out.println("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
                         chatId = update.getMessage().getChatId().toString();
                         return;
                     } else {
@@ -134,12 +136,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
 
                 //查询个人信息
-                if (text.trim().startsWith("/star info")) {
+                if (text.trim().startsWith("/starinfo")) {
                     String[] strings = text.split(" ");
-                    if (strings.length == 3) {
-                        System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[2]);
+                    if (strings.length == 2) {
+                        System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
 
-                        JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[2].trim());
+                        JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[1].trim());
                         StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
 
                         return;
