@@ -428,6 +428,7 @@ public class JavbusSpider {
         }
 
         CompletableFuture[] completableFutures = filmUrls.stream()
+                .parallel()
                 .map(e -> e.replace(baseUrl, ""))
                 .map(e -> {
                     CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {

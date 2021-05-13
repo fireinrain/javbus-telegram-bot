@@ -33,17 +33,11 @@ import java.util.function.Function;
  */
 public class JavbusInfoPushBot extends TelegramLongPollingBot {
     //Q&A private chatid
+    //TODO chatid 有状态 如果不同的频道使用，那么会导致消息错乱
     private String chatId = "-1001371132897";
 
     //private String chatId = "-493244777";
 
-    private boolean isPrivateChannel = true;
-
-    public JavbusInfoPushBot(DefaultBotOptions options, String chatId, boolean isPrivateChannel) {
-        new JavbusInfoPushBot(options);
-        this.chatId = chatId;
-        this.isPrivateChannel = isPrivateChannel;
-    }
 
     public JavbusInfoPushBot(DefaultBotOptions options) {
         super(options);
@@ -62,19 +56,87 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         //设置chatId
-        chatId = update.getMessage().getChatId().toString();
-        //文本消息
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String text = update.getMessage().getText();
-            if (text.trim().startsWith("/code")) {
+        if (update.hasMessage()) {
+            System.out.println("----------------------> recieve message from bot place");
+            chatId = update.getMessage().getChatId().toString();
+            //文本消息
+            if (update.getMessage().hasText()) {
+                String text = update.getMessage().getText();
+                doWithCommand(text);
+                return;
+            }
+        }
+        //channel post
+        //post 消息频率约束比bot严格
+        if (update.hasChannelPost()) {
+            System.out.println("----------------------> recieve message from channel place");
+            chatId = update.getChannelPost().getChatId().toString();
+            //channel post
+            if (update.getChannelPost().hasText()) {
+                String text = update.getChannelPost().getText();
+                doWithCommand(text);
+            }
+        }
+
+
+    }
+
+    private void doWithCommand(String text) {
+        if (text.trim().startsWith("/code")) {
+            String[] strings = text.split(" ");
+            if (strings.length == 2) {
+                SpiderJob.trigerJavbusTask(JavbusHelper.normalCode(strings[1].trim()));
+                System.out.println("触发推Javbus任务, 查询 " + strings[1]);
+                return;
+            } else {
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                try {
+                    // Call method to send the message
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                return;
+            }
+        }
+
+        if (text.trim().startsWith("/star")) {
+            //查询所有
+            if (text.trim().startsWith("/starall")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
-                    SpiderJob.trigerJavbusTask(JavbusHelper.normalCode(strings[1].trim()));
-                    System.out.println("触发推Javbus任务, 查询 " + strings[1]);
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(strings[1].trim());
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    System.out.println("触发推StarJavbus任务, 查询所有" + strings[1]);
                     return;
                 } else {
                     SendMessage message = new SendMessage();
-                    message.setChatId(update.getMessage().getChatId().toString());
+                    message.setChatId(chatId);
+                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                    try {
+                        // Call method to send the message
+                        execute(message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+            }
+            //查询已有磁力
+            if (text.trim().startsWith("/starmag")) {
+                String[] strings = text.split(" ");
+                if (strings.length == 2) {
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[1].trim());
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    System.out.println("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
+                    return;
+                } else {
+                    SendMessage message = new SendMessage();
+                    message.setChatId(chatId);
                     message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
 
                     try {
@@ -87,118 +149,67 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             }
 
-            if (text.trim().startsWith("/star")) {
-                //查询所有
-                if (text.trim().startsWith("/starall")) {
-                    String[] strings = text.split(" ");
-                    if (strings.length == 2) {
-                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(strings[1].trim());
-                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                        System.out.println("触发推StarJavbus任务, 查询所有" + strings[1]);
-                        chatId = update.getMessage().getChatId().toString();
-                        return;
-                    } else {
-                        SendMessage message = new SendMessage();
-                        message.setChatId(update.getMessage().getChatId().toString());
-                        message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+            //查询个人信息
+            if (text.trim().startsWith("/starinfo")) {
+                String[] strings = text.split(" ");
+                if (strings.length == 2) {
+                    System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
 
-                        try {
-                            // Call method to send the message
-                            execute(message);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                        return;
+                    JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[1].trim());
+                    StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
+
+                    return;
+                } else {
+                    SendMessage message = new SendMessage();
+                    message.setChatId(chatId);
+                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                    try {
+                        // Call method to send the message
+                        execute(message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
                     }
-                }
-                //查询已有磁力
-                if (text.trim().startsWith("/starmag")) {
-                    String[] strings = text.split(" ");
-                    if (strings.length == 2) {
-                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[1].trim());
-                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                        System.out.println("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
-                        chatId = update.getMessage().getChatId().toString();
-                        return;
-                    } else {
-                        SendMessage message = new SendMessage();
-                        message.setChatId(update.getMessage().getChatId().toString());
-                        message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
-
-                        try {
-                            // Call method to send the message
-                            execute(message);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                        return;
-                    }
-                }
-
-                //查询个人信息
-                if (text.trim().startsWith("/starinfo")) {
-                    String[] strings = text.split(" ");
-                    if (strings.length == 2) {
-                        System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
-
-                        JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[1].trim());
-                        StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
-
-                        return;
-                    } else {
-                        SendMessage message = new SendMessage();
-                        message.setChatId(update.getMessage().getChatId().toString());
-                        message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
-
-                        try {
-                            // Call method to send the message
-                            execute(message);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                        return;
-                    }
-                }
-                //查询首页最多30个作品
-                if (text.trim().startsWith("/star")) {
-                    String[] queryStrs = text.split(" ");
-                    if (queryStrs.length == 2) {
-                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(queryStrs[1].trim());
-                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                        System.out.println("触发推StarJavbus任务, 查询 " + queryStrs[1]);
-                        chatId = update.getMessage().getChatId().toString();
-                        return;
-                    } else {
-                        SendMessage message = new SendMessage();
-                        message.setChatId(update.getMessage().getChatId().toString());
-                        message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
-
-                        try {
-                            // Call method to send the message
-                            execute(message);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                        return;
-                    }
+                    return;
                 }
             }
+            //查询首页最多30个作品
+            if (text.trim().startsWith("/star")) {
+                String[] queryStrs = text.split(" ");
+                if (queryStrs.length == 2) {
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(queryStrs[1].trim());
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    System.out.println("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                    return;
+                } else {
+                    SendMessage message = new SendMessage();
+                    message.setChatId(chatId);
+                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
 
-
-            System.out.println(TgBotConfig.JAVBUS_BOT_NAME + " 收到消息： " + text);
-            // Create a SendMessage object with mandatory fields
-            SendMessage message = new SendMessage();
-            message.setChatId(update.getMessage().getChatId().toString());
-            message.setText("'" + text + "<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
-
-            try {
-                // Call method to send the message
-                execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
+                    try {
+                        // Call method to send the message
+                        execute(message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
             }
         }
 
+
+        System.out.println(TgBotConfig.JAVBUS_BOT_NAME + " 收到消息： " + text);
+        // Create a SendMessage object with mandatory fields
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText("'" + text + "<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+        try {
+            // Call method to send the message
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
 
