@@ -301,8 +301,12 @@ public class JavbusDataItem {
                 .append("类型：").append(types).append("\n")
                 .append("类别：").append(series).append("\n")
                 .append("演员：").append(stars).append("\n")
-                .append("#").append(code.replace("-", ""));
-        if (null != mainStarPageUrl && null!= mainStarPageUrl.getStartPageUrl()){
+                .append("#");
+        if (JavbusHelper.startWithNumber(code)) {
+            code = "A" + code;
+        }
+        stringBuilder.append(code.replaceAll("-", "_"));
+        if (null != mainStarPageUrl && null != mainStarPageUrl.getStartPageUrl()) {
             stringBuilder.append(" ").append("#").append(stars);
         }
 
@@ -334,8 +338,11 @@ public class JavbusDataItem {
         } else {
             stringBuilder.append("暂无\n");
         }
-        stringBuilder.append("#").append(code.replace("-", ""));
-        if (null != mainStarPageUrl && null!= mainStarPageUrl.getStartPageUrl()){
+        if (JavbusHelper.startWithNumber(code)) {
+            code = "A" + code;
+        }
+        stringBuilder.append("#").append(code.replaceAll("-", "_"));
+        if (null != mainStarPageUrl && null != mainStarPageUrl.getStartPageUrl()) {
             stringBuilder.append(" ").append("#").append(stars);
         }
         return stringBuilder.toString();
@@ -346,7 +353,7 @@ public class JavbusDataItem {
         if (null != sampleImgs && !sampleImgs.isEmpty()) {
             //(先计算出余数)
             int remainder = sampleImgs.size() % 10;
-            if (remainder==1){
+            if (remainder == 1) {
                 String s = sampleImgs.get(sampleImgs.size() - 1);
                 sampleImgs.add(s);
             }

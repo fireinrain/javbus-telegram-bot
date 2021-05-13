@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.function.Function;
 
 /**
  * @description: 信息推送
@@ -218,10 +217,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         super.onRegister();
         JobExcutor.doTgJob(() -> this.startJavbusPushTask(chatId));
         JobExcutor.doDelayPushImgJob(() -> this.startDelaySamplePushJob(chatId));
-        JobExcutor.doJavbusStarInfoJob(()->this.startJavbusStarInfoPushTask(chatId));
+        JobExcutor.doJavbusStarInfoJob(() -> this.startJavbusStarInfoPushTask(chatId));
     }
 
-    public void startJavbusStarInfoPushTask(String chatId){
+    public void startJavbusStarInfoPushTask(String chatId) {
         ConcurrentLinkedDeque<JavbusStarInfo> linkedDeque = JobExcutor.javbusStarInfoConcurrentLinkedDeque;
 
         while (true) {
@@ -399,7 +398,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             for (int i = 0; i < completableFutures.length; i++) {
                                 InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                                 if (hasSetTag) {
-                                    inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
+                                    inputMediaPhoto.setCaption("#" + javbusDataItem.getCode());
                                     hasSetTag = false;
                                 }
                                 CompletableFuture completableFuture = completableFutures[i];
@@ -416,7 +415,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                 String sampleImg = (String) objects[1];
 
                                 inputMediaPhoto.setMedia(inputStream, sampleImg.substring(sampleImg.lastIndexOf("/")));
-                                inputMediaPhoto.setParseMode("Markdown");
+                                inputMediaPhoto.setParseMode("Html");
                                 inputMediaPhotoList.add(inputMediaPhoto);
                             }
                             SendMediaGroup sendMediaGroup = new SendMediaGroup();
@@ -465,7 +464,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
         }
     }
-    public  void pushJavbusStarInfo(JavbusStarInfo javbusStarInfo){
+
+    public void pushJavbusStarInfo(JavbusStarInfo javbusStarInfo) {
         try {
             String javStarInfo = javbusStarInfo.toPrettyStr();
             SendMessage selfInfoMessage = new SendMessage();
@@ -489,7 +489,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     System.out.println("推送个人信息出现异常：" + e.getMessage());
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("推送个人信息出现异常：" + e.getMessage());
         }
@@ -498,7 +498,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     /**
      * 推送个人信息任务
      */
-    class JavbusStarInfoJob implements Runnable{
+    class JavbusStarInfoJob implements Runnable {
 
         private JavbusStarInfo javbusStarInfo;
 
@@ -510,7 +510,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         public void run() {
             try {
                 pushJavbusStarInfo(javbusStarInfo);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -619,7 +619,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                         if (hasSetTag) {
                             StringBuilder stringBuilder = new StringBuilder();
-                            stringBuilder.append("#").append(javbusDataItem.getCode().replace("-", ""));
+                            String code = javbusDataItem.getCode();
+                            //针对无码作品的数字番号做处理
+                            if (JavbusHelper.startWithNumber(code)) {
+                                code = "A" + code;
+                            }
+                            stringBuilder.append("#").append(code.replaceAll("-", "_"));
                             if (null != javbusDataItem.getMainStarPageUrl() && null != javbusDataItem.getMainStarPageUrl().getStartPageUrl()) {
                                 stringBuilder.append(" ").append("#").append(javbusDataItem.getStars());
                             }
@@ -633,7 +638,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         String sampleImg = (String) objects[1];
 
                         inputMediaPhoto.setMedia(inputStream, sampleImg.substring(sampleImg.lastIndexOf("/")));
-                        inputMediaPhoto.setParseMode("Markdown");
+                        //Markdown模式会对下划线 中划线敏感
+                        inputMediaPhoto.setParseMode("Html");
                         inputMediaPhotoList.add(inputMediaPhoto);
                     }
 
@@ -657,21 +663,18 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             responseBody.close();
                         }
                         System.out.println("推送样品图完成：" + javbusDataItem.getCode());
-                    }).exceptionally(new Function<Throwable, List<Message>>() {
-                        @Override
-                        public List<Message> apply(Throwable throwable) {
-                            System.out.println("推送样品图CompleteFuture出现异常：" + throwable.getMessage());
-                            //尝试重新加入延迟队列的最末端
-                            System.out.println("正在尝试重新加入延迟队列......");
-                            if (javbusDataItem.getFetchRetry() >= 2) {
-                                System.out.println("推送样品图尝试次数超过限制(3次),丢弃：" + javbusDataItem.getCode());
-                                return null;
-                            }
-                            int fetchCount = javbusDataItem.getFetchRetry() + 1;
-                            javbusDataItem.setFetchRetry(fetchCount);
-                            JobExcutor.doDelayPushImgEnqueue(javbusDataItem);
+                    }).exceptionally(throwable -> {
+                        System.out.println("推送样品图CompleteFuture出现异常：" + throwable.getMessage());
+                        //尝试重新加入延迟队列的最末端
+                        System.out.println("正在尝试重新加入延迟队列......");
+                        if (javbusDataItem.getFetchRetry() >= 2) {
+                            System.out.println("推送样品图尝试次数超过限制(3次),丢弃：" + javbusDataItem.getCode());
                             return null;
                         }
+                        int fetchCount = javbusDataItem.getFetchRetry() + 1;
+                        javbusDataItem.setFetchRetry(fetchCount);
+                        JobExcutor.doDelayPushImgEnqueue(javbusDataItem);
+                        return null;
                     });
                     listCompletableFuture.join();
                 }
@@ -727,7 +730,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             SendMessage magnetMessage = new SendMessage();
             magnetMessage.setChatId(chatId);
             magnetMessage.setText(magnetStrs);
-            magnetMessage.enableMarkdown(true);
+            magnetMessage.enableMarkdown(false);
             executeAsync(magnetMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {

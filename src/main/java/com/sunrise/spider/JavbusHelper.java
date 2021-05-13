@@ -14,6 +14,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +39,12 @@ public class JavbusHelper {
 
     }
 
+    /**
+     * 获取演员首页所有番号
+     *
+     * @param url
+     * @return
+     */
     public static List<String> getStarAllCodeNrFanHao(String url) {
         OkHttpClient okHttpClient = new OkHttpClient();
 
@@ -67,6 +75,12 @@ public class JavbusHelper {
 
     }
 
+    /**
+     * 将字符串转换成url中的编码格式字符串
+     *
+     * @param str
+     * @return
+     */
     public static String parseStrToUrlEncoder(String str) {
         String encode = null;
         try {
@@ -97,6 +111,13 @@ public class JavbusHelper {
 
     }
 
+    /**
+     * 计算分页信息，用作后面遍历作品页
+     *
+     * @param total
+     * @param pageSize
+     * @return
+     */
     public static int[] caculatePageInfo(int total, int pageSize) {
         int totalPageNum = (total + pageSize - 1) / pageSize;
         int left = total - (totalPageNum - 1) * pageSize;
@@ -106,8 +127,35 @@ public class JavbusHelper {
         return ints;
     }
 
+    /**
+     * 计算默认分页
+     *
+     * @param total
+     * @return
+     */
     public static int[] caculatePageInfo(int total) {
-       return caculatePageInfo(total, defaultPageSize);
+        return caculatePageInfo(total, defaultPageSize);
+    }
+
+    /**
+     * 判断code 时候是欧美类型
+     * 1. 开头以多余5个英文字符开口
+     * @param args
+     */
+
+    /**
+     * 判断是否是数字开头
+     *
+     * @param code
+     * @return
+     */
+    public static boolean startWithNumber(String code) {
+        Pattern pattern = Pattern.compile("[0-9]*");
+        Matcher isNum = pattern.matcher(code.charAt(0) + "");
+        if (!isNum.matches()) {
+            return false;
+        }
+        return true;
     }
 
 
@@ -116,6 +164,8 @@ public class JavbusHelper {
         caculatePageInfo(10, 30);
 
         //System.out.println(parseStrToUrlEncoder("つかさ"));
+
+        System.out.println(startWithNumber("123434-1"));
 
     }
 }

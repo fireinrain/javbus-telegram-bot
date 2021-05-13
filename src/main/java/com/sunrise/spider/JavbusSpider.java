@@ -343,6 +343,9 @@ public class JavbusSpider {
                             String substring = httpUrl.url().toString().substring(0, lastIndexOfSlash);
 
                             List<Cookie> cookies = cookieStore.get(substring);
+                            if (null == cookies) {
+                                return new ArrayList<Cookie>();
+                            }
                             List<Cookie> newCookies = new ArrayList<Cookie>();
                             Cookie cookie2 = cookies.get(cookies.size() - 1);
                             Cookie cookie = new Cookie.Builder()
@@ -586,38 +589,10 @@ public class JavbusSpider {
     public static List<JavbusDataItem> fetchFilmsInfoByName(String starName) {
         String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
         String starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
-        Request request = new Request.Builder()
-                .url(starUrl).get()
-                .headers(Headers.of(getStarSearchReqHeader(starUrl)))
-                .build();
-
-        Response execute = null;
-        try {
-            execute = okHttpClient.newCall(request).execute();
-            if (execute.code() != 200) {
-                System.out.println("无法查询：" + starName);
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            //重试次数
-            int retry = 0;
-            while (retry < 3) {
-                try {
-                    execute = okHttpClient.newCall(request).execute();
-                } catch (IOException ioException) {
-                    //ioException.printStackTrace();
-                    System.out.println("请求页面失败，正在重试......");
-                }
-                if (null != execute && execute.code() != 200) {
-                    System.out.println("无法查询：" + starName);
-                    return null;
-                }
-                if (null != execute && execute.code() == 200) {
-                    break;
-                }
-                retry++;
-            }
+        Response execute = searchStarByName(starName, starUrl, "code");
+        if (execute == null) {
+            starUrl = "https://www.javbus.com/uncensored/search/" + starNameEncode + "&type=0&parent=uc";
+            execute = searchStarByName(starName, starUrl, "nocode");
         }
         String result = null;
         try {
@@ -625,7 +600,6 @@ public class JavbusSpider {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("查询搜索页成功，正在解析页面......");
 
         Document document = Jsoup.parse(result);
         Elements elements = document.select("#waterfall > div > a");
@@ -685,6 +659,58 @@ public class JavbusSpider {
 
         execute.body().close();
         return javbusDataItems;
+    }
+
+    @Nullable
+    private static Response searchStarByName(String starName, String starUrl, String queryType) {
+        String msg = "";
+        if ("code".equals(queryType)) {
+            msg = "有码查询";
+        }
+        if ("nocode".equals(queryType)) {
+            msg = "无码查询";
+        }
+        if ("occident".equals(queryType)) {
+            msg = "欧美查询";
+        }
+        System.out.println("正在进行" + msg + "......");
+        Request request = new Request.Builder()
+                .url(starUrl).get()
+                .headers(Headers.of(getStarSearchReqHeader(starUrl)))
+                .build();
+
+        Response execute = null;
+        try {
+            execute = okHttpClient.newCall(request).execute();
+            if (execute.code() != 200) {
+                System.out.println(msg + "--无法查询：" + starName);
+                return null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            //重试次数
+            int retry = 0;
+            while (retry < 3) {
+                try {
+                    execute = okHttpClient.newCall(request).execute();
+                } catch (IOException ioException) {
+                    //ioException.printStackTrace();
+                    System.out.println(msg + "--请求页面失败，正在重试......");
+                }
+                if (null != execute && execute.code() != 200) {
+                    System.out.println(msg + "--无法查询：" + starName);
+                    return null;
+                }
+                if (null != execute && execute.code() == 200) {
+                    break;
+                }
+                retry++;
+            }
+        }
+        if (execute.code() == 200) {
+            System.out.println("查询搜索页成功，正在解析页面......");
+        }
+        return execute;
     }
 
     /**
@@ -762,7 +788,7 @@ public class JavbusSpider {
 
     private static void parsetSampleImgsContent(JavbusDataItem javbusDataItem, Elements contentContainer) {
         Elements sampleWall = contentContainer.select("#sample-waterfall");
-        ArrayList<String> sampleUrls = new ArrayList<>();
+        List<String> sampleUrls = new ArrayList<>();
         try {
             Element sampleImgsEl = sampleWall.get(0);
             List<Node> childNodes = sampleImgsEl.childNodes();
@@ -778,7 +804,10 @@ public class JavbusSpider {
         } catch (Exception e) {
             //没找到图片
         }
-
+        //处理无码图
+        sampleUrls = sampleUrls.stream()
+                .filter(e -> !"".equals(e))
+                .collect(Collectors.toList());
         javbusDataItem.setSampleImgs(sampleUrls);
     }
 
