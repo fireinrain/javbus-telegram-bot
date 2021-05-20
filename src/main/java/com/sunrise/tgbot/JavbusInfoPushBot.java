@@ -226,6 +226,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     return;
                 }
             }
+
+            //starnewall
+
+            //starnewmag
         }
 
 

@@ -195,7 +195,8 @@ public class JavbusHelper {
      * @return
      */
     public static boolean isforeignProduct(String code) {
-        if (code.length() <= 8) {
+        String s = code.replaceAll("-", "");
+        if (s.length() <= 8) {
             return false;
         }
         return true;
