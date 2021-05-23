@@ -207,7 +207,7 @@ public class JavbusHelper {
         System.out.println(normalCode("abp334"));
         caculatePageInfo(10, 30);
 
-        //System.out.println(parseStrToUrlEncoder("つかさ"));
+        System.out.println(parseStrToUrlEncoder("つかさ"));
 
         System.out.println(startWithNumber("123434-1"));
         System.out.println(startWithAlpha("我是sads"));
