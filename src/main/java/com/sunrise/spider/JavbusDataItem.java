@@ -1,6 +1,7 @@
 package com.sunrise.spider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sunrise.tgbot.TgBotConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -286,6 +287,9 @@ public class JavbusDataItem {
             startPageUrl = "多演员作品，暂无主演作品主页";
         } else {
             startPageUrl = mainStarPageUrl.getStartPageUrl();
+        }
+        if (!bigImgUrl.contains("http://") && !bigImgUrl.contains("https://")) {
+            bigImgUrl = TgBotConfig.SPIDER_BASE_URL + bigImgUrl;
         }
 
         stringBuilder

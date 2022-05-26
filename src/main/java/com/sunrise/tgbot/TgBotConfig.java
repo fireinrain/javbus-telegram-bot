@@ -1,8 +1,7 @@
 package com.sunrise.tgbot;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -64,6 +63,11 @@ public class TgBotConfig {
      */
     public static String FORWARD_MESSAGE_OPTION_CHATID;
 
+    /**
+     * 需要转发到channel的name
+     */
+    public static String FORWARD_MESSAGE_OPTION_CHANNEL_NAME;
+
 
     // 获取Bot Token的chat ID
     static {
@@ -80,6 +84,14 @@ public class TgBotConfig {
             SPIDER_FORGIEN_BASE_URL = properties.getProperty("SPIDER_FORGIEN_BASE_URL");
             FORWARD_MESSAGE_OPTION = Boolean.parseBoolean(properties.getProperty("FORWARD_MESSAGE_OPTION"));
             FORWARD_MESSAGE_OPTION_CHATID = properties.getProperty("FORWARD_MESSAGE_OPTION_CHATID");
+            FORWARD_MESSAGE_OPTION_CHANNEL_NAME = properties.getProperty("FORWARD_MESSAGE_OPTION_CHANNEL_NAME");
+
+            if (FORWARD_MESSAGE_OPTION) {
+                // use channel name to get chat id and set it as default chat_id
+                String channelChatId = TgBotHelper.getChannelChatId(JAVBUS_BOT_TOKEN, FORWARD_MESSAGE_OPTION_CHANNEL_NAME);
+                Objects.requireNonNull(channelChatId, "channelId 不能为空");
+                FORWARD_MESSAGE_OPTION_CHATID = channelChatId;
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
