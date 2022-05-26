@@ -28,6 +28,8 @@ import java.util.Objects;
 public class ReplyMessageBot extends TelegramLongPollingBot {
     public static final Logger logging = LoggerFactory.getLogger(ReplyMessageBot.class);
 
+    public static String chatId = "";
+
     public ReplyMessageBot(DefaultBotOptions options) {
         super(options);
     }
@@ -44,6 +46,27 @@ public class ReplyMessageBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        //处理channel消息
+        if (update.hasChannelPost()) {
+            logging.info("----------------------> recieve message from channel place");
+            chatId = update.getChannelPost().getChatId().toString();
+            //channel post
+            if (update.getChannelPost().hasText()) {
+                String text = update.getChannelPost().getText();
+                SendMessage message = new SendMessage();
+                message.setChatId(update.getChannelPost().getChatId().toString());
+                message.setText("'"+update.getChannelPost().getText()+"<<<<<-'"+TgBotConfig.REPLY_BOT_NAME);
+
+                try {
+                    // Call method to send the message
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
         //文本消息
         if (update.hasMessage() && update.getMessage().hasText()) {
 

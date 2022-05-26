@@ -33,9 +33,9 @@ public class JavbusSpider {
 
     private static int proxyPort = TgBotConfig.PROXY_PORT;
 
-    private static String baseUrl = TgBotConfig.spiderBaseUrl;
+    private static String baseUrl = TgBotConfig.SPIDER_BASE_URL;
 
-    private static String foreignerBaseUrl = TgBotConfig.spiderForgienBaseUrl;
+    private static String foreignerBaseUrl = TgBotConfig.SPIDER_FORGIEN_BASE_URL;
 
     private static OkHttpClient okHttpClient;
 

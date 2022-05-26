@@ -185,7 +185,9 @@ public class JavbusStarInfoItem {
 
     public String toPrettyStr() {
         StringBuilder stringBuilder = new StringBuilder();
-        headPhoto = TgBotConfig.spiderBaseUrl + headPhoto;
+        if (!headPhoto.contains("http://") && !headPhoto.contains("https://")){
+            headPhoto = TgBotConfig.SPIDER_BASE_URL + headPhoto;
+        }
 
         stringBuilder
                 .append("大头贴：").append(headPhoto).append("\n")

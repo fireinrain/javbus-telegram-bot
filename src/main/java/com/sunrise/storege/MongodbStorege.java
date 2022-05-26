@@ -110,7 +110,6 @@ public class MongodbStorege {
 
         mongoCollection.insertOne(document);
 
-        // TODO log success
         logging.info("插入成功：" + info);
 
     }
@@ -142,7 +141,6 @@ public class MongodbStorege {
 
         mongoCollection.insertMany(documents);
 
-        // TODO log success
         logging.info("插入批量数据成功：" + listInfos.size());
 
     }

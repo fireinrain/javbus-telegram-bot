@@ -37,10 +37,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     // Q&A private chatid
     // TODO chatid 有状态 如果不同的频道使用，那么会导致消息错乱
-    private String chatId = "-1001371132897";
+    public static String chatId = "";
 
     // private String chatId = "-493244777";
-
 
     public JavbusInfoPushBot(DefaultBotOptions options) {
         super(options);
@@ -58,23 +57,48 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        //设置chatId
+        if (update.hasEditedMessage()){
+            logging.info("----------------------> recieve message from bot place");
+            // 判断是否开启了forward chat
+            if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
+                chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
+            } else {
+                chatId = update.getEditedMessage().getChatId().toString();
+            }
+            // 文本消息
+            if (update.getEditedMessage().hasText()) {
+                String text = update.getEditedMessage().getText();
+                doWithCommand(text);
+                return;
+            }
+        }
+        // 设置chatId
         if (update.hasMessage()) {
             logging.info("----------------------> recieve message from bot place");
-            chatId = update.getMessage().getChatId().toString();
-            //文本消息
+            // 判断是否开启了forward chat
+            if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
+                chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
+            } else {
+                chatId = update.getMessage().getChatId().toString();
+            }
+            // 文本消息
             if (update.getMessage().hasText()) {
                 String text = update.getMessage().getText();
                 doWithCommand(text);
                 return;
             }
         }
-        //channel post
-        //post 消息频率约束比bot严格
+        // channel post
+        // post 消息频率约束比bot严格
         if (update.hasChannelPost()) {
             logging.info("----------------------> recieve message from channel place");
-            chatId = update.getChannelPost().getChatId().toString();
-            //channel post
+            if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
+                chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
+            } else {
+                chatId = update.getChannelPost().getChatId().toString();
+
+            }
+            // channel post
             if (update.getChannelPost().hasText()) {
                 String text = update.getChannelPost().getText();
                 doWithCommand(text);
@@ -107,7 +131,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
 
         if (text.trim().startsWith("/star")) {
-            //查询所有
+            // 查询所有
             if (text.trim().startsWith("/starall")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
@@ -136,7 +160,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     return;
                 }
             }
-            //查询已有磁力
+            // 查询已有磁力
             if (text.trim().startsWith("/starmag")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
@@ -166,7 +190,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             }
 
-            //查询个人信息
+            // 查询个人信息
             if (text.trim().startsWith("/starinfo")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
@@ -200,7 +224,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     return;
                 }
             }
-            //查询首页最多30个作品
+            // 查询首页最多30个作品
             if (text.trim().startsWith("/star")) {
                 String[] queryStrs = text.split(" ");
                 if (queryStrs.length == 2) {
@@ -231,9 +255,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             }
 
-            //starnewall
+            // starnewall
 
-            //starnewmag
+            // starnewmag
         }
 
 
@@ -297,32 +321,32 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                     JobExcutor.doTgJob(tgPushTask);
 
-                    //SendPhoto.SendPhotoBuilder builder = SendPhoto.builder();
-                    //builder.caption("cccccc");
-                    //builder.photo(new InputFile(new FileInputStream("abc.jpg"),"ceshi"));
-                    //builder.chatId("-1001371132897");
-                    //builder.parseMode("Markdown");
-                    //SendPhoto sendPhoto = builder.build();
+                    // SendPhoto.SendPhotoBuilder builder = SendPhoto.builder();
+                    // builder.caption("cccccc");
+                    // builder.photo(new InputFile(new FileInputStream("abc.jpg"),"ceshi"));
+                    // builder.chatId("-1001371132897");
+                    // builder.parseMode("Markdown");
+                    // SendPhoto sendPhoto = builder.build();
 
-                    //execute(sendPhoto);
+                    // execute(sendPhoto);
                 } else {
                     logging.info("--------------------------------当前爬虫数据已经推送完毕--------------------------------");
                 }
                 TimeUnit.SECONDS.sleep(5);
 
-                //SendDocument.SendDocumentBuilder builder = SendDocument.builder();
-                //builder.chatId("-1001371132897");
-                //builder.caption("这是一个标题");
-                //builder.parseMode("Markdown");
-                //InputFile inputFile = new InputFile();
-                //inputFile.setMedia(new FileInputStream("abc.jpg"),"测试图票");
-                //builder.thumb(inputFile);
+                // SendDocument.SendDocumentBuilder builder = SendDocument.builder();
+                // builder.chatId("-1001371132897");
+                // builder.caption("这是一个标题");
+                // builder.parseMode("Markdown");
+                // InputFile inputFile = new InputFile();
+                // inputFile.setMedia(new FileInputStream("abc.jpg"),"测试图票");
+                // builder.thumb(inputFile);
                 //
-                //InputFile inputFile2 = new InputFile();
-                //inputFile2.setMedia(new FileInputStream("abc.jpg"),"测试图票");
-                //builder.document(inputFile2);
-                //SendDocument sendDocument = builder.build();
-                //execute(sendDocument);
+                // InputFile inputFile2 = new InputFile();
+                // inputFile2.setMedia(new FileInputStream("abc.jpg"),"测试图票");
+                // builder.document(inputFile2);
+                // SendDocument sendDocument = builder.build();
+                // execute(sendDocument);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -377,11 +401,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<String> sampleImgs = javbusDataItem.getSampleImgs();
                     List<List<String>> listList = javbusDataItem.sliceSampleImgUrlForupload();
                     if (null != sampleImgs && !sampleImgs.isEmpty()) {
-                        //发送图片组
+                        // 发送图片组
                         for (List<String> strings : listList) {
                             List<InputMedia> inputMediaPhotoList = new ArrayList<>();
                             boolean hasSetTag = true;
-                            //for (String sampleImg : strings) {
+                            // for (String sampleImg : strings) {
                             //    InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                             //    if (hasSetTag) {
                             //        inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
@@ -408,16 +432,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             CompletableFuture[] completableFutures = strings.stream()
                                     .map(el -> {
                                         CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
-                                            //下载图片
+                                            // 下载图片
                                             OkHttpClient client = new OkHttpClient.Builder()
                                                     .retryOnConnectionFailure(true)
-                                                    .connectTimeout(60, TimeUnit.SECONDS) //连接超时
-                                                    .readTimeout(60, TimeUnit.SECONDS) //读取超时
-                                                    .writeTimeout(60, TimeUnit.SECONDS) //写超时
+                                                    .connectTimeout(60, TimeUnit.SECONDS) // 连接超时
+                                                    .readTimeout(60, TimeUnit.SECONDS) // 读取超时
+                                                    .writeTimeout(60, TimeUnit.SECONDS) // 写超时
                                                     .build();
-                                            //获取请求对象
+                                            // 获取请求对象
                                             Request request = new Request.Builder().url(el.trim()).build();
-                                            //获取响应体
+                                            // 获取响应体
                                             ResponseBody body = null;
                                             try {
                                                 body = client.newCall(request).execute().body();
@@ -473,11 +497,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 });
 
                 CompletableFuture<Void> all = CompletableFuture.allOf(stage1, stage2, stage3);
-                //等待所有任务完成
+                // 等待所有任务完成
                 all.join();
 
             } catch (Exception e) {
-                //e.printStackTrace();
+                // e.printStackTrace();
                 logging.info("推送作品信息异常：" + e.getMessage());
             }
         }
@@ -592,11 +616,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             List<List<String>> listList = javbusDataItem.sliceSampleImgUrlForupload();
 
             if (null != sampleImgs && !sampleImgs.isEmpty()) {
-                //发送图片组
+                // 发送图片组
                 for (List<String> strings : listList) {
                     List<InputMedia> inputMediaPhotoList = new ArrayList<>();
                     boolean hasSetTag = true;
-                    //for (String sampleImg : strings) {
+                    // for (String sampleImg : strings) {
                     //    InputMediaPhoto inputMediaPhoto = new InputMediaPhoto();
                     //    if (hasSetTag) {
                     //        inputMediaPhoto.setCaption("#" + javbusDataItem.getCode().replace("-", ""));
@@ -624,16 +648,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     CompletableFuture[] completableFutures = strings.stream().parallel()
                             .map(el -> {
                                 CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
-                                    //下载图片
+                                    // 下载图片
                                     OkHttpClient client = new OkHttpClient.Builder()
                                             .retryOnConnectionFailure(true)
-                                            .connectTimeout(60, TimeUnit.SECONDS) //连接超时
-                                            .readTimeout(60, TimeUnit.SECONDS) //读取超时
-                                            .writeTimeout(60, TimeUnit.SECONDS) //写超时
+                                            .connectTimeout(60, TimeUnit.SECONDS) // 连接超时
+                                            .readTimeout(60, TimeUnit.SECONDS) // 读取超时
+                                            .writeTimeout(60, TimeUnit.SECONDS) // 写超时
                                             .build();
-                                    //获取请求对象
+                                    // 获取请求对象
                                     Request request = new Request.Builder().url(el.trim()).build();
-                                    //获取响应体
+                                    // 获取响应体
                                     ResponseBody body = null;
                                     Response execute = null;
                                     try {
@@ -675,7 +699,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         String sampleImg = (String) objects[1];
 
                         inputMediaPhoto.setMedia(inputStream, sampleImg.substring(sampleImg.lastIndexOf("/")));
-                        //Markdown模式会对下划线 中划线敏感
+                        // Markdown模式会对下划线 中划线敏感
                         inputMediaPhoto.setParseMode("Html");
                         inputMediaPhotoList.add(inputMediaPhoto);
                     }
@@ -686,7 +710,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     CompletableFuture<List<Message>> listCompletableFuture = executeAsync(sendMediaGroup);
 
                     listCompletableFuture.whenCompleteAsync((message, throwable) -> {
-                        //主动关闭
+                        // 主动关闭
                         for (CompletableFuture completableFuture : completableFutures) {
                             Object[] objects = new Object[0];
                             try {
@@ -702,7 +726,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         logging.info("推送样品图完成：" + javbusDataItem.getCode());
                     }).exceptionally(throwable -> {
                         logging.info("推送样品图CompleteFuture出现异常：" + throwable.getMessage());
-                        //尝试重新加入延迟队列的最末端
+                        // 尝试重新加入延迟队列的最末端
                         logging.info("正在尝试重新加入延迟队列......");
                         if (javbusDataItem.getFetchRetry() >= 2) {
                             logging.info("推送样品图尝试次数超过限制(3次),丢弃：" + javbusDataItem.getCode());
@@ -748,15 +772,15 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             });
         } catch (Exception e) {
-            //e.printStackTrace();
+            // e.printStackTrace();
             logging.info("推送简介出现异常：" + e.getMessage());
             e.printStackTrace();
-            //try {
+            // try {
             //    Thread.sleep(2000);
             //} catch (InterruptedException interruptedException) {
             //    interruptedException.printStackTrace();
             //}
-            //pushSampleImagesInfo(javbusDataItem);
+            // pushSampleImagesInfo(javbusDataItem);
         }
 
     }
@@ -784,14 +808,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             });
         } catch (Exception e) {
-            //e.printStackTrace();
+            // e.printStackTrace();
             logging.info("推送磁力信息出现异常：" + e.getMessage());
-            //try {
+            // try {
             //    Thread.sleep(2000);
             //} catch (InterruptedException interruptedException) {
             //    interruptedException.printStackTrace();
             //}
-            //pushMagnentInfo(javbusDataItem);
+            // pushMagnentInfo(javbusDataItem);
         }
     }
 }

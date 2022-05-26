@@ -47,7 +47,6 @@ public class StartInfoSpiderJob implements Runnable {
         if (MongodbStorege.isMongoDatabaseAvailable.get()) {
             MongodbStorege.storeInfo(jsonStr, "javbus", "javStarInfo");
         } else {
-            // TODO log no store db for skip
             logging.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
 
         }

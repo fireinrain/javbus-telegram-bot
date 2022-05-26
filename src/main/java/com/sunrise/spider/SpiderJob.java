@@ -47,7 +47,6 @@ public class SpiderJob implements Runnable {
         if (MongodbStorege.isMongoDatabaseAvailable.get()) {
             MongodbStorege.storeInfo(jsonStr, "javbus", "javFilm");
         } else {
-            // TODO log no store db for skip
             logging.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
         }
 
