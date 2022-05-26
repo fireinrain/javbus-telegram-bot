@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * @description: 信息推送
+ * @description: tg bot 信息推送
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/24 12:55 PM
@@ -168,8 +168,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 if (strings.length == 2) {
                     System.out.println("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
 
-                    JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(strings[1].trim());
-                    StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
+                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(strings[1].trim());
+                    StartInfoSpiderJob.trigerStarInfoJob(JavbusStarInfoItem);
 
                     return;
                 }
@@ -178,8 +178,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     String starName = text.replace("/starinfo", "").trim();
                     System.out.println("触发推InfoJavbus任务, 查询个人信息" + starName);
 
-                    JavbusStarInfo javbusStarInfo = JavbusSpider.fetchStarInfoByName(starName);
-                    StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfo);
+                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(starName);
+                    StartInfoSpiderJob.trigerStarInfoJob(JavbusStarInfoItem);
 
                     return;
                 } else {
@@ -233,11 +233,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
 
 
+        // 直接返回无法处理的消息命令
         System.out.println(TgBotConfig.JAVBUS_BOT_NAME + " 收到消息： " + text);
         // Create a SendMessage object with mandatory fields
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("'" + text + "<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+        message.setText("Warn！无法处理： '" + text + "<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
 
         try {
             // Call method to send the message
@@ -253,17 +254,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         super.onRegister();
         JobExcutor.doTgJob(() -> this.startJavbusPushTask(chatId));
         JobExcutor.doDelayPushImgJob(() -> this.startDelaySamplePushJob(chatId));
-        JobExcutor.doJavbusStarInfoJob(() -> this.startJavbusStarInfoPushTask(chatId));
+        JobExcutor.doJavbusStarInfoItemJob(() -> this.startJavbusStarInfoItemPushTask(chatId));
     }
 
-    public void startJavbusStarInfoPushTask(String chatId) {
-        ConcurrentLinkedDeque<JavbusStarInfo> linkedDeque = JobExcutor.javbusStarInfoConcurrentLinkedDeque;
+    public void startJavbusStarInfoItemPushTask(String chatId) {
+        ConcurrentLinkedDeque<JavbusStarInfoItem> linkedDeque = JobExcutor.JavbusStarInfoItemConcurrentLinkedDeque;
 
         while (true) {
             try {
                 if (!linkedDeque.isEmpty()) {
-                    JavbusStarInfo javbusDataItem = linkedDeque.pollFirst();
-                    Runnable tgPushTask = new JavbusStarInfoJob(javbusDataItem);
+                    JavbusStarInfoItem javbusDataItem = linkedDeque.pollFirst();
+                    Runnable tgPushTask = new JavbusStarInfoItemJob(javbusDataItem);
                     JobExcutor.doTgJob(tgPushTask);
                 }
                 TimeUnit.SECONDS.sleep(5);
@@ -501,9 +502,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
     }
 
-    public void pushJavbusStarInfo(JavbusStarInfo javbusStarInfo) {
+    public void pushJavbusStarInfoItem(JavbusStarInfoItem JavbusStarInfoItem) {
         try {
-            String javStarInfo = javbusStarInfo.toPrettyStr();
+            String javStarInfo = JavbusStarInfoItem.toPrettyStr();
             SendMessage selfInfoMessage = new SendMessage();
             selfInfoMessage.setChatId(chatId);
             selfInfoMessage.setText(javStarInfo);
@@ -513,7 +514,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             executeAsync(selfInfoMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
-                    System.out.println("个人信息推送完成： " + javbusStarInfo.getStarName());
+                    System.out.println("个人信息推送完成： " + JavbusStarInfoItem.getStarName());
                 }
 
                 @Override
@@ -534,18 +535,18 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     /**
      * 推送个人信息任务
      */
-    class JavbusStarInfoJob implements Runnable {
+    class JavbusStarInfoItemJob implements Runnable {
 
-        private JavbusStarInfo javbusStarInfo;
+        private JavbusStarInfoItem JavbusStarInfoItem;
 
-        public JavbusStarInfoJob(JavbusStarInfo javbusStarInfo) {
-            this.javbusStarInfo = javbusStarInfo;
+        public JavbusStarInfoItemJob(JavbusStarInfoItem JavbusStarInfoItem) {
+            this.JavbusStarInfoItem = JavbusStarInfoItem;
         }
 
         @Override
         public void run() {
             try {
-                pushJavbusStarInfo(javbusStarInfo);
+                pushJavbusStarInfoItem(JavbusStarInfoItem);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -6,7 +6,7 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @description:
+ * @description: 延迟样品图推送 防止过多的请求导致tg服务报错
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/26 10:55 PM

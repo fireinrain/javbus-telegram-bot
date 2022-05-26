@@ -13,7 +13,7 @@ public class TgBotConfig {
 
     public static String JAVBUS_BOT_NAME = "howcanirename_a_javbus_bot";
 
-    public static String JAVBUS_BOT_TOKEN = "1679572267:AAFhQRlUyKCitLWp_Y2BdpPnlXGrnltLOIM";
+    public static String JAVBUS_BOT_TOKEN = "1679572267:AAFBitCdq7lp8wgI9T-jOAXK69ctO0dpVV0";
 
 
 

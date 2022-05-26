@@ -1,10 +1,6 @@
 package com.sunrise.spider;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.MongoCollection;
 import com.sunrise.storege.MongodbStorege;
-import org.bson.Document;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
 /**
- * @description:
+ * @description: 爬取演员主页信息爬虫
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/26 12:48 AM
@@ -39,32 +35,21 @@ public class StarSpiderJob implements Runnable{
                 .collect(Collectors.toList());
         this.concurrentLinkedDeque.addAll(javbusDataItems);
 
-        //for (JavbusDataItem javbusDataItem : this.javbusDataItems) {
+        // for (JavbusDataItem javbusDataItem : this.javbusDataItems) {
         //    if (null == javbusDataItem.getVisitUrl()){
         //        continue;
         //    }
         //    this.concurrentLinkedDeque.offer(javbusDataItem);
         //}
-        List<Document> documents = this.javbusDataItems.stream()
-                .map(e -> {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    String jsonStr = null;
-                    try {
-                        jsonStr = objectMapper.writeValueAsString(e);
-                        Document document = Document.parse(jsonStr);
-                        return document;
-                    } catch (JsonProcessingException exception) {
-                        exception.printStackTrace();
-                    }
-                    return new Document();
-                }).collect(Collectors.toList());
 
+        if (MongodbStorege.isMongoDatabaseAvailable.get()) {
+            MongodbStorege.storeInfos(this.javbusDataItems, "javbus", "javFilm");
+        } else {
+            // TODO log for skip
+            System.out.println("Warn! No mongoDB online, skip for local store：" + this.javbusDataItems.size());
 
-        MongoCollection<Document> mongoCollection = MongodbStorege.createCollectionIfNotExist("javbus", "javFilm");
+        }
 
-        mongoCollection.insertMany(documents);
-
-        System.out.println("插入批量数据成功：" + this.javbusDataItems.size());
 
     }
 

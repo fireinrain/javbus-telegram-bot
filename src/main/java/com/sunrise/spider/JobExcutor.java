@@ -3,7 +3,7 @@ package com.sunrise.spider;
 import java.util.concurrent.*;
 
 /**
- * @description:
+ * @description: 爬虫执行器
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/25 12:35 AM
@@ -15,7 +15,7 @@ public class JobExcutor {
 
     public static volatile ConcurrentLinkedDeque<JavbusDataItem> javbusDataItemConcurrentLinkedDeque = null;
 
-    public static volatile ConcurrentLinkedDeque<JavbusStarInfo> javbusStarInfoConcurrentLinkedDeque = null;
+    public static volatile ConcurrentLinkedDeque<JavbusStarInfoItem> JavbusStarInfoItemConcurrentLinkedDeque = null;
 
     public static volatile DelayQueue<DelaySampleImgPush> delaySampleImgPushes = null;
 
@@ -23,7 +23,7 @@ public class JobExcutor {
         spiderExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
         tgBotExcutorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
         javbusDataItemConcurrentLinkedDeque = new ConcurrentLinkedDeque<>();
-        javbusStarInfoConcurrentLinkedDeque = new ConcurrentLinkedDeque<>();
+        JavbusStarInfoItemConcurrentLinkedDeque = new ConcurrentLinkedDeque<>();
         delaySampleImgPushes = new DelayQueue<>();
     }
 
@@ -34,7 +34,8 @@ public class JobExcutor {
     public static void doTgJob(Runnable runnable) {
         tgBotExcutorService.submit(runnable);
     }
-    public static void doJavbusStarInfoJob(Runnable runnable){
+
+    public static void doJavbusStarInfoItemJob(Runnable runnable) {
         tgBotExcutorService.submit(runnable);
     }
 

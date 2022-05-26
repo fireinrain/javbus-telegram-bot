@@ -1,7 +1,7 @@
 package com.sunrise.spider;
 
 /**
- * @description:
+ * @description: 演员主页链接对象
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/30 1:03 AM

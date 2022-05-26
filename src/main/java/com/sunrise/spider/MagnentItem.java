@@ -1,7 +1,7 @@
 package com.sunrise.spider;
 
 /**
- * @description:
+ * @description: 番号对象
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/24 6:52 PM

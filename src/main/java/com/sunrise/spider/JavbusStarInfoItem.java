@@ -1,12 +1,12 @@
 package com.sunrise.spider;
 
 /**
- * @description:
+ * @description: 演员
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/5/1 4:02 PM
  */
-public class JavbusStarInfo {
+public class JavbusStarInfoItem {
     /**
      * 所有作品数量
      */
@@ -167,7 +167,7 @@ public class JavbusStarInfo {
         this.headPhoto = headPhoto;
     }
 
-    public JavbusStarInfo() {
+    public JavbusStarInfoItem() {
         this.headPhoto = "";
         this.starName = "";
         this.birthday = "";
@@ -205,7 +205,7 @@ public class JavbusStarInfo {
 
     @Override
     public String toString() {
-        return "JavbusStarInfo{" +
+        return "JavbusStarInfoItem{" +
                 "allFilmNum='" + allFilmNum + '\'' +
                 ", hasMagNum='" + hasMagNum + '\'' +
                 ", headPhoto='" + headPhoto + '\'' +

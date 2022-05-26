@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * @description:
+ * @description: 详情页数据传输对象
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/24 4:47 PM

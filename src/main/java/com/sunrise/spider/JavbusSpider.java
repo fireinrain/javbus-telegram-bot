@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * @description:
+ * @description: 爬虫类 实现爬取详情页 番号信息等
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/24 2:42 PM
@@ -52,13 +52,13 @@ public class JavbusSpider {
                 .build();
     }
 
-    public static JavbusStarInfo fetchStarInfoByName(String starName) {
+    public static JavbusStarInfoItem fetchStarInfoByName(String starName) {
         System.out.println("正在查找信息：" + starName);
-        JavbusStarInfo javbusStarInfo = new JavbusStarInfo();
+        JavbusStarInfoItem JavbusStarInfoItem = new JavbusStarInfoItem();
         List<JavbusDataItem> javbusDataItems = fetchFilmsInfoByName(starName);
-        //找到mainStarUrl为1的就是主演了
+        // 找到mainStarUrl为1的就是主演了
         if (null == javbusDataItems || javbusDataItems.size() <= 0) {
-            return javbusStarInfo;
+            return JavbusStarInfoItem;
         }
         JavbusDataItem javbusDataItem = javbusDataItems.stream()
                 .filter(e -> null != e.getMainStarPageUrl())
@@ -93,14 +93,14 @@ public class JavbusSpider {
         TextNode node = (TextNode) allFilmNode.childNodes().get(2);
         String text1 = node.text();
         String allCounts = text1.trim().split(" ")[1].trim();
-        javbusStarInfo.setAllFilmNum(allCounts);
+        JavbusStarInfoItem.setAllFilmNum(allCounts);
 
         Elements haveMagnentCount = document.select("#resultshowmag");
         Element haveMagnentFilmNode = haveMagnentCount.get(0);
         TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
         String text2 = node2.text();
         String haveMagnents = text2.trim().split(" ")[1].trim();
-        javbusStarInfo.setHasMagNum(haveMagnents);
+        JavbusStarInfoItem.setHasMagNum(haveMagnents);
 
         Elements elements = document.select("#waterfall");
 
@@ -110,9 +110,9 @@ public class JavbusSpider {
 
         Elements img = infoEl.select("img");
         String src = img.attr("src");
-        javbusStarInfo.setHeadPhoto(src);
+        JavbusStarInfoItem.setHeadPhoto(src);
         String title = img.attr("title");
-        javbusStarInfo.setStarName(title);
+        JavbusStarInfoItem.setStarName(title);
 
         Elements p = infoEl.select("p");
 
@@ -123,30 +123,30 @@ public class JavbusSpider {
             String value = split[1].trim();
             switch (key) {
                 case "生日":
-                    javbusStarInfo.setBirthday(value);
+                    JavbusStarInfoItem.setBirthday(value);
                     break;
                 case "年齡":
-                    javbusStarInfo.setAge(value);
+                    JavbusStarInfoItem.setAge(value);
                     break;
                 case "身高":
-                    javbusStarInfo.setHeight(value);
+                    JavbusStarInfoItem.setHeight(value);
                 case "罩杯":
-                    javbusStarInfo.setCup(value);
+                    JavbusStarInfoItem.setCup(value);
                     break;
                 case "胸圍":
-                    javbusStarInfo.setChestCircumference(value);
+                    JavbusStarInfoItem.setChestCircumference(value);
                     break;
                 case "腰圍":
-                    javbusStarInfo.setWaistline(value);
+                    JavbusStarInfoItem.setWaistline(value);
                     break;
                 case "臀圍":
-                    javbusStarInfo.setHips(value);
+                    JavbusStarInfoItem.setHips(value);
                     break;
                 case "出生地":
-                    javbusStarInfo.setBirthPlace(value);
+                    JavbusStarInfoItem.setBirthPlace(value);
                     break;
                 case "愛好":
-                    javbusStarInfo.setHobby(value);
+                    JavbusStarInfoItem.setHobby(value);
                     break;
                 default:
                     System.out.println("无法抽取个人信息：" + key + " " + value);
@@ -154,10 +154,10 @@ public class JavbusSpider {
 
             }
         }
-        //System.out.println(javbusStarInfo.toPrettyStr());
-        //close http
+        // System.out.println(JavbusStarInfoItem.toPrettyStr());
+        // close http
         execute.body().close();
-        return javbusStarInfo;
+        return JavbusStarInfoItem;
     }
 
     /**

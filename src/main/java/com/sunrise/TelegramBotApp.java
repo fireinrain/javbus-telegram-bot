@@ -1,5 +1,6 @@
 package com.sunrise;
 
+import com.sunrise.storege.MongodbStorege;
 import com.sunrise.tgbot.JavbusInfoPushBot;
 import com.sunrise.tgbot.ReplyMessageBot;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -21,6 +22,8 @@ public class TelegramBotApp {
 
     public static void main(String[] args) {
         try {
+            // check mongodb is ok
+            MongodbStorege.isMongoDatabaseAvailable();
             // Create the TelegramBotsApi object to register your bots
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
 

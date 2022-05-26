@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * @description:
+ * @description: 辅助类 主要包含判断是否为欧美 判断番号类型
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/25 4:27 AM

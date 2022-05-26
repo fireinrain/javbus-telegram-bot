@@ -2,15 +2,13 @@ package com.sunrise.spider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.MongoCollection;
 import com.sunrise.storege.MongodbStorege;
-import org.bson.Document;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
- * @description:
+ * @description: 爬取番号详情线程
  * @version: 1.00
  * @author: lzhaoyang
  * @date: 2021/4/25 12:40 AM
@@ -41,13 +39,14 @@ public class SpiderJob implements Runnable{
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        MongoCollection<Document> mongoCollection = MongodbStorege.createCollectionIfNotExist("javbus", "javFilm");
 
-        org.bson.Document document = org.bson.Document.parse(jsonStr);
+        if (MongodbStorege.isMongoDatabaseAvailable.get()) {
+            MongodbStorege.storeInfo(jsonStr, "javbus", "javFilm");
+        } else {
+            // TODO log no store db for skip
+            System.out.println("Warn! No mongoDB online, skip for local store：" + jsonStr);
+        }
 
-        mongoCollection.insertOne(document);
-
-        System.out.println("插入成功：" + jsonStr);
 
     }
 
