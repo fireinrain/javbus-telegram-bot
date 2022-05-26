@@ -1,5 +1,7 @@
 package com.sunrise.spider;
 
+import com.sunrise.tgbot.TgBotConfig;
+
 /**
  * @description: 演员
  * @version: 1.00
@@ -183,6 +185,7 @@ public class JavbusStarInfoItem {
 
     public String toPrettyStr() {
         StringBuilder stringBuilder = new StringBuilder();
+        headPhoto = TgBotConfig.spiderBaseUrl + headPhoto;
 
         stringBuilder
                 .append("大头贴：").append(headPhoto).append("\n")

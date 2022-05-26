@@ -16,8 +16,11 @@ public class TgBotConfig {
     public static String JAVBUS_BOT_TOKEN = "1679572267:AAFBitCdq7lp8wgI9T-jOAXK69ctO0dpVV0";
 
 
-
     public static String PROXY_HOST = "127.0.0.1";
 
     public static Integer PROXY_PORT = 7891;
+
+    public static String spiderBaseUrl = "https://www.javbus.com/";
+
+    public static String spiderForgienBaseUrl = "https://www.javbus.org/";
 }

@@ -1,6 +1,8 @@
 package com.sunrise.spider;
 
 import com.sunrise.storege.MongodbStorege;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
@@ -13,14 +15,16 @@ import java.util.stream.Collectors;
  * @author: lzhaoyang
  * @date: 2021/4/26 12:48 AM
  */
-public class StarSpiderJob implements Runnable{
+public class StarSpiderJob implements Runnable {
+    public static final Logger logging = LoggerFactory.getLogger(StarSpiderJob.class);
+
 
     private List<JavbusDataItem> javbusDataItems;
 
     private ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque;
 
-    public StarSpiderJob(List<JavbusDataItem> javbusDataItems,ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque) {
-        Objects.requireNonNull(concurrentLinkedDeque,"JavbusDataItem Queue cant be null");
+    public StarSpiderJob(List<JavbusDataItem> javbusDataItems, ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque) {
+        Objects.requireNonNull(concurrentLinkedDeque, "JavbusDataItem Queue cant be null");
         this.javbusDataItems = javbusDataItems;
         this.concurrentLinkedDeque = concurrentLinkedDeque;
     }
@@ -46,7 +50,7 @@ public class StarSpiderJob implements Runnable{
             MongodbStorege.storeInfos(this.javbusDataItems, "javbus", "javFilm");
         } else {
             // TODO log for skip
-            System.out.println("Warn! No mongoDB online, skip for local store：" + this.javbusDataItems.size());
+            logging.warn("Warn! No mongoDB online, skip for local store：" + this.javbusDataItems.size());
 
         }
 

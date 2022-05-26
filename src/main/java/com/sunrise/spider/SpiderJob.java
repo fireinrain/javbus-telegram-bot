@@ -3,6 +3,8 @@ package com.sunrise.spider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sunrise.storege.MongodbStorege;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -13,14 +15,16 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * @author: lzhaoyang
  * @date: 2021/4/25 12:40 AM
  */
-public class SpiderJob implements Runnable{
+public class SpiderJob implements Runnable {
+    public static final Logger logging = LoggerFactory.getLogger(SpiderJob.class);
+
 
     private String filmCode;
 
     private ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque;
 
-    public SpiderJob(String filmCode,ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque) {
-        Objects.requireNonNull(concurrentLinkedDeque,"JavbusDataItem Queue cant be null");
+    public SpiderJob(String filmCode, ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque) {
+        Objects.requireNonNull(concurrentLinkedDeque, "JavbusDataItem Queue cant be null");
         this.filmCode = filmCode;
         this.concurrentLinkedDeque = concurrentLinkedDeque;
     }
@@ -44,7 +48,7 @@ public class SpiderJob implements Runnable{
             MongodbStorege.storeInfo(jsonStr, "javbus", "javFilm");
         } else {
             // TODO log no store db for skip
-            System.out.println("Warn! No mongoDB online, skip for local store：" + jsonStr);
+            logging.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
         }
 
 

@@ -1,5 +1,8 @@
 package com.sunrise.spider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.*;
 
 /**
@@ -9,6 +12,8 @@ import java.util.concurrent.*;
  * @date: 2021/4/25 12:35 AM
  */
 public class JobExcutor {
+    public static final Logger logging = LoggerFactory.getLogger(JobExcutor.class);
+
     public static volatile ThreadPoolExecutor spiderExcutorService = null;
 
     public static volatile ThreadPoolExecutor tgBotExcutorService = null;
@@ -61,9 +66,9 @@ public class JobExcutor {
                 public void run() {
                     try {
                         TimeUnit.SECONDS.sleep(3);
-                        System.out.println(Thread.currentThread().getName() + "----" + finalI);
+                        logging.info(Thread.currentThread().getName() + "----" + finalI);
                         BlockingQueue<Runnable> queue = tgBotExcutorService.getQueue();
-                        System.out.println("-----当前队列：" + queue.size());
+                        logging.info("-----当前队列：" + queue.size());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -75,7 +80,7 @@ public class JobExcutor {
 
         for (int j = 0; j < 20; j++) {
             BlockingQueue<Runnable> queue = tgBotExcutorService.getQueue();
-            System.out.println("当前队列：" + queue.size());
+            logging.info("当前队列：" + queue.size());
         }
     }
 

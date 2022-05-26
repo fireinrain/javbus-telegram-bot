@@ -1,5 +1,7 @@
 package com.sunrise.tgbot;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
@@ -24,6 +26,8 @@ import java.util.Objects;
  * @date: 2021/4/11 4:45 AM
  */
 public class ReplyMessageBot extends TelegramLongPollingBot {
+    public static final Logger logging = LoggerFactory.getLogger(ReplyMessageBot.class);
+
     public ReplyMessageBot(DefaultBotOptions options) {
         super(options);
     }
@@ -43,7 +47,7 @@ public class ReplyMessageBot extends TelegramLongPollingBot {
         //文本消息
         if (update.hasMessage() && update.getMessage().hasText()) {
 
-            System.out.println(TgBotConfig.REPLY_BOT_NAME+" 收到消息： " + update.getMessage().getText());
+            logging.info(TgBotConfig.REPLY_BOT_NAME + " 收到消息： " + update.getMessage().getText());
             // Create a SendMessage object with mandatory fields
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
@@ -59,7 +63,7 @@ public class ReplyMessageBot extends TelegramLongPollingBot {
         //图片消息
         if (update.hasMessage() && update.getMessage().hasPhoto()) {
             List<PhotoSize> photo = update.getMessage().getPhoto();
-            System.out.println("收到图片" + photo.size() + "张");
+            logging.info("收到图片" + photo.size() + "张");
             PhotoSize bigPhotoSize = update.getMessage().getPhoto().get(photo.size() - 1);
             String filePath = bigPhotoSize.getFilePath();
 

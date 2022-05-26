@@ -10,6 +10,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 8:38 PM
  */
 public class MongodbStorege {
+    public static final Logger logging = LoggerFactory.getLogger(MongodbStorege.class);
+
 
     private static String mongoDbUrl = "mongodb://admin:admin@127.0.0.1:27017";
 
@@ -107,7 +111,7 @@ public class MongodbStorege {
         mongoCollection.insertOne(document);
 
         // TODO log success
-        System.out.println("插入成功：" + info);
+        logging.info("插入成功：" + info);
 
     }
 
@@ -139,7 +143,7 @@ public class MongodbStorege {
         mongoCollection.insertMany(documents);
 
         // TODO log success
-        System.out.println("插入批量数据成功：" + listInfos.size());
+        logging.info("插入批量数据成功：" + listInfos.size());
 
     }
 
@@ -151,7 +155,8 @@ public class MongodbStorege {
         // Document document = new Document();
         // document.append("name", "xiaoqian").append("age", 12).append("addr", "beijin");
         // mongoCollection.insertOne(document);
-        System.out.println(portIsUsing("127.0.0.1", 27017));
+        boolean portIsUsing = portIsUsing("127.0.0.1", 27017);
+        logging.info("portIsUsing: {}", portIsUsing);
     }
 
 

@@ -27,9 +27,9 @@ public class Test {
         //        .map(e->e.trim().replaceAll(" ",""))
         //        .collect(Collectors.toList());
         //
-        //System.out.println(vars);
+        // logging.info(vars);
         //
-        //System.out.println(JavbusSpider.getMagnetReqUrl(a));
+        // logging.info(JavbusSpider.getMagnetReqUrl(a));
 
         //File file = new File("src/main/resources/reqHeaders.txt");
         //BufferedReader fileReader = new BufferedReader(new FileReader(file));
@@ -39,9 +39,9 @@ public class Test {
         //    hashMap.put(split[0],split[1]);
         //    return e;
         //}).collect(Collectors.toList());
-        //System.out.println(hashMap.size());
+        // logging.info(hashMap.size());
         //
-        //System.out.println(file.exists());
+        // logging.info(file.exists());
 
 
         //String message = "hello";
@@ -59,7 +59,7 @@ public class Test {
         //        .addHeader("User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36")
         //        .build();
         //
-        //okHttpClient.newCall(request).enqueue(new Callback() {
+        // okHttpClient.newCall(request).enqueue(new Callback() {
         //    @Override
         //    public void onFailure(@NotNull Call call, @NotNull IOException e) {
         //
@@ -67,24 +67,24 @@ public class Test {
         //
         //    @Override
         //    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-        //        System.out.println(response.toString());
-        //        System.out.println(response.body().string());
+        //        logging.info(response.toString());
+        //        logging.info(response.body().string());
         //    }
         //});
 
-        //System.out.println(JavbusSpider.isValidDate("2020-12-01"));
-        //System.out.println(JavbusSpider.isValidDate("2020-12\nxsxasasx"));
-        //System.out.println("2020-12\nxsxasasx");
+        // logging.info(JavbusSpider.isValidDate("2020-12-01"));
+        // logging.info(JavbusSpider.isValidDate("2020-12\nxsxasasx"));
+        // logging.info("2020-12\nxsxasasx");
 
-        //int number = (int) Math.ceil((float) 13 / 10);
-        //System.out.println(number);
+        // int number = (int) Math.ceil((float) 13 / 10);
+        // logging.info(number);
         //
-        //ArrayList<String> strings = new ArrayList<>();
-        //String a = "https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-1.jpg";
-        //String b ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-2.jpg";
-        //String c ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-3.jpg";
-        //String d ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-4.jpg";
-        //String e ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-5.jpg";
+        // ArrayList<String> strings = new ArrayList<>();
+        // String a = "https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-1.jpg";
+        // String b ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-2.jpg";
+        // String c ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-3.jpg";
+        // String d ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-4.jpg";
+        // String e ="https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-5.jpg";
         //
         //strings.add(a);
         //strings.add(b);
@@ -118,7 +118,7 @@ public class Test {
         //
         //
         //
-        //System.out.println("");
+        // logging.info("");
 
         //OkHttpClient okHttpClient = new OkHttpClient();
         //
@@ -133,7 +133,7 @@ public class Test {
         //String result = null;
         //try {
         //    if (execute.code() != 200){
-        //        System.out.println("无法查询");
+        //        logging.info("无法查询");
         //        return;
         //    }
         //    result = execute.body().string();
@@ -145,15 +145,15 @@ public class Test {
         //
         //Elements contentContainer = document.select("body > div.wrap.mt30 > ul > li");
         //
-        //for (Element element : contentContainer) {
-        //    System.out.println(element.text());
+        // for (Element element : contentContainer) {
+        //    logging.info(element.text());
         //}
 
 
         //body > div.wrap.mt30 > ul > li:nth-child(29) > a > p
 
-        //Thread.sleep(5000);
-        //System.out.println("xxx");
+        // Thread.sleep(5000);
+        // logging.info("xxx");
 
 
         String proxyHost = "127.0.0.1";

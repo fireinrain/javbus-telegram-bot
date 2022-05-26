@@ -2,6 +2,8 @@ package com.sunrise.tgbot;
 
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -12,13 +14,16 @@ import java.io.IOException;
  * @date: 2021/4/25 3:25 PM
  */
 public class TgBotHelper {
+    public static final Logger logging = LoggerFactory.getLogger(TgBotHelper.class);
+
     /**
      * 怎样获取private chatid？
      * 先将channle 设置为public 然后发送请求url 解析相应 然后再把channel设置
      * 回private 你就可以继续使用这个chatid 了
+     *
      * @return
      */
-    public static String getChatId(){
+    public static String getChatId() {
         return null;
 
     }
@@ -49,8 +54,8 @@ public class TgBotHelper {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                System.out.println(response.toString());
-                System.out.println(response.body().string());
+                logging.info(response.toString());
+                logging.info(response.body().string());
             }
         });
     }

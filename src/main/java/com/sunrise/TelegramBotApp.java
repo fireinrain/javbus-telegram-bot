@@ -3,6 +3,8 @@ package com.sunrise;
 import com.sunrise.storege.MongodbStorege;
 import com.sunrise.tgbot.JavbusInfoPushBot;
 import com.sunrise.tgbot.ReplyMessageBot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -18,6 +20,7 @@ import static com.sunrise.tgbot.TgBotConfig.PROXY_PORT;
  */
 public class TelegramBotApp {
 
+    public static final Logger logging = LoggerFactory.getLogger(TelegramBotApp.class);
 
 
     public static void main(String[] args) {
@@ -54,9 +57,9 @@ public class TelegramBotApp {
             //    JobExcutor.doSpiderJob(spiderJob);
             //});
 
+            logging.info("Javbus Bot 已经启动");
             botsApi.registerBot(replyMessageBot);
             botsApi.registerBot(pushInfoBot);
-
 
 
         } catch (TelegramApiException e) {

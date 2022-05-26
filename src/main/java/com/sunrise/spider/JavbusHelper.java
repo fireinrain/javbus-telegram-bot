@@ -6,6 +6,8 @@ import okhttp3.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -25,15 +27,17 @@ import java.util.stream.Collectors;
  * @date: 2021/4/25 4:27 AM
  */
 public class JavbusHelper {
+    public static final Logger logging = LoggerFactory.getLogger(JavbusHelper.class);
+
     public static int defaultPageSize = 30;
 
     public static String normalCode(String code) {
-        //欧美番号
+        // 欧美番号
         if (code.length() >= 8) {
             code = code.replaceAll("\\.", "-");
             return code.toUpperCase(Locale.ROOT);
         }
-        //无码
+        // 无码
         if (startWithNumber(code)) {
             code = code.replaceAll("_", "-");
             return code.toUpperCase(Locale.ROOT);
@@ -204,15 +208,15 @@ public class JavbusHelper {
 
 
     public static void main(String[] args) {
-        System.out.println(normalCode("abp334"));
+        logging.info(normalCode("abp334"));
         caculatePageInfo(10, 30);
 
-        System.out.println(parseStrToUrlEncoder("つかさ"));
+        logging.info(parseStrToUrlEncoder("つかさ"));
 
-        System.out.println(startWithNumber("123434-1"));
-        System.out.println(startWithAlpha("我是sads"));
-        System.out.println(isforeignProduct("DayWithAPornstar.20.04.21"));
-        System.out.println(normalCode("DDFBusty.16.10.25"));
+        logging.info("{}", startWithNumber("123434-1"));
+        logging.info("{}", startWithAlpha("我是sads"));
+        logging.info("{}", isforeignProduct("DayWithAPornstar.20.04.21"));
+        logging.info(normalCode("DDFBusty.16.10.25"));
 
     }
 }

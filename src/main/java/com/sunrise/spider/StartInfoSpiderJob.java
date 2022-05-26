@@ -3,6 +3,8 @@ package com.sunrise.spider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sunrise.storege.MongodbStorege;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -16,6 +18,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * @date: 2021/5/1 6:45 PM
  */
 public class StartInfoSpiderJob implements Runnable {
+    public static final Logger logging = LoggerFactory.getLogger(StartInfoSpiderJob.class);
+
     private JavbusStarInfoItem JavbusStarInfoItem;
 
     private ConcurrentLinkedDeque<JavbusStarInfoItem> concurrentLinkedDeque;
@@ -44,7 +48,7 @@ public class StartInfoSpiderJob implements Runnable {
             MongodbStorege.storeInfo(jsonStr, "javbus", "javStarInfo");
         } else {
             // TODO log no store db for skip
-            System.out.println("Warn! No mongoDB online, skip for local store：" + jsonStr);
+            logging.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
 
         }
 
