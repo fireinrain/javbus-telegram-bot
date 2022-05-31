@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * @description: tg bot 信息推送
@@ -38,6 +39,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     // Q&A private chatid
     // TODO chatid 有状态 如果不同的频道使用，那么会导致消息错乱
     public static String chatId = "";
+
+    public static Object lockForUse = new Object();
 
     // private String chatId = "-493244777";
 
@@ -57,7 +60,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasEditedMessage()){
+
+        if (update.hasEditedMessage()) {
             logging.info("----------------------> recieve message from bot place");
             // 判断是否开启了forward chat
             if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
@@ -309,8 +313,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         while (true) {
             // Response{protocol=http/1.1, code=200, message=OK, url=https://api.telegram.org/bot1795760173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o/sendMessage?chat_id=@sunrisechannel_8888&text=hello}
             //{"ok":true,"result":{"message_id":38,"sender_chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"date":1619242901,"text":"hello"}}
-            logging.info("--------------------------------睡眠5秒--------------------------------" + System.currentTimeMillis());
-            logging.info("--------------------------------当前还有" + linkedDeque.size() + "个任务没有被推入执行器--------------------------------");
+
             try {
 
                 if (!linkedDeque.isEmpty()) {
@@ -350,6 +353,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+            if (logging.isDebugEnabled()) {
+                logging.debug("--------------------------------睡眠5秒--------------------------------" + System.currentTimeMillis());
+                logging.debug("--------------------------------当前还有" + linkedDeque.size() + "个任务没有被推入执行器--------------------------------");
+
             }
         }
     }

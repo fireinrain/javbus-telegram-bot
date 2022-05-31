@@ -9,6 +9,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.sunrise.tgbot.TgBotConfig;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class MongodbStorege {
     public static final Logger logging = LoggerFactory.getLogger(MongodbStorege.class);
 
 
-    private static String mongoDbUrl = "mongodb://admin:admin@127.0.0.1:27017";
+    private static String mongoDbUrl = TgBotConfig.MONGO_DB_URL;
 
     public static volatile AtomicBoolean isMongoDatabaseAvailable = new AtomicBoolean(false);
 
