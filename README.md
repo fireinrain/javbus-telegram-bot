@@ -15,5 +15,5 @@ channel 获取channel id 目前的方式是 先把channel 设置为public 然后
 当获取chat_id 后可以把channel 设置为private， chat id 并不会变 这样我们还是可以继续进行转发
 
 
-
+注意：访问telegram 需要使用代理 我这里用的是代理到本地的clash端口  需要在setting.properties配置 
 
