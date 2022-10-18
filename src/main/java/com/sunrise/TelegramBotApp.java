@@ -15,8 +15,6 @@ import static com.sunrise.tgbot.TgBotConfig.PROXY_PORT;
 
 /**
  * Main App
- * 1795760173:AAG2jNCNnf3DdR0NMWAgHa4NiGwOBoMwGio
- * 1679572267:AAFBitCdq7lp8wgI9T-jOAXK69ctO0dpVV0
  *
  * @author sunrise
  */
