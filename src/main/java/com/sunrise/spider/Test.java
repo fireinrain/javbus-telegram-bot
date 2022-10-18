@@ -164,12 +164,12 @@ public class Test {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .proxy(proxy)
                 .retryOnConnectionFailure(true)
-                //连接超时
-                .connectTimeout(60, TimeUnit.SECONDS)
-                //读取超时
-                .readTimeout(60, TimeUnit.SECONDS)
-                //写超时
-                .writeTimeout(60, TimeUnit.SECONDS)
+                // 连接超时
+                .connectTimeout(60 * 6, TimeUnit.SECONDS)
+                // 读取超时
+                .readTimeout(60 * 6, TimeUnit.SECONDS)
+                // 写超时
+                .writeTimeout(60 * 6, TimeUnit.SECONDS)
                 .build();
 
         //okHttpClient.newCall()

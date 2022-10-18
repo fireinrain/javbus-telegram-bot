@@ -66,19 +66,12 @@ public class JavbusHelper {
 
         Request request = new Request.Builder().url(url).get().build();
 
-        Response execute = null;
-        try {
-            execute = okHttpClient.newCall(request).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String result = null;
-        try {
+        String result = "";
+        try (Response execute = okHttpClient.newCall(request).execute()) {
             result = execute.body().string();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         Document document = Jsoup.parse(result);
 
         Elements contentContainer = document.select("body > div.wrap.mt30 > ul > li");

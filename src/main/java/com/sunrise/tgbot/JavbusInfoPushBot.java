@@ -310,7 +310,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         ConcurrentLinkedDeque<JavbusDataItem> linkedDeque = JobExcutor.javbusDataItemConcurrentLinkedDeque;
 
         while (true) {
-            // Response{protocol=http/1.1, code=200, message=OK, url=https://api.telegram.org/bot1795760173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o/sendMessage?chat_id=@sunrisechannel_8888&text=hello}
+            // Response{protocol=http/1.1, code=200, message=OK, url=https://api.telegram.org/bot1795760*6173:AAGqnMBVoBohuWzv0fsQGbclZ3N_nYOIW_o/sendMessage?chat_id=@sunrisechannel_8888&text=hello}
             //{"ok":true,"result":{"message_id":38,"sender_chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"chat":{"id":-1001371132897,"title":"Q&A","username":"sunrisechannel_8888","type":"channel"},"date":1619242901,"text":"hello"}}
 
             try {
@@ -439,19 +439,25 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             CompletableFuture[] completableFutures = strings.stream().map(el -> {
                                 CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
                                     // 下载图片
-                                    OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(true).connectTimeout(60, TimeUnit.SECONDS) // 连接超时
-                                            .readTimeout(60, TimeUnit.SECONDS) // 读取超时
-                                            .writeTimeout(60, TimeUnit.SECONDS) // 写超时
+                                    OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(true).connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
+                                            .readTimeout(60 * 6, TimeUnit.SECONDS) // 读取超时
+                                            .writeTimeout(60 * 6, TimeUnit.SECONDS) // 写超时
                                             .build();
                                     // 获取请求对象
                                     Request request = new Request.Builder().url(el.trim()).build();
                                     // 获取响应体
+                                    Response response = null;
                                     ResponseBody body = null;
                                     try {
-                                        body = client.newCall(request).execute().body();
+                                        response = client.newCall(request).execute();
+                                        body = response.body();
                                     } catch (IOException exception) {
-                                        body.close();
+                                        if (null != body) {
+                                            body.close();
+                                            logging.warn("当前请求响应失败");
+                                        }
                                         exception.printStackTrace();
+                                        logging.error("当前请求地址: " + request.url());
                                     }
                                     Object[] objects = new Object[2];
                                     objects[0] = body;
@@ -474,9 +480,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                 Object[] objects = new Object[0];
                                 try {
                                     objects = (Object[]) completableFuture.get();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                } catch (ExecutionException e) {
+                                } catch (InterruptedException | ExecutionException e) {
                                     e.printStackTrace();
                                 }
                                 ResponseBody responseBody = (ResponseBody) objects[0];
@@ -664,9 +668,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     CompletableFuture[] completableFutures = strings.stream().parallel().map(el -> {
                         CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
                             // 下载图片
-                            OkHttpClient client = new OkHttpClient.Builder().retryOnConnectionFailure(true).connectTimeout(60, TimeUnit.SECONDS) // 连接超时
-                                    .readTimeout(60, TimeUnit.SECONDS) // 读取超时
-                                    .writeTimeout(60, TimeUnit.SECONDS) // 写超时
+                            OkHttpClient client = new OkHttpClient.Builder()
+                                    .addInterceptor(new RetryInterceptor(2))
+                                    .retryOnConnectionFailure(true)
+                                    .connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
+                                    .readTimeout(60 * 6, TimeUnit.SECONDS) // 读取超时
+                                    .writeTimeout(60 * 6, TimeUnit.SECONDS) // 写超时
                                     .build();
                             // 获取请求对象
                             Request request = new Request.Builder().url(el.trim()).build();
@@ -674,14 +681,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             ResponseBody body = null;
                             Response execute = null;
                             try {
+                                logging.info("开始请求图片地址: " + request.url());
                                 execute = client.newCall(request).execute();
                                 body = execute.body();
                             } catch (IOException exception) {
                                 if (null != body) {
-                                    logging.warn("当前请求响应失败");
                                     body.close();
+                                    logging.warn("当前请求响应失败");
                                 }
                                 exception.printStackTrace();
+                                logging.error("当前请求地址: " + request.url());
                             }
                             Object[] objects = new Object[2];
                             objects[0] = body;
