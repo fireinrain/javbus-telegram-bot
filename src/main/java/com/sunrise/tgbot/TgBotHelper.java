@@ -34,6 +34,7 @@ public class TgBotHelper {
      */
     public static String getChatId(String botToken) {
         final String[] chatId = new String[1];
+        // TODO 使用try-with-resource 语法
         OkHttpClient okHttpClient = new OkHttpClient();
         String getUpdate = "https://api.telegram.org/bot" + botToken + "/getMe";
         // 发送消息给特定的频道
