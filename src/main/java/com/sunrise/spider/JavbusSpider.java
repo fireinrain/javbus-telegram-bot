@@ -776,6 +776,7 @@ public class JavbusSpider {
             execute = okHttpClient.newCall(request).execute();
             if (execute.code() != 200) {
                 logging.info("无法查询：" + filmReqUrl);
+                javbusDataItem.setCode(fileCode);
                 return javbusDataItem;
             }
         } catch (IOException e) {

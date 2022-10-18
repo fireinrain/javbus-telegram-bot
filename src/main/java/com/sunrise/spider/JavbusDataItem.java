@@ -73,18 +73,25 @@ public class JavbusDataItem {
     private volatile int fetchRetry;
 
     public JavbusDataItem() {
-        this.bigImgUrl = "";
-        this.titleStr = "";
-        this.code = "";
-        this.publishDate = "";
-        this.totalTime = "";
-        this.director = "";
-        this.produceCompany = "";
-        this.publishCompany = "";
-        this.series = "";
-        this.types = "";
-        this.stars = "";
-        this.fetchRetry = 0;
+        this.setStarsPageUrls(null);
+        this.setMainStarPageUrl(null);
+        this.setBigImgUrl("");
+        this.setTitleStr("");
+        this.setCode("");
+        this.setPublishDate("");
+        this.setTotalTime("");
+        this.setDirector("");
+        this.setProduceCompany("");
+        this.setPublishCompany("");
+        this.setTypes("");
+        this.setStars("");
+        this.setSampleImgs(null);
+        this.setMagnents(null);
+        this.setSeries("");
+        this.setVisitUrl("");
+        this.setFetchRetry(0);
+        this.setAllFilmCount("");
+        this.setHaveMagnentCount("");
     }
 
     //拆分类型

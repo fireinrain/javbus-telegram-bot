@@ -32,9 +32,10 @@ public class SpiderJob implements Runnable {
     @Override
     public void run() {
         JavbusDataItem javbusDataItem = JavbusSpider.fetchFilmInFoByCode(filmCode);
-        if (null == javbusDataItem.getVisitUrl()){
-            return;
-        }
+        // 在push消息那边判断
+        // if (null == javbusDataItem.getVisitUrl() || "".equals(javbusDataItem.getVisitUrl())) {
+        //     return;
+        // }
         this.concurrentLinkedDeque.offer(javbusDataItem);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonStr = null;
@@ -53,8 +54,8 @@ public class SpiderJob implements Runnable {
 
     }
 
-    public static void trigerJavbusTask(String code){
-        SpiderJob spiderJob = new SpiderJob(code,JobExcutor.javbusDataItemConcurrentLinkedDeque);
+    public static void trigerJavbusTask(String code) {
+        SpiderJob spiderJob = new SpiderJob(code, JobExcutor.javbusDataItemConcurrentLinkedDeque);
         JobExcutor.doTgJob(spiderJob);
     }
 }

@@ -43,7 +43,7 @@ public class JavbusHelper {
             return code.toUpperCase(Locale.ROOT);
         }
 
-        //日本
+        // 日本
         if (!code.contains("-")) {
             assert code.length() >= 3;
             String number = code.substring(code.length() - 3);
@@ -166,7 +166,7 @@ public class JavbusHelper {
      * @return
      */
     public static boolean startWithNumber(String code) {
-        if (code.length() <= 9) {
+        if (code.length() <= 9 && code.length() > 0) {
             Pattern pattern = Pattern.compile("[0-9]*");
             Matcher isNum = pattern.matcher(code.charAt(0) + "");
             if (!isNum.matches()) {

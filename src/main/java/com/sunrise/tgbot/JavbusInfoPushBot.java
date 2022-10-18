@@ -121,7 +121,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             } else {
                 SendMessage message = new SendMessage();
                 message.setChatId(chatId);
-                message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+                message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
 
                 try {
                     // Call method to send the message
@@ -152,7 +152,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
-                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
 
                     try {
                         // Call method to send the message
@@ -181,7 +181,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
-                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
 
                     try {
                         // Call method to send the message
@@ -216,7 +216,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
-                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
 
                     try {
                         // Call method to send the message
@@ -246,7 +246,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
-                    message.setText("'" + text + "无效查询<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
 
                     try {
                         // Call method to send the message
@@ -269,7 +269,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         // Create a SendMessage object with mandatory fields
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("Warn！无法处理： '" + text + "<<<<<-'" + TgBotConfig.JAVBUS_BOT_NAME);
+        message.setText("Warn！无法处理： '" + text + "<---'" + TgBotConfig.JAVBUS_BOT_NAME);
 
         try {
             // Call method to send the message
@@ -594,6 +594,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
         @Override
         public void run() {
+            if (null == this.javbusDataItem.getVisitUrl() || "".equals(this.javbusDataItem.getVisitUrl())) {
+                pushNotFoundResult();
+                return;
+            }
             try {
                 pushIntroduceInfo(javbusDataItem);
                 pushMagnentInfo(javbusDataItem);
@@ -601,6 +605,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
             } catch (TelegramApiException e) {
                 e.printStackTrace();
+            }
+        }
+
+        public void pushNotFoundResult() {
+            try {
+                pushCodeNotFundMsg(this.javbusDataItem);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -749,6 +761,36 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         } catch (Exception e) {
             logging.info("推送样品图Try出现异常：" + e.getMessage());
             e.printStackTrace();
+        }
+
+    }
+
+    private void pushCodeNotFundMsg(JavbusDataItem javbusDataItem) throws TelegramApiException {
+        try {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("该番号未找到!");
+            sendMessage.enableHtml(true);
+            sendMessage.enableMarkdown(false);
+            sendMessage.enableNotification();
+            executeAsync(sendMessage, new SentCallback<Message>() {
+                @Override
+                public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
+                    logging.info(javbusDataItem.getCode() + " 番号查询未找到结果,消息推送完毕");
+                }
+
+                @Override
+                public void onError(BotApiMethod<Message> botApiMethod, TelegramApiRequestException e) {
+                }
+
+                @Override
+                public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                    logging.info("推送番号未找到消息出现异常：" + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            // e.printStackTrace();
+            logging.info("推送番号未找到消息出现异常：" + e.getMessage());
         }
 
     }
