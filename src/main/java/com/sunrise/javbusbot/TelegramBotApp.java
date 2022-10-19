@@ -1,8 +1,8 @@
-package com.sunrise;
+package com.sunrise.javbusbot;
 
-import com.sunrise.storege.MongodbStorege;
-import com.sunrise.tgbot.JavbusInfoPushBot;
-import com.sunrise.tgbot.ReplyMessageBot;
+import com.sunrise.javbusbot.storege.MongodbStorege;
+import com.sunrise.javbusbot.tgbot.JavbusInfoPushBot;
+import com.sunrise.javbusbot.tgbot.ReplyMessageBot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -10,8 +10,8 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import static com.sunrise.tgbot.TgBotConfig.PROXY_HOST;
-import static com.sunrise.tgbot.TgBotConfig.PROXY_PORT;
+import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_HOST;
+import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_PORT;
 
 /**
  * Main App

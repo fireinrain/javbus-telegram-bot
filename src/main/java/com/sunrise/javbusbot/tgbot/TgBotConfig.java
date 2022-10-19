@@ -1,4 +1,4 @@
-package com.sunrise.tgbot;
+package com.sunrise.javbusbot.tgbot;
 
 import java.io.IOException;
 import java.util.Objects;

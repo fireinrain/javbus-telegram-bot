@@ -1,7 +1,7 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sunrise.tgbot.TgBotConfig;
+import com.sunrise.javbusbot.tgbot.TgBotConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;

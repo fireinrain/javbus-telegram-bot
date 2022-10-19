@@ -1,7 +1,7 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sunrise.tgbot.TgBotConfig;
+import com.sunrise.javbusbot.tgbot.TgBotConfig;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -935,16 +935,18 @@ public class JavbusSpider {
      * DV-1314
      * TD-026
      *
-     * @param fileCode
+     * @param filmCode
      * @return
      */
-    public static JavbusDataItem fetchFilmInFoByCode(String fileCode) {
+    public static JavbusDataItem fetchFilmInFoByCode(String filmCode) {
         String filmReqUrl = "";
-        // 判断fileCode类型
-        if (JavbusHelper.isforeignProduct(fileCode)) {
-            filmReqUrl = foreignerBaseUrl + fileCode;
+        // 判断filmCode类型
+        if (JavbusHelper.isforeignProduct(filmCode)) {
+            filmReqUrl = foreignerBaseUrl + filmCode;
         } else {
-            filmReqUrl = baseUrl + fileCode;
+            // 移除多余的日期
+            filmCode = JavbusHelper.removeDateFromFilmCode(filmCode);
+            filmReqUrl = baseUrl + filmCode;
         }
 
         JavbusDataItem javbusDataItem = new JavbusDataItem();
@@ -955,7 +957,7 @@ public class JavbusSpider {
         try (Response execute = okHttpClient.newCall(request).execute();) {
             if (execute.code() != 200) {
                 logging.info("无法查询：" + filmReqUrl);
-                javbusDataItem.setCode(fileCode);
+                javbusDataItem.setCode(filmCode);
                 return javbusDataItem;
             } else {
                 result = execute.body().string();
@@ -1016,6 +1018,10 @@ public class JavbusSpider {
                 if (childNode instanceof Element) {
                     Element node = (Element) childNode;
                     String href = node.attr("href");
+                    // 不是来自dmm的图
+                    if (href.startsWith("/pics/")) {
+                        href = TgBotConfig.SPIDER_BASE_URL + href;
+                    }
                     sampleUrls.add(href);
                     // logging.info(href);
                 }

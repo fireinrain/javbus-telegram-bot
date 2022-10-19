@@ -1,4 +1,4 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sunrise</groupId>
-    <artifactId>telegram-bot</artifactId>
+    <artifactId>javbus-tg-bot</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>telegram-bot</name>
+    <name>javbus-tg-bot</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,7 +109,7 @@
                     <archive>
                         <manifest>
                             <!--这里指定要运行的main类-->
-                            <mainClass>com.sunrise.TelegramBotApp</mainClass>
+                            <mainClass>com.sunrise.javbusbot.TelegramBotApp</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

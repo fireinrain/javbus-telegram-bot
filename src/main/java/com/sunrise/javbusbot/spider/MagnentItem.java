@@ -1,4 +1,4 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
 /**
  * @description: 番号对象

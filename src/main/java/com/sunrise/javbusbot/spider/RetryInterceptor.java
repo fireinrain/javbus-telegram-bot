@@ -1,4 +1,4 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
 import okhttp3.Interceptor;
 import okhttp3.Request;

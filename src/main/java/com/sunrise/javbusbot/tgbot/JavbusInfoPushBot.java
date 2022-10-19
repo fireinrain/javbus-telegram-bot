@@ -1,6 +1,6 @@
-package com.sunrise.tgbot;
+package com.sunrise.javbusbot.tgbot;
 
-import com.sunrise.spider.*;
+import com.sunrise.javbusbot.spider.*;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

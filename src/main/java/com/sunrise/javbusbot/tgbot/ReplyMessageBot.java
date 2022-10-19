@@ -1,4 +1,4 @@
-package com.sunrise.tgbot;
+package com.sunrise.javbusbot.tgbot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
-import com.sunrise.tgbot.TgBotConfig;
+import com.sunrise.javbusbot.tgbot.TgBotConfig;
 
 /**
  * @description: 演员

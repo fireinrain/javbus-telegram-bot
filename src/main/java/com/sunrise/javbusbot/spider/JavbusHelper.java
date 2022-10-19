@@ -1,4 +1,4 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,6 +14,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -76,9 +78,7 @@ public class JavbusHelper {
 
         Elements contentContainer = document.select("body > div.wrap.mt30 > ul > li");
 
-        List<String> collect = contentContainer.stream()
-                .map(e -> e.text())
-                .collect(Collectors.toList());
+        List<String> collect = contentContainer.stream().map(e -> e.text()).collect(Collectors.toList());
 
         return collect;
 
@@ -193,10 +193,30 @@ public class JavbusHelper {
      */
     public static boolean isforeignProduct(String code) {
         String s = code.replaceAll("-", "");
+        // 移除可能存在的日期
+        // https://www.javbus.com/FSDSS-408_2022-05-12
+        s = s.split("_")[0];
         if (s.length() <= 8) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 移除日本番号可能存在的日期
+     *
+     * @param filmCode
+     * @return
+     */
+    public static String removeDateFromFilmCode(String filmCode) {
+        String[] s = filmCode.split("_");
+        String dateStr = s[s.length - 1];
+        try {
+            LocalDate date = LocalDate.parse(dateStr);
+        } catch (DateTimeParseException e) {
+            return filmCode;
+        }
+        return s[0];
     }
 
 
@@ -212,4 +232,6 @@ public class JavbusHelper {
         logging.info(normalCode("DDFBusty.16.10.25"));
 
     }
+
+
 }

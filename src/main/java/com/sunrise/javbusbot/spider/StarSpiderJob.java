@@ -1,6 +1,6 @@
-package com.sunrise.spider;
+package com.sunrise.javbusbot.spider;
 
-import com.sunrise.storege.MongodbStorege;
+import com.sunrise.javbusbot.storege.MongodbStorege;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

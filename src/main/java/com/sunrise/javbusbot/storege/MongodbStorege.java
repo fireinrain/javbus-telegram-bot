@@ -1,4 +1,4 @@
-package com.sunrise.storege;
+package com.sunrise.javbusbot.storege;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +9,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.sunrise.tgbot.TgBotConfig;
+import com.sunrise.javbusbot.tgbot.TgBotConfig;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
