@@ -87,7 +87,7 @@
     </dependencies>
 
     <build>
-        <finalName>telegram-bot</finalName>
+        <finalName>javbus-tg-bot</finalName>
         <plugins>
 
             <plugin>
