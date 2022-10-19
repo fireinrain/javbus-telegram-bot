@@ -75,7 +75,7 @@ public class JavbusSpider {
 
         Request request = new Request.Builder()
                 .url(pageUrl).get()
-                .headers(Headers.of(getStarSearchReqHeader(pageUrl)))
+                .headers(Headers.of(getStarSearchReqHeader(pageUrl, true)))
                 .build();
 
         Response execute = null;
@@ -374,7 +374,7 @@ public class JavbusSpider {
         }
         Request request = new Request.Builder()
                 .url(pageUrl).get()
-                .headers(Headers.of(getStarSearchReqHeader(pageUrl)))
+                .headers(Headers.of(getStarSearchReqHeader(pageUrl, true)))
                 .build();
         String result = "";
         try (Response execute = okHttpClient.newCall(request).execute();) {
@@ -487,7 +487,7 @@ public class JavbusSpider {
 
         Request request = new Request.Builder()
                 .url(pageUrl).get()
-                .headers(Headers.of(getStarSearchReqHeader(pageUrl)))
+                .headers(Headers.of(getStarSearchReqHeader(pageUrl, true)))
                 .build();
 
         Response execute = null;
@@ -590,6 +590,195 @@ public class JavbusSpider {
     }
 
     /**
+     * 获取演员最新一部作品
+     *
+     * @param starName
+     * @return
+     */
+    public static JavbusDataItem fetchLatestFilmInfoByName(String starName) {
+        String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
+        String starUrl = "";
+        Response execute = null;
+        if (JavbusHelper.startWithAlpha(starName)) {
+            starUrl = "https://www.javbus.org/search/" + starNameEncode;
+            execute = searchStarByName(starName, starUrl, "occident", false);
+        } else {
+            starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
+            execute = searchStarByName(starName, starUrl, "code", false);
+            if (execute == null) {
+                starUrl = "https://www.javbus.com/uncensored/search/" + starNameEncode + "&type=0&parent=uc";
+                execute = searchStarByName(starName, starUrl, "nocode", false);
+            }
+        }
+        if (null == execute) {
+            return null;
+        }
+        String result = null;
+        try {
+            result = execute.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            execute.close();
+        }
+
+        Document document = Jsoup.parse(result);
+        Elements elements = document.select("#waterfall > div > a");
+
+        Elements allFilmCount = document.select("#resultshowall");
+        Element allFilmNode = allFilmCount.get(0);
+        TextNode node = (TextNode) allFilmNode.childNodes().get(2);
+        String text1 = node.text();
+        // logging.info(text1);
+        String allFilmCountStr = text1.trim().split(" ")[1].trim();
+
+        Elements haveMagnentCount = document.select("#resultshowmag");
+        Element haveMagnentFilmNode = haveMagnentCount.get(0);
+        TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
+        String text2 = node2.text();
+        String haveMagnentCountStr = text2.trim().split(" ")[1].trim();
+
+        ArrayList<String> filmUrls = new ArrayList<>();
+        for (Element element : elements) {
+            String text = element.attr("href").trim();
+            filmUrls.add(text);
+            // 只需要第一个
+            break;
+        }
+
+        CompletableFuture[] completableFutures = filmUrls.stream()
+                .map(e -> {
+                    if (e.startsWith(baseUrl)) {
+                        e = e.replace(baseUrl, "");
+                        return e;
+                    }
+                    if (e.startsWith(foreignerBaseUrl)) {
+                        e = e.replace(foreignerBaseUrl, "");
+                        return e;
+                    }
+                    return e;
+                }).parallel()
+                .map(e -> {
+                    CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                        return fetchFilmInFoByCode(e);
+                    });
+                    return dataItemCompletableFuture;
+                }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(completableFutures).join();
+
+        List<JavbusDataItem> javbusDataItems = Arrays.stream(completableFutures).map(e -> {
+            JavbusDataItem javbusDataItem = null;
+            try {
+                javbusDataItem = (JavbusDataItem) e.get();
+            } catch (InterruptedException | ExecutionException interruptedException) {
+                interruptedException.printStackTrace();
+            }
+            return javbusDataItem;
+        }).collect(Collectors.toList());
+
+        // StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+        javbusDataItems
+                .forEach(e -> {
+                    e.setAllFilmCount(allFilmCountStr);
+                    e.setHaveMagnentCount(haveMagnentCountStr);
+                });
+        return javbusDataItems.get(0);
+    }
+
+
+    public static JavbusDataItem fetchLatestMagFilmInfoByName(String starName) {
+        String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
+        String starUrl = "";
+        Response execute = null;
+        if (JavbusHelper.startWithAlpha(starName)) {
+            starUrl = "https://www.javbus.org/search/" + starNameEncode;
+            execute = searchStarByName(starName, starUrl, "occident", true);
+        } else {
+            starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
+            execute = searchStarByName(starName, starUrl, "code", true);
+            if (execute == null) {
+                starUrl = "https://www.javbus.com/uncensored/search/" + starNameEncode + "&type=0&parent=uc";
+                execute = searchStarByName(starName, starUrl, "nocode", true);
+            }
+        }
+        if (null == execute) {
+            return null;
+        }
+        String result = null;
+        try {
+            result = execute.body().string();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            execute.close();
+        }
+
+        Document document = Jsoup.parse(result);
+        Elements elements = document.select("#waterfall > div > a");
+
+        Elements allFilmCount = document.select("#resultshowall");
+        Element allFilmNode = allFilmCount.get(0);
+        TextNode node = (TextNode) allFilmNode.childNodes().get(2);
+        String text1 = node.text();
+        // logging.info(text1);
+        String allFilmCountStr = text1.trim().split(" ")[1].trim();
+
+        Elements haveMagnentCount = document.select("#resultshowmag");
+        Element haveMagnentFilmNode = haveMagnentCount.get(0);
+        TextNode node2 = (TextNode) haveMagnentFilmNode.childNodes().get(2);
+        String text2 = node2.text();
+        String haveMagnentCountStr = text2.trim().split(" ")[1].trim();
+
+        ArrayList<String> filmUrls = new ArrayList<>();
+        for (Element element : elements) {
+            String text = element.attr("href").trim();
+            filmUrls.add(text);
+            // 只需要第一个
+            break;
+        }
+
+        CompletableFuture[] completableFutures = filmUrls.stream()
+                .map(e -> {
+                    if (e.startsWith(baseUrl)) {
+                        e = e.replace(baseUrl, "");
+                        return e;
+                    }
+                    if (e.startsWith(foreignerBaseUrl)) {
+                        e = e.replace(foreignerBaseUrl, "");
+                        return e;
+                    }
+                    return e;
+                }).parallel()
+                .map(e -> {
+                    CompletableFuture<JavbusDataItem> dataItemCompletableFuture = CompletableFuture.supplyAsync(() -> {
+                        return fetchFilmInFoByCode(e);
+                    });
+                    return dataItemCompletableFuture;
+                }).toArray(CompletableFuture[]::new);
+
+        CompletableFuture.allOf(completableFutures).join();
+
+        List<JavbusDataItem> javbusDataItems = Arrays.stream(completableFutures).map(e -> {
+            JavbusDataItem javbusDataItem = null;
+            try {
+                javbusDataItem = (JavbusDataItem) e.get();
+            } catch (InterruptedException | ExecutionException interruptedException) {
+                interruptedException.printStackTrace();
+            }
+            return javbusDataItem;
+        }).collect(Collectors.toList());
+
+        // StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+        javbusDataItems
+                .forEach(e -> {
+                    e.setAllFilmCount(allFilmCountStr);
+                    e.setHaveMagnentCount(haveMagnentCountStr);
+                });
+        return javbusDataItems.get(0);
+    }
+
+    /**
      * 该方法只能获取到查询页面最多30个作品，远远低于点击个人主页进去所找到的
      * 条目数量
      *
@@ -602,13 +791,13 @@ public class JavbusSpider {
         Response execute = null;
         if (JavbusHelper.startWithAlpha(starName)) {
             starUrl = "https://www.javbus.org/search/" + starNameEncode;
-            execute = searchStarByName(starName, starUrl, "occident");
+            execute = searchStarByName(starName, starUrl, "occident", false);
         } else {
             starUrl = "https://www.javbus.com/search/" + starNameEncode + "&type=&parent=ce";
-            execute = searchStarByName(starName, starUrl, "code");
+            execute = searchStarByName(starName, starUrl, "code", false);
             if (execute == null) {
                 starUrl = "https://www.javbus.com/uncensored/search/" + starNameEncode + "&type=0&parent=uc";
-                execute = searchStarByName(starName, starUrl, "nocode");
+                execute = searchStarByName(starName, starUrl, "nocode", false);
             }
         }
         if (null == execute) {
@@ -674,16 +863,14 @@ public class JavbusSpider {
             JavbusDataItem javbusDataItem = null;
             try {
                 javbusDataItem = (JavbusDataItem) e.get();
-            } catch (InterruptedException interruptedException) {
+            } catch (InterruptedException | ExecutionException interruptedException) {
                 interruptedException.printStackTrace();
-            } catch (ExecutionException executionException) {
-                executionException.printStackTrace();
             }
             return javbusDataItem;
         }).collect(Collectors.toList());
 
         // StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-        javbusDataItems.stream()
+        javbusDataItems
                 .forEach(e -> {
                     e.setAllFilmCount(allFilmCountStr);
                     e.setHaveMagnentCount(haveMagnentCountStr);
@@ -692,7 +879,7 @@ public class JavbusSpider {
     }
 
     @Nullable
-    private static Response searchStarByName(String starName, String starUrl, String queryType) {
+    private static Response searchStarByName(String starName, String starUrl, String queryType, boolean magFlag) {
         String msg = "";
         if ("code".equals(queryType)) {
             msg = "有码查询";
@@ -706,7 +893,7 @@ public class JavbusSpider {
         logging.info("正在进行" + msg + "......");
         Request request = new Request.Builder()
                 .url(starUrl).get()
-                .headers(Headers.of(getStarSearchReqHeader(starUrl)))
+                .headers(Headers.of(getStarSearchReqHeader(starUrl, magFlag)))
                 .build();
 
         Response execute = null;
@@ -1211,9 +1398,12 @@ public class JavbusSpider {
      * @param starReqUrl
      * @return
      */
-    public static HashMap<String, String> getStarSearchReqHeader(String starReqUrl) {
+    public static HashMap<String, String> getStarSearchReqHeader(String starReqUrl, boolean magFlag) {
         HashMap<String, String> requestHeader = getRequestHeader("src/main/resources/searchReqHeader.txt");
         // 替换
+        if (!magFlag) {
+            requestHeader.put("cookie", "genreinfo=glyphicon glyphicon-plus; starinfo=glyphicon glyphicon-plus; existmag=all");
+        }
         String replace = starReqUrl.replace("https://www.javbus.com", "");
         requestHeader.put(":path", replace);
         return requestHeader;

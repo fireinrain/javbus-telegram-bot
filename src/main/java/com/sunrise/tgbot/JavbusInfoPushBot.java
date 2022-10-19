@@ -23,6 +23,7 @@ import org.telegram.telegrambots.meta.updateshandlers.SentCallback;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -117,6 +118,53 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (strings.length == 2) {
                 SpiderJob.trigerJavbusTask(JavbusHelper.normalCode(strings[1].trim()));
                 logging.info("触发推Javbus任务, 查询 " + strings[1]);
+                return;
+            } else {
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                try {
+                    // Call method to send the message
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                return;
+            }
+        }
+        // 推送演员最新的一部作品 可能是没有mag的
+        // latest
+        if (text.trim().startsWith("/latest")) {
+            String[] queryStrs = text.split(" ");
+            if (queryStrs.length == 2) {
+                JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(queryStrs[1].trim());
+                List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                logging.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                return;
+            } else {
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+
+                try {
+                    // Call method to send the message
+                    execute(message);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                return;
+            }
+        }
+        // 推送最新一部有磁力的作品
+        if (text.trim().startsWith("/maglatest")) {
+            String[] queryStrs = text.split(" ");
+            if (queryStrs.length == 2) {
+                JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestMagFilmInfoByName(queryStrs[1].trim());
+                List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                logging.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
                 return;
             } else {
                 SendMessage message = new SendMessage();
@@ -257,10 +305,6 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     return;
                 }
             }
-
-            // starnewall
-
-            // starnewmag
         }
 
 
@@ -603,8 +647,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 return;
             }
             try {
+                logging.info("当前作品地址为: " + javbusDataItem.getVisitUrl());
                 pushIntroduceInfo(javbusDataItem);
                 pushMagnentInfo(javbusDataItem);
+                logging.info("正在推送样品图延迟任务: " + javbusDataItem.getCode());
                 JobExcutor.doDelayPushImgEnqueue(javbusDataItem);
 
             } catch (TelegramApiException e) {
