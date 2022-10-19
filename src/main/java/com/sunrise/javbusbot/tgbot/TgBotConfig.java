@@ -41,6 +41,10 @@ public class TgBotConfig {
      * 代理端口
      */
     public static Integer PROXY_PORT;
+    /**
+     * 是否开启代理
+     */
+    public static boolean ENABLE_PROXY;
 
     /**
      * mongodb 链接
@@ -85,6 +89,7 @@ public class TgBotConfig {
             JAVBUS_BOT_TOKEN = properties.getProperty("JAVBUS_BOT_TOKEN");
             PROXY_HOST = properties.getProperty("PROXY_HOST");
             PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
+            ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));
             MONGO_DB_URL = properties.getProperty("MONGO_DB_URL");
             SPIDER_BASE_URL = properties.getProperty("SPIDER_BASE_URL");
             SPIDER_FORGIEN_BASE_URL = properties.getProperty("SPIDER_FORGIEN_BASE_URL");

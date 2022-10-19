@@ -3,6 +3,7 @@ package com.sunrise.javbusbot;
 import com.sunrise.javbusbot.storege.MongodbStorege;
 import com.sunrise.javbusbot.tgbot.JavbusInfoPushBot;
 import com.sunrise.javbusbot.tgbot.ReplyMessageBot;
+import com.sunrise.javbusbot.tgbot.TgBotConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -33,11 +34,12 @@ public class TelegramBotApp {
             // Set up Http proxy
             DefaultBotOptions botOptions = new DefaultBotOptions();
 
-            botOptions.setProxyHost(PROXY_HOST);
-            botOptions.setProxyPort(PROXY_PORT);
-            // Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
-            botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
-
+            if (TgBotConfig.ENABLE_PROXY) {
+                botOptions.setProxyHost(PROXY_HOST);
+                botOptions.setProxyPort(PROXY_PORT);
+                // Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
+                botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+            }
 
             // Register your newly created AbilityBot
             ReplyMessageBot replyMessageBot = new ReplyMessageBot(botOptions);
@@ -45,9 +47,9 @@ public class TelegramBotApp {
 
 
             //"KAWD-552", "KAWD-563", "KAWD-573", "KAWD-774", "KAWD-692"
-            //List<String> strings = Arrays.asList("mide-433");
+            // List<String> strings = Arrays.asList("mide-433");
 
-            //List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/yingyouluo.html");
+            // List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/yingyouluo.html");
             //List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/kuisi.html");
 
             //List<SpiderJob> spiderJobs = strings.stream()
