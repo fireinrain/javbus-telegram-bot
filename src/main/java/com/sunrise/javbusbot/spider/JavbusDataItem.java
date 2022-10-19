@@ -16,14 +16,16 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 4:47 PM
  */
 public class JavbusDataItem {
-    //所有作品数量
+    // telegram 消息ID
+    private String messageChatId;
+    // 所有作品数量
     private String allFilmCount;
-    //含有磁力作品数量
+    // 含有磁力作品数量
     private String haveMagnentCount;
-    //访问url
+    // 访问url
     private String visitUrl;
 
-    //封面大图
+    // 封面大图
     private String bigImgUrl;
 
     //标题
@@ -94,7 +96,15 @@ public class JavbusDataItem {
         this.setHaveMagnentCount("");
     }
 
-    //拆分类型
+    public String getMessageChatId() {
+        return messageChatId;
+    }
+
+    public void setMessageChatId(String messageChatId) {
+        this.messageChatId = messageChatId;
+    }
+
+    // 拆分类型
     public List<String> typesToTypeList() {
         Objects.requireNonNull(this.types);
         if (types.contains(" ")) {

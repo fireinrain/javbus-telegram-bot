@@ -21,17 +21,21 @@ public class SpiderJob implements Runnable {
 
     private String filmCode;
 
+    private String messageChatId;
+
     private ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque;
 
-    public SpiderJob(String filmCode, ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque) {
+    public SpiderJob(String filmCode, String messageChatId, ConcurrentLinkedDeque<JavbusDataItem> concurrentLinkedDeque) {
         Objects.requireNonNull(concurrentLinkedDeque, "JavbusDataItem Queue cant be null");
         this.filmCode = filmCode;
         this.concurrentLinkedDeque = concurrentLinkedDeque;
+        this.messageChatId = messageChatId;
     }
 
     @Override
     public void run() {
         JavbusDataItem javbusDataItem = JavbusSpider.fetchFilmInFoByCode(filmCode);
+        javbusDataItem.setMessageChatId(messageChatId);
         // 在push消息那边判断
         // if (null == javbusDataItem.getVisitUrl() || "".equals(javbusDataItem.getVisitUrl())) {
         //     return;
@@ -54,8 +58,8 @@ public class SpiderJob implements Runnable {
 
     }
 
-    public static void trigerJavbusTask(String code) {
-        SpiderJob spiderJob = new SpiderJob(code, JobExcutor.javbusDataItemConcurrentLinkedDeque);
+    public static void trigerJavbusCodeTask(String code, String messageChatId) {
+        SpiderJob spiderJob = new SpiderJob(code, messageChatId, JobExcutor.javbusDataItemConcurrentLinkedDeque);
         JobExcutor.doTgJob(spiderJob);
     }
 }

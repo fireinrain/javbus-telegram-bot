@@ -9,6 +9,8 @@ import com.sunrise.javbusbot.tgbot.TgBotConfig;
  * @date: 2021/5/1 4:02 PM
  */
 public class JavbusStarInfoItem {
+    // Telegram message chat id;
+    private String messageChatId;
     /**
      * 所有作品数量
      */
@@ -64,6 +66,14 @@ public class JavbusStarInfoItem {
      * 爱好
      */
     private String hobby;
+
+    public String getMessageChatId() {
+        return messageChatId;
+    }
+
+    public void setMessageChatId(String messageChatId) {
+        this.messageChatId = messageChatId;
+    }
 
     public String getAllFilmNum() {
         return allFilmNum;
