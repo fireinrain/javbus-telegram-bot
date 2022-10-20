@@ -12,6 +12,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
@@ -20,6 +22,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.meta.updateshandlers.SentCallback;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -100,7 +104,6 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
             } else {
                 chatId = update.getChannelPost().getChatId().toString();
-
             }
             // channel post
             if (update.getChannelPost().hasText()) {
@@ -123,7 +126,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             } else {
                 SendMessage message = new SendMessage();
                 message.setChatId(messageChatId);
-                message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                message.setText(text + " 人家查询不到啦,请重新输入(/code xxxx)" + "❤️❤️❤️");
 
                 try {
                     // Call method to send the message
@@ -148,7 +151,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             } else {
                 SendMessage message = new SendMessage();
                 message.setChatId(messageChatId);
-                message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                message.setText(text + "人家查询不到啦,请重新输入(/latest xxxx)" + "❤️❤️❤️");
 
                 try {
                     // Call method to send the message
@@ -172,7 +175,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             } else {
                 SendMessage message = new SendMessage();
                 message.setChatId(messageChatId);
-                message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                message.setText(text + "人家查询不到啦,请重新输入(/maglatest xxxx)" + "❤️❤️❤️");
 
                 try {
                     // Call method to send the message
@@ -205,7 +208,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(messageChatId);
-                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText(text + "人家查询不到啦,请重新输入(/starall xxxx)" + "❤️❤️❤️");
 
                     try {
                         // Call method to send the message
@@ -236,7 +239,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(messageChatId);
-                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText(text + "人家查询不到啦,请重新输入(/starmag xxxx)" + "❤️❤️❤️");
 
                     try {
                         // Call method to send the message
@@ -271,7 +274,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(messageChatId);
-                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText(text + "人家查询不到啦,请重新输入(/starinfo xxxx)" + "❤️❤️❤️");
 
                     try {
                         // Call method to send the message
@@ -303,7 +306,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } else {
                     SendMessage message = new SendMessage();
                     message.setChatId(messageChatId);
-                    message.setText("'" + text + "无效查询,请重新输入<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+                    message.setText(text + "人家查询不到啦,请重新输入(/star xxxx)" + "❤️❤️❤️");
 
                     try {
                         // Call method to send the message
@@ -322,7 +325,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         // Create a SendMessage object with mandatory fields
         SendMessage message = new SendMessage();
         message.setChatId(messageChatId);
-        message.setText("Warn！无法处理： '" + text + "<---'" + TgBotConfig.JAVBUS_BOT_NAME);
+        message.setText("人家不认识这个指令： " + text + " " + "\uD83D\uDE35\uD83D\uDE35\uD83D\uDE35");
 
         try {
             // Call method to send the message
@@ -629,6 +632,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             try {
                 logging.info("当前作品地址为: " + javbusDataItem.getVisitUrl());
                 pushIntroduceInfo(javbusDataItem);
+                pushVideoPreview(javbusDataItem);
                 pushMagnentInfo(javbusDataItem);
                 logging.info("正在推送样品图延迟任务: " + javbusDataItem.getCode());
                 JobExcutor.doDelayPushImgEnqueue(javbusDataItem);
@@ -646,6 +650,131 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
         }
 
+    }
+
+    /**
+     * 当查询单一番号作品时 推送视频预览
+     *
+     * @param javbusDataItem
+     */
+    private void pushVideoPreview(JavbusDataItem javbusDataItem) {
+        try {
+            CompletableFuture<Object[]> completableFuture = CompletableFuture.supplyAsync(() -> {
+                String videoPreviewUrl = javbusDataItem.getVideoPreviewUrl();
+                // 下载视频
+                OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new RetryInterceptor(2)).retryOnConnectionFailure(true).connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
+                        .readTimeout(60 * 6, TimeUnit.SECONDS) // 读取超时
+                        .writeTimeout(60 * 6, TimeUnit.SECONDS) // 写超时
+                        .build();
+                // 获取请求对象
+                Request request = new Request.Builder().url(videoPreviewUrl.trim()).build();
+                // 获取响应体
+                ResponseBody body = null;
+                Response execute = null;
+                try {
+                    logging.info("开始请求视频地址: " + request.url());
+                    execute = client.newCall(request).execute();
+                    body = execute.body();
+                } catch (IOException exception) {
+                    if (null != body) {
+                        body.close();
+                        logging.warn("当前请求响应失败");
+                    }
+                    exception.printStackTrace();
+                    logging.error("当前请求地址: " + request.url());
+                }
+                String bigImgUrl = javbusDataItem.getBigImgUrl();
+                Request thumbRequest = new Request.Builder().url(bigImgUrl.trim()).build();
+                ResponseBody thumbResponse = null;
+                try {
+                    Response response = client.newCall(thumbRequest).execute();
+                    thumbResponse = response.body();
+                } catch (IOException e) {
+                    if (null != body) {
+                        body.close();
+                        logging.warn("当前请求响应失败");
+                    }
+                    e.printStackTrace();
+                    logging.error("当前请求地址: " + request.url());
+                }
+                Object[] objects = new Object[3];
+                objects[0] = body;
+                objects[1] = thumbResponse;
+                objects[2] = videoPreviewUrl.trim();
+                return objects;
+            });
+            CompletableFuture.allOf(completableFuture).join();
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String code = javbusDataItem.getCode();
+            stringBuilder.append("#").append(code.replaceAll("-", "_"));
+            if (null != javbusDataItem.getMainStarPageUrl() && null != javbusDataItem.getMainStarPageUrl().getStartPageUrl()) {
+                stringBuilder.append(" ").append("#").append(javbusDataItem.getStars());
+            }
+            Object[] objects = completableFuture.get();
+            ResponseBody responseBody = (ResponseBody) objects[0];
+            if (responseBody == null) {
+                logging.warn("当前视频预览请求失败,已跳过");
+                return;
+            }
+            SendVideo sendVideo = new SendVideo();
+            sendVideo.setChatId(javbusDataItem.getMessageChatId());
+            InputStream inputStream = responseBody.byteStream();
+
+            ByteArrayOutputStream tempStream = new ByteArrayOutputStream();
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buffer)) > -1) {
+                tempStream.write(buffer, 0, len);
+            }
+            tempStream.flush();
+
+            InputStream fileInputStream = new ByteArrayInputStream(tempStream.toByteArray());
+            InputStream getMetaDataStream = new ByteArrayInputStream(tempStream.toByteArray());
+
+            String videoPreviewUrl = (String) objects[2];
+            InputFile inputFile = new InputFile(fileInputStream, videoPreviewUrl.substring(videoPreviewUrl.lastIndexOf("/")));
+            sendVideo.setVideo(inputFile);
+            sendVideo.setCaption(stringBuilder.toString());
+            sendVideo.setParseMode("html");
+
+            ArrayList<Integer> videoMetaData = VideoPreviewUtils.getVideoMetaData(getMetaDataStream);
+            sendVideo.setDuration(videoMetaData.get(2));
+            sendVideo.setHeight(videoMetaData.get(0));
+            sendVideo.setWidth(videoMetaData.get(1));
+            sendVideo.setSupportsStreaming(true);
+            // 获取缩略图
+            ResponseBody thumbResponse = (ResponseBody) objects[1];
+            InputStream thumbInputStream = thumbResponse.byteStream();
+            String bigImgUrl = javbusDataItem.getBigImgUrl();
+            sendVideo.setThumb(new InputFile(thumbInputStream, bigImgUrl.substring(bigImgUrl.lastIndexOf("/"))));
+            CompletableFuture<Message> messageFuture = executeAsync(sendVideo);
+
+            messageFuture.whenCompleteAsync((message, throwable) -> {
+                // 主动关闭
+                ResponseBody rs = (ResponseBody) objects[0];
+                rs.close();
+                logging.info("推送样品图完成：" + javbusDataItem.getCode());
+            }).exceptionally(throwable -> {
+                logging.info("推送预览视频CompleteFuture出现异常：" + throwable.getMessage());
+                // 尝试重新加入延迟队列的最末端
+                logging.info("正在尝试重新加入延迟队列......");
+                if (javbusDataItem.getFetchRetry() >= 1) {
+                    logging.info("推送预览视频尝试次数超过限制(2次),丢弃：" + javbusDataItem.getCode());
+                } else {
+                    int fetchCount = javbusDataItem.getFetchRetry() + 1;
+                    javbusDataItem.setFetchRetry(fetchCount);
+                    JobExcutor.doTgJob(() -> this.pushVideoPreview(javbusDataItem));
+                }
+                return null;
+            });
+            messageFuture.join();
+            logging.info("推送视频预览成功: " + code);
+        } catch (Exception e) {
+            logging.error("推送视频预览Try出现异常：" + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -694,10 +823,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     CompletableFuture[] completableFutures = strings.stream().parallel().map(el -> {
                         CompletableFuture<Object[]> inputStreamCompletableFuture = CompletableFuture.supplyAsync(() -> {
                             // 下载图片
-                            OkHttpClient client = new OkHttpClient.Builder()
-                                    .addInterceptor(new RetryInterceptor(2))
-                                    .retryOnConnectionFailure(true)
-                                    .connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
+                            OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new RetryInterceptor(2)).retryOnConnectionFailure(true).connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
                                     .readTimeout(60 * 6, TimeUnit.SECONDS) // 读取超时
                                     .writeTimeout(60 * 6, TimeUnit.SECONDS) // 写超时
                                     .build();

@@ -36,10 +36,12 @@ public class SpiderJob implements Runnable {
     public void run() {
         JavbusDataItem javbusDataItem = JavbusSpider.fetchFilmInFoByCode(filmCode);
         javbusDataItem.setMessageChatId(messageChatId);
-        // 在push消息那边判断
-        // if (null == javbusDataItem.getVisitUrl() || "".equals(javbusDataItem.getVisitUrl())) {
-        //     return;
-        // }
+        // 如果有访问链接
+        if (null != javbusDataItem.getVisitUrl() && !"".equals(javbusDataItem.getVisitUrl())) {
+            // 获取视频预览地址
+            String filmPreviewUrl = VideoPreviewUtils.getFilmPreviewUrl(javbusDataItem);
+            javbusDataItem.setVideoPreviewUrl(filmPreviewUrl);
+        }
         this.concurrentLinkedDeque.offer(javbusDataItem);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonStr = null;

@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 4:47 PM
  */
 public class JavbusDataItem {
+    // 预览地址 预览地址只会在番号查询才起作用
+    private String videoPreviewUrl;
     // telegram 消息ID
     private String messageChatId;
     // 所有作品数量
@@ -102,6 +104,14 @@ public class JavbusDataItem {
 
     public void setMessageChatId(String messageChatId) {
         this.messageChatId = messageChatId;
+    }
+
+    public String getVideoPreviewUrl() {
+        return videoPreviewUrl;
+    }
+
+    public void setVideoPreviewUrl(String videoPreviewUrl) {
+        this.videoPreviewUrl = videoPreviewUrl;
     }
 
     // 拆分类型

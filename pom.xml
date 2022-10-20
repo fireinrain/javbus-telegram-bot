@@ -55,6 +55,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.14.0-rc1</version>
         </dependency>
+        <dependency>
+            <groupId>org.mp4parser</groupId>
+            <artifactId>isoparser</artifactId>
+            <version>1.9.41</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
@@ -64,13 +69,6 @@
             <version>3.12.11</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -82,6 +80,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.32</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

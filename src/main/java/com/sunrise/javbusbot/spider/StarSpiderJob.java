@@ -31,8 +31,15 @@ public class StarSpiderJob implements Runnable {
 
     @Override
     public void run() {
-        if (javbusDataItems.size() <=0){
+        if (javbusDataItems.size() <= 0) {
             return;
+        }
+        // 如果是列表只有一个 就进行视频预览地址查询
+        if (javbusDataItems.size() == 1) {
+            // 获取视频预览地址
+            JavbusDataItem javbusDataItem = javbusDataItems.get(0);
+            String filmPreviewUrl = VideoPreviewUtils.getFilmPreviewUrl(javbusDataItem);
+            javbusDataItem.setVideoPreviewUrl(filmPreviewUrl);
         }
         List<JavbusDataItem> javbusDataItems = this.javbusDataItems.stream()
                 .filter(e -> null != e.getVisitUrl())
