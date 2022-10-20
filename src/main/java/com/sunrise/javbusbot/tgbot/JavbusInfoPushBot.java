@@ -759,7 +759,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 // 主动关闭
                 ResponseBody rs = (ResponseBody) objects[0];
                 rs.close();
-                logging.info("推送样品图完成：" + javbusDataItem.getCode());
+                logging.info("推送预览视频完成：" + javbusDataItem.getCode());
             }).exceptionally(throwable -> {
                 logging.info("推送预览视频CompleteFuture出现异常：" + throwable.getMessage());
                 // 尝试重新加入延迟队列的最末端

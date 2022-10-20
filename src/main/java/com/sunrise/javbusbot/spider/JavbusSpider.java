@@ -998,11 +998,20 @@ public class JavbusSpider {
                     Element node = (Element) childNode;
                     String href = node.attr("href");
                     // 不是来自dmm的图
-                    if (href.startsWith("/pics/")) {
+                    if (href.startsWith("/pics/") || href.startsWith("/imgs")) {
                         href = TgBotConfig.SPIDER_BASE_URL + href;
                     }
                     sampleUrls.add(href);
                     // logging.info(href);
+                }
+            }
+            // 针对无码作品样品图 格式不一样
+            Elements elements = sampleImgsEl.selectXpath("//span/div/img");
+            if (!elements.isEmpty()) {
+                for (Element element : elements) {
+                    String src = element.attr("src");
+                    src = TgBotConfig.SPIDER_BASE_URL + src;
+                    sampleUrls.add(src);
                 }
             }
         } catch (Exception e) {

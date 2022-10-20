@@ -358,7 +358,7 @@ public class VideoPreviewUtils {
             if (companysMap.containsKey(studio)) {
                 String videoTmpUrl = companysMap.get(studio);
                 if ("HEYZO".equals(studio)) {
-                    code = code.replace("HEYZO-", "");
+                    code = code.replace("heyzo-", "").replace("HEYZO-", "");
                 }
                 return videoTmpUrl.replace("%s", code);
             }
