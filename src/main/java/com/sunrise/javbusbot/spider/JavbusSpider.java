@@ -926,6 +926,7 @@ public class JavbusSpider {
             filmCode = JavbusHelper.removeDateFromFilmCode(filmCode);
             filmReqUrl = baseUrl + filmCode;
         }
+        // TODO 暂时不支持复杂 无码作品番号
 
         JavbusDataItem javbusDataItem = new JavbusDataItem();
 

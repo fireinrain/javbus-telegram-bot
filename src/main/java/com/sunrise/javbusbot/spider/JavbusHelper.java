@@ -196,7 +196,7 @@ public class JavbusHelper {
         // 移除可能存在的日期
         // https://www.javbus.com/FSDSS-408_2022-05-12
         s = s.split("_")[0];
-        if (s.length() <= 8) {
+        if (s.length() <= 9) {
             return false;
         }
         return true;
