@@ -327,8 +327,9 @@ public class VideoPreviewUtils {
                 String[] tempStr2 = videoUrlPart.split(",\"saved\":0");
                 String videoTmpStr = tempStr2[0];
                 String replace = videoTmpStr.replace("\"", "").replace("\\", "").replace("/hlsvideo/", "/litevideo/").replace("/playlist.m3u8", "");
-                // 默认获取720
-                String mp4Url = replace + "/" + queryCode + "_mhb_w.mp4";
+                // 默认获取720 dmb
+                //_mhb_w 960p
+                String mp4Url = replace + "/" + queryCode + "_dmb_w.mp4";
                 videoUrl = mp4Url;
             }
         }
@@ -372,7 +373,7 @@ public class VideoPreviewUtils {
      * @param inputStream
      * @return
      */
-    public static ArrayList<Integer> getVideoMetaData(InputStream inputStream) {
+    public static ArrayList<Integer> getVideoMetaData(InputStream inputStream, String videoUrl) {
         ArrayList<Integer> result = new ArrayList<>();
         ReadableByteChannel readableByteChannel = Channels.newChannel(inputStream);
 
@@ -396,7 +397,7 @@ public class VideoPreviewUtils {
                     break;
                 }
             }
-            logger.info("预览视频信息: ");
+            logger.info("预览视频信息: " + videoUrl);
             logger.info("视频宽度: " + width);
             logger.info("视频高度: " + height);
             logger.info("视频长度: " + duration + "s");

@@ -684,7 +684,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     logging.error("当前请求地址: " + request.url());
                 }
                 String bigImgUrl = javbusDataItem.getBigImgUrl();
-                Request thumbRequest = new Request.Builder().url(bigImgUrl.trim()).build();
+                Request thumbRequest = new Request.Builder().get().url(bigImgUrl.trim()).build();
                 ResponseBody thumbResponse = null;
                 try {
                     Response response = client.newCall(thumbRequest).execute();
@@ -730,16 +730,20 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
             tempStream.flush();
 
+            if ((tempStream.size() / (1000 * 1000)) > 50) {
+                logging.warn("预览视频大于50MB,无法使用Bot发送");
+                return;
+            }
             InputStream fileInputStream = new ByteArrayInputStream(tempStream.toByteArray());
             InputStream getMetaDataStream = new ByteArrayInputStream(tempStream.toByteArray());
-
+            // telegram 对bot发送文件单个文件最大不超过50Mb
             String videoPreviewUrl = (String) objects[2];
             InputFile inputFile = new InputFile(fileInputStream, videoPreviewUrl.substring(videoPreviewUrl.lastIndexOf("/")));
             sendVideo.setVideo(inputFile);
             sendVideo.setCaption(stringBuilder.toString());
             sendVideo.setParseMode("html");
 
-            ArrayList<Integer> videoMetaData = VideoPreviewUtils.getVideoMetaData(getMetaDataStream);
+            ArrayList<Integer> videoMetaData = VideoPreviewUtils.getVideoMetaData(getMetaDataStream, javbusDataItem.getVideoPreviewUrl());
             sendVideo.setDuration(videoMetaData.get(2));
             sendVideo.setHeight(videoMetaData.get(0));
             sendVideo.setWidth(videoMetaData.get(1));
