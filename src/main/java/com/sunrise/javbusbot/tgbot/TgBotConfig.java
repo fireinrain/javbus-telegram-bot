@@ -99,18 +99,19 @@ public class TgBotConfig {
             String javbusBotName = System.getenv("JAVBUS_BOT_NAME");
             String javbusBotToken = System.getenv("JAVBUS_BOT_TOKEN");
             if (Strings.isNullOrEmpty(javbusBotName)) {
-                logger.info("JAVBUS_BOT_NAME env exist, use env value!");
-                JAVBUS_BOT_NAME = javbusBotName;
-            } else {
                 logger.info("JAVBUS_BOT_NAME env not exist,use setting profile as default");
                 JAVBUS_BOT_NAME = properties.getProperty("JAVBUS_BOT_NAME");
+            } else {
+                logger.info("JAVBUS_BOT_NAME env exist, use env value!");
+                JAVBUS_BOT_NAME = javbusBotName;
             }
             if (Strings.isNullOrEmpty(javbusBotToken)) {
-                logger.info("JAVBUS_BOT_TOKEN env exist, use env value!");
-                JAVBUS_BOT_TOKEN = javbusBotToken;
-            } else {
                 logger.info("JAVBUS_BOT_TOKEN env not exist,use setting profile as default");
                 JAVBUS_BOT_TOKEN = properties.getProperty("JAVBUS_BOT_TOKEN");
+
+            } else {
+                logger.info("JAVBUS_BOT_TOKEN env exist, use env value!");
+                JAVBUS_BOT_TOKEN = javbusBotToken;
             }
             PROXY_HOST = properties.getProperty("PROXY_HOST");
             PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
