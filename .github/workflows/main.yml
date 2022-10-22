@@ -46,7 +46,7 @@ jobs:
       - name: Run Start Command
         uses: fifsky/ssh-action@master
         with:
-          script: | # 命令中的 & 表示在后台运行进程
+          command: | # 命令中的 & 表示在后台运行进程
             cd /root/javbus
             ls -al
           host: ${{ secrets.HOST }}
