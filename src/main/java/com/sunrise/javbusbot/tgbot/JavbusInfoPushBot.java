@@ -119,6 +119,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     }
 
+    /**
+     * 发送查询等待消息
+     *
+     * @param text
+     * @param messageChatId
+     */
     private void sendWaitingForQuery(String text, String messageChatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(messageChatId);
@@ -131,6 +137,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * 根据查询指令执行相应功能
+     *
+     * @param text
+     * @param messageChatId
+     */
     private void doWithCommand(String text, String messageChatId) {
         if (text.trim().startsWith("/code")) {
             String[] strings = text.split(" ");
