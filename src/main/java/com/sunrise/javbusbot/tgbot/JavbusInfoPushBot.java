@@ -131,7 +131,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      */
     private void sendStarNameList(List<String> starNames, String messageChatId) {
         StringBuilder builder = new StringBuilder();
-        builder.append("已为您找到如下演员: \n");
+        builder.append("已为您找到如下演员(包含曾用名): \n");
         builder.append("-----------------------------------------------------\n");
         for (int i = 1; i <= starNames.size(); i++) {
             builder.append(i + ". " + starNames.get(i - 1) + "\n");
