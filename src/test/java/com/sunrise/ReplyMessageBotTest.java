@@ -1,5 +1,6 @@
-package com.sunrise.javbusbot.tgbot;
+package com.sunrise;
 
+import com.sunrise.javbusbot.tgbot.TgBotConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -25,12 +26,12 @@ import java.util.Objects;
  * @author: lzhaoyang
  * @date: 2021/4/11 4:45 AM
  */
-public class ReplyMessageBot extends TelegramLongPollingBot {
-    public static final Logger logging = LoggerFactory.getLogger(ReplyMessageBot.class);
+public class ReplyMessageBotTest extends TelegramLongPollingBot {
+    public static final Logger logging = LoggerFactory.getLogger(ReplyMessageBotTest.class);
 
     public static String chatId = "";
 
-    public ReplyMessageBot(DefaultBotOptions options) {
+    public ReplyMessageBotTest(DefaultBotOptions options) {
         super(options);
     }
 

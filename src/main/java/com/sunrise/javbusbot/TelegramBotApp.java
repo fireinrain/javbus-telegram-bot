@@ -2,7 +2,6 @@ package com.sunrise.javbusbot;
 
 import com.sunrise.javbusbot.storege.MongodbStorege;
 import com.sunrise.javbusbot.tgbot.JavbusInfoPushBot;
-import com.sunrise.javbusbot.tgbot.ReplyMessageBot;
 import com.sunrise.javbusbot.tgbot.TgBotConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +41,12 @@ public class TelegramBotApp {
             }
 
             // Register your newly created AbilityBot
-            ReplyMessageBot replyMessageBot = new ReplyMessageBot(botOptions);
             JavbusInfoPushBot pushInfoBot = new JavbusInfoPushBot(botOptions);
-
 
             //"KAWD-552", "KAWD-563", "KAWD-573", "KAWD-774", "KAWD-692"
             // List<String> strings = Arrays.asList("mide-433");
-
             // List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/yingyouluo.html");
             //List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/kuisi.html");
-
             //List<SpiderJob> spiderJobs = strings.stream()
             //        .map(e -> new SpiderJob(e, JobExcutor.concurrentLinkedDeque))
             //        .collect(Collectors.toList());
@@ -60,10 +55,7 @@ public class TelegramBotApp {
             //});
 
             logging.info("Javbus Bot 已经启动");
-            botsApi.registerBot(replyMessageBot);
             botsApi.registerBot(pushInfoBot);
-
-
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

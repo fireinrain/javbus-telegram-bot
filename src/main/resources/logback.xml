@@ -17,7 +17,10 @@
             <fileNamePattern>log/output.log.%i</fileNamePattern>
         </rollingPolicy>
         <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <!--日志文件保留天数-->
+            <MaxHistory>30</MaxHistory>
             <MaxFileSize>1MB</MaxFileSize>
+            <TotalSizeCap>10MB</TotalSizeCap>
         </triggeringPolicy>
     </appender>
 
