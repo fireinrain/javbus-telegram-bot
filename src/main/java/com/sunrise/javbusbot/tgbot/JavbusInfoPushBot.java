@@ -75,6 +75,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (update.getEditedMessage().hasText()) {
                 String text = update.getEditedMessage().getText();
                 String messageChatId = update.getEditedMessage().getChatId().toString();
+                sendWaitingForQuery(text, messageChatId);
                 doWithCommand(text, messageChatId);
                 return;
             }
@@ -92,6 +93,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (update.getMessage().hasText()) {
                 String text = update.getMessage().getText();
                 String messageChatId = update.getMessage().getChatId().toString();
+                sendWaitingForQuery(text, messageChatId);
                 doWithCommand(text, messageChatId);
                 return;
             }
@@ -109,11 +111,24 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (update.getChannelPost().hasText()) {
                 String text = update.getChannelPost().getText();
                 String messageChatId = update.getEditedMessage().getChatId().toString();
+                sendWaitingForQuery(text, messageChatId);
                 doWithCommand(text, messageChatId);
             }
         }
 
 
+    }
+
+    private void sendWaitingForQuery(String text, String messageChatId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(messageChatId);
+        sendMessage.setText("正在拼命查询: " + text + ", 请稍后...");
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            logging.warn("发送等待消息失败: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void doWithCommand(String text, String messageChatId) {
