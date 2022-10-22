@@ -1100,7 +1100,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         try {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(javbusDataItem.getMessageChatId());
-            sendMessage.setText("该番号未找到!\uD83D\uDE37\uD83D\uDE37\uD83D\uDE37");
+            sendMessage.setText("对不起,该查询未找到!\uD83D\uDE37\uD83D\uDE37\uD83D\uDE37");
             sendMessage.enableHtml(true);
             sendMessage.enableMarkdown(false);
             sendMessage.enableNotification();
