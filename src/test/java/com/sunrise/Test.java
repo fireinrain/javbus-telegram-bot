@@ -1,6 +1,7 @@
-package com.sunrise.javbusbot.spider;
+package com.sunrise;
 
 import com.google.common.base.Strings;
+import com.sunrise.javbusbot.spider.DataPair;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

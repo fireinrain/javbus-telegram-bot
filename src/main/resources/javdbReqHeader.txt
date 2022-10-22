@@ -1,0 +1,18 @@
+:authority: javdb.com
+:method: GET
+:path: /search?q=sanshan&f=actor
+:scheme: https
+accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+accept-language: zh,en;q=0.9,zh-TW;q=0.8,zh-CN;q=0.7,ja;q=0.6
+cache-control: no-cache
+cookie: list_mode=h; theme=auto; locale=zh; over18=1; _rucaptcha_session_id=39b55d61ebfa08f7a4a1107ab4c47c52; __cf_bm=FnZWQCoVsYwJrBF0qgRLiq9.pa7ceRePxlEu7fRhyiE-1666415715-0-ATGKdJnikmrNJTgoxzL3Jk/xX4bFniEuq4cXgJhbI4lUHVtZxVvSj5NhqBzYGHj5PrY2lN6o+R8HUe+1c7vhgT2HRg00wq4+3aBSp0hsd5VgCV9MFdMMH6kFBOgGm3KTIQ==; redirect_to=%2Fv%2Fk5Mr6%2Fplay; _jdb_session=OH2f8HW4TpnS6ttoKl%2F8zMBWrbG541wjc6J3LJdYlbV2Gg8EsnAOeahzRZKbARFrguZ3OJO%2B8Xo0%2FGOe6FLGtSHWGbjK%2Fo8LWQQz7GbAgFjPxoyQvlWbprUxG9TsKr0VIx3VSsslaLl3pQU8gw3t%2F%2Flfu9H%2B2H5MLe2ULuScpkUbnGF2T1YuXAwWOla5DCIT6ej12a0TSqX%2BfNMcKpdMQi2lrEwBcUhyJOGENz5VKBnxPw7jvjl2%2FEWUODpnXwskhW77gHEk8PW2saS%2FKCImULbvlewemH4eJvnfgg7jPbQHRA8mg55nAwwk9HafJP3f9AkNw1UV6gUq%2BLFlZepBHhGdNWMzBzwu4FOG25qyO1imKqQYGoYLw1chgrv2ns76IiV7sMW%2F4Wf2GlLoSOK1Gs4Q7daUnJ16SZn5m0JTpdNopSciIFfSHJ04qok0fHgZhfOcwC%2FVH1D510UWKNBC45aurl8qwpmF91%2FuS5Kf0NqqYUvE%2FMh4XvE9lOqKLdFwFLb9xEsSQgF%2B5zxezyi7iUz1DxYzEupSynBU9poV--ffj7IPH86Wwe7fmz--cbnrUmBWiJzWa6cJFyePMw%3D%3D
+pragma: no-cache
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+sec-fetch-dest: document
+sec-fetch-mode: navigate
+sec-fetch-site: none
+sec-fetch-user: ?1
+upgrade-insecure-requests: 1
+user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36

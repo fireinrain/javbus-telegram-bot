@@ -1,6 +1,7 @@
 package com.sunrise.javbusbot.spider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Strings;
 import com.sunrise.javbusbot.tgbot.TgBotConfig;
 import okhttp3.*;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -1344,7 +1346,6 @@ public class JavbusSpider {
         ///ajax/uncledatoolsbyajax.php?gid=46298156144&lang=zh&img=https://pics.javbus.com/cover/87y2_b.jpg&uc=0&floor=734
         InputStream resourceAsStream = JavbusSpider.class.getClassLoader().getResourceAsStream(fileName);
 
-        File file = new File(fileName);
         BufferedReader fileReader = null;
         fileReader = new BufferedReader(new InputStreamReader(resourceAsStream));
         HashMap<String, String> hashMap = new HashMap<>();
@@ -1389,6 +1390,33 @@ public class JavbusSpider {
         }
         String replace = starReqUrl.replace("https://www.javbus.com", "");
         requestHeader.put(":path", replace);
+        return requestHeader;
+    }
+
+    /**
+     * 获取javdb 请求头
+     *
+     * @param queryStr
+     * @param queryType
+     * @return
+     */
+    public static HashMap<String, String> getJavdbSearchReqHeader(String queryStr, String queryType) {
+        HashMap<String, String> requestHeader = getRequestHeader("javdbReqHeader.txt");
+        // 默认为搜索演员的header
+        if (Strings.isNullOrEmpty(queryType)) {
+            queryType = "actor";
+        }
+        String path = "/search?q=$s&f=$t";
+        String realPath = path.replace("$s", queryStr).replace("$t", queryType);
+        // 进行url encode
+        try {
+            String encode = URLEncoder.encode(realPath, "UTF-8");
+            realPath = encode;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        requestHeader.put(":path", realPath);
+        // requestHeader.remove("cookie");
         return requestHeader;
     }
 

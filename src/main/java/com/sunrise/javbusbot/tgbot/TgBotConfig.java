@@ -52,6 +52,11 @@ public class TgBotConfig {
     public static String MONGO_DB_URL;
 
     /**
+     * javdb 链接
+     */
+    public static String JAVDB_BASE_URL;
+
+    /**
      * 日本作品起始url
      */
     public static String SPIDER_BASE_URL;
@@ -91,6 +96,7 @@ public class TgBotConfig {
             PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
             ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));
             MONGO_DB_URL = properties.getProperty("MONGO_DB_URL");
+            JAVDB_BASE_URL = properties.getProperty("JAVDB_BASE_URL");
             SPIDER_BASE_URL = properties.getProperty("SPIDER_BASE_URL");
             SPIDER_FORGIEN_BASE_URL = properties.getProperty("SPIDER_FORGIEN_BASE_URL");
             FORWARD_MESSAGE_OPTION = Boolean.parseBoolean(properties.getProperty("FORWARD_MESSAGE_OPTION"));
