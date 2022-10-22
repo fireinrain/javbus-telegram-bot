@@ -27,10 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -807,6 +804,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             e.printStackTrace();
             logger.warn("当前查询出现错误: " + e.getMessage());
         }
+        results = new ArrayList<>(new HashSet<>(results));
         return results;
     }
 
