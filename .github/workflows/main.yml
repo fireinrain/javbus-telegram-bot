@@ -51,7 +51,7 @@ jobs:
             export JAVBUS_BOT_NAME = ${{secrets.BOT_NAME}}
             export JAVBUS_BOT_NAME = ${{secrets.BOT_TOKEN}}
             cd /root/javbus
-            ps -ef | grep javbus-tg-bot-jar-with-dependencies.jar | grep -v grep | cut -c 9-15 | xargs kill -9
+            ps -ef | grep javbus-tg-bot-jar-with-dependencies.jar | grep -v grep | awk '{print $2}' | xargs kill -9
             nohup java -jar javbus-tg-bot-jar-with-dependencies.jar >/dev/null 2>&1 &
           host: ${{ secrets.HOST }}
           port: ${{ secrets.PORT }}
