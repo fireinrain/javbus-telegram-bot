@@ -43,7 +43,7 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USER_NAME }}
           password: ${{ secrets.PASSWORD }}
-      - name: 在服务器上执行 java -jar，请确保服务器安装了 JDK
+      - name: Run Start Command
         uses: fifsky/ssh-action@master
         with:
           script: | # 命令中的 & 表示在后台运行进程
