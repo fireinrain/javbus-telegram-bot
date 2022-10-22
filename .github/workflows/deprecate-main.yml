@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Test Java CI
 on:
   push:
     tags:
