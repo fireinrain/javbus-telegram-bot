@@ -44,11 +44,11 @@ jobs:
           username: ${{ secrets.USER_NAME }}
           password: ${{ secrets.PASSWORD }}
       - name: 在服务器上执行 java -jar，请确保服务器安装了 JDK
-        if: always()
         uses: fifsky/ssh-action@master
         with:
           script: | # 命令中的 & 表示在后台运行进程
-            cd /root/javbus && nohup java -jar javbus-tg-bot-jar-with-dependencies.jar >/dev/null 2>&1 &
+            cd /root/javbus
+            ls -al
           host: ${{ secrets.HOST }}
           port: ${{ secrets.PORT }}
           user: ${{ secrets.USER_NAME }}
