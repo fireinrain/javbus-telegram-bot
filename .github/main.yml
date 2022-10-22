@@ -53,6 +53,8 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           script: |
+            export JAVBUS_BOT_NAME = ${{secrets.BOT_NAME}}
+            export JAVBUS_BOT_NAME = ${{secrets.BOT_TOKEN}}
             cd /root/javbus-tg-bot
             wget https://github.com/fireinrain/javbus-telegram-bot/releases/latest/download/release.tgz -O release.tgz
             tar zxvf release.tgz
