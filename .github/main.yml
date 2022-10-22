@@ -1,0 +1,60 @@
+name: Publish And Deploy to vps
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      # 下载源码
+      - name: Checkout
+        uses: actions/checkout@master
+
+      # 打包构建
+      - name: Build
+        uses: actions/setup-maven@master
+      - run: mvn clean
+      - run: mvn  build
+      - run: cd target && tar -zcvf release.tgz javbus-tg-bot-jar-with-dependencies.jar
+
+      # 发布 Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      # 上传构建结果到 Release
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release.tgz
+          asset_name: release.tgz
+          asset_content_type: application/x-tgz
+
+      # 部署到服务器
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER_NAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /root/javbus-tg-bot
+            wget https://github.com/fireinrain/javbus-telegram-bot/releases/latest/download/release.tgz -O release.tgz
+            tar zxvf release.tgz
+            ps -ef | grep javbus-tg-bot-jar-with-dependencies.jar | grep -v grep | cut -c 9-15 | xargs kill -9
+            nohup java -jar javbus-tg-bot-jar-with-dependencies.jar >/dev/null 2>&1 &
