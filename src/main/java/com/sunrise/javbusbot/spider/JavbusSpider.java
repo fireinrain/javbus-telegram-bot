@@ -582,6 +582,7 @@ public class JavbusSpider {
      * @return
      */
     public static JavbusDataItem fetchLatestFilmInfoByName(String starName) {
+        JavbusDataItem resultData = new JavbusDataItem();
         String starNameEncode = JavbusHelper.parseStrToUrlEncoder(starName);
         String starUrl = "";
         Response execute = null;
@@ -597,7 +598,7 @@ public class JavbusSpider {
             }
         }
         if (null == execute) {
-            return null;
+            return resultData;
         }
         String result = null;
         try {
@@ -666,7 +667,10 @@ public class JavbusSpider {
             e.setAllFilmCount(allFilmCountStr);
             e.setHaveMagnentCount(haveMagnentCountStr);
         });
-        return javbusDataItems.get(0);
+        if (!javbusDataItems.isEmpty()) {
+            resultData = javbusDataItems.get(0);
+        }
+        return resultData;
     }
 
     /**
