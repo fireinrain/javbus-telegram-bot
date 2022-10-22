@@ -135,7 +135,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             builder.append(i + ". " + starNames.get(i - 1) + "\n");
         }
         builder.append("-----------------------------------------------------\n");
-        builder.append("请选择需要查询的演员，并重新输入命令(/command xxxx)");
+        builder.append("请选择需要查询的演员，并重新输入命令(/command 序号-xxxx)来选择查询. eg: /command 1-樱空桃");
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(messageChatId);
         sendMessage.setText(builder.toString());
@@ -200,6 +200,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         if (text.trim().startsWith("/latest")) {
             String[] queryStrs = text.split(" ");
             if (queryStrs.length == 2) {
+                String queryStr = queryStrs[1].trim();
+                String[] split = queryStr.split("-");
+                if (split.length == 2 && isNumeric(split[0])) {
+                    // 直接查询 不再进行javdb 演员名字查询
+                    JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
+                    javbusDataItem.setMessageChatId(messageChatId);
+                    List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                    return;
+                }
                 // 获取演员的正确名字
                 List<String> starNames = this.fixStarName(queryStrs[1].trim());
                 if (starNames.size() > 1) {
@@ -230,6 +241,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         if (text.trim().startsWith("/maglatest")) {
             String[] queryStrs = text.split(" ");
             if (queryStrs.length == 2) {
+                String queryStr = queryStrs[1].trim();
+                String[] split = queryStr.split("-");
+                if (split.length == 2 && isNumeric(split[0])) {
+                    // 直接查询 不再进行javdb 演员名字查询
+                    JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
+                    javbusDataItem.setMessageChatId(messageChatId);
+                    List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                    StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                    logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                    return;
+                }
                 // 获取演员的正确名字
                 List<String> starNames = this.fixStarName(queryStrs[1].trim());
                 if (starNames.size() > 1) {
@@ -262,6 +284,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/starall")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
+                    String queryStr = strings[1].trim();
+                    String[] split = queryStr.split("-");
+                    if (split.length == 2 && isNumeric(split[0])) {
+                        // 直接查询 不再进行javdb 演员名字查询
+                        JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
+                        javbusDataItem.setMessageChatId(messageChatId);
+                        List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                        logger.info("触发推StarJavbus任务, 查询 " + strings[1]);
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
                     if (starNames.size() > 1) {
@@ -305,6 +338,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/starmag")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
+                    String queryStr = strings[1].trim();
+                    String[] split = queryStr.split("-");
+                    if (split.length == 2 && isNumeric(split[0])) {
+                        // 直接查询 不再进行javdb 演员名字查询
+                        JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
+                        javbusDataItem.setMessageChatId(messageChatId);
+                        List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                        logger.info("触发推StarJavbus任务, 查询 " + strings[1]);
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
                     if (starNames.size() > 1) {
@@ -349,6 +393,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/starinfo")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
+                    String queryStr = strings[1].trim();
+                    String[] split = queryStr.split("-");
+                    if (split.length == 2 && isNumeric(split[0])) {
+                        // 直接查询 不再进行javdb 演员名字查询
+                        JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
+                        javbusDataItem.setMessageChatId(messageChatId);
+                        List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                        logger.info("触发推StarJavbus任务, 查询 " + strings[1]);
+                        return;
+                    }
                     logger.info("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
@@ -394,6 +449,17 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/star")) {
                 String[] queryStrs = text.split(" ");
                 if (queryStrs.length == 2) {
+                    String queryStr = queryStrs[1].trim();
+                    String[] split = queryStr.split("-");
+                    if (split.length == 2 && isNumeric(split[0])) {
+                        // 直接查询 不再进行javdb 演员名字查询
+                        JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
+                        javbusDataItem.setMessageChatId(messageChatId);
+                        List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                        StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
+                        logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                        return;
+                    }
                     List<String> starNames = this.fixStarName(queryStrs[1].trim());
                     if (starNames.size() > 1) {
                         this.sendStarNameList(starNames, messageChatId);
@@ -1196,5 +1262,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             //}
             // pushMagnentInfo(javbusDataItem);
         }
+    }
+
+    public static boolean isNumeric(String str) {
+        for (int i = str.length(); --i >= 0; ) {
+            if (!Character.isDigit(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }
