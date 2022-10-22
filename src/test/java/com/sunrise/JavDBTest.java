@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +40,7 @@ public class JavDBTest {
         okHttpClient = builder.build();
         Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavdbSearchReqHeader(queryStr, ""))).build();
 
-
+        List<String> results = Collections.emptyList();
         try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
             if (response.code() != 200) {
                 System.out.println("当前查询失败: " + response.request().url());
@@ -49,9 +50,8 @@ public class JavDBTest {
             System.out.println(result);
             Document document = Jsoup.parse(result);
             Elements elements = document.selectXpath("//*[@id=\"actors\"]/div/a/strong");
-            List<String> strings = elements.stream().map(e -> e.text()).collect(Collectors.toList());
-            System.out.println(strings);
-
+            results = elements.stream().map(e -> e.text()).collect(Collectors.toList());
+            System.out.println(results);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

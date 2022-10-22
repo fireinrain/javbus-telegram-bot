@@ -1,10 +1,10 @@
 package com.sunrise.javbusbot.tgbot;
 
 import com.sunrise.javbusbot.spider.*;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -29,7 +29,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
+import static com.sunrise.javbusbot.spider.JavbusSpider.getJavdbSearchReqHeader;
 
 /**
  * @description: tg bot 信息推送
@@ -120,6 +124,35 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     }
 
     /**
+     * 发送查询出的演员列表
+     *
+     * @param starNames
+     * @param messageChatId
+     */
+    private void sendStarNameList(List<String> starNames, String messageChatId) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("已为您找到如下演员: \n");
+        builder.append("-----------------------------------------------------\n");
+        for (int i = 1; i <= starNames.size(); i++) {
+            builder.append(i + ". " + starNames.get(i - 1) + "\n");
+        }
+        builder.append("-----------------------------------------------------\n");
+        builder.append("请选择需要查询的演员，并重新输入命令(/command xxxx)");
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(messageChatId);
+        sendMessage.setText(builder.toString());
+        sendMessage.enableHtml(true);
+        sendMessage.enableMarkdown(false);
+        sendMessage.enableNotification();
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            logging.error("发送消息失败: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * 发送查询等待消息
      *
      * @param text
@@ -169,7 +202,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         if (text.trim().startsWith("/latest")) {
             String[] queryStrs = text.split(" ");
             if (queryStrs.length == 2) {
-                JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(queryStrs[1].trim());
+                // 获取演员的正确名字
+                List<String> starNames = this.fixStarName(queryStrs[1].trim());
+                if (starNames.size() > 1) {
+                    this.sendStarNameList(starNames, messageChatId);
+                    return;
+                }
+                JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(starNames.get(0));
                 javbusDataItem.setMessageChatId(messageChatId);
                 List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
                 StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
@@ -193,7 +232,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         if (text.trim().startsWith("/maglatest")) {
             String[] queryStrs = text.split(" ");
             if (queryStrs.length == 2) {
-                JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestMagFilmInfoByName(queryStrs[1].trim());
+                // 获取演员的正确名字
+                List<String> starNames = this.fixStarName(queryStrs[1].trim());
+                if (starNames.size() > 1) {
+                    this.sendStarNameList(starNames, messageChatId);
+                    return;
+                }
+                JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestMagFilmInfoByName(starNames.get(0));
                 javbusDataItem.setMessageChatId(messageChatId);
                 List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
                 StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
@@ -219,7 +264,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/starall")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(strings[1].trim());
+                    // 获取演员的正确名字
+                    List<String> starNames = this.fixStarName(strings[1].trim());
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logging.info("触发推StarJavbus任务, 查询所有" + strings[1]);
@@ -227,7 +278,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
                 if (strings.length >= 3) {
                     String starName = text.replaceAll("/starall", "").trim();
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(starName);
+                    // 获取演员的正确名字
+                    List<String> starNames = this.fixStarName(starName);
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logging.info("触发推StarJavbus任务, 查询所有" + starName);
@@ -250,7 +307,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/starmag")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(strings[1].trim());
+                    // 获取演员的正确名字
+                    List<String> starNames = this.fixStarName(strings[1].trim());
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logging.info("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
@@ -258,7 +321,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
                 if (strings.length >= 3) {
                     String starName = text.replace("/starmag", "").trim();
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starName);
+                    // 获取演员的正确名字
+                    List<String> starNames = this.fixStarName(starName);
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logging.info("触发推StarJavbus任务, 查询所有含有磁力" + starName);
@@ -283,7 +352,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
                     logging.info("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
-                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(strings[1].trim());
+                    // 获取演员的正确名字
+                    List<String> starNames = this.fixStarName(strings[1].trim());
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(starNames.get(0));
                     JavbusStarInfoItem.setMessageChatId(messageChatId);
                     StartInfoSpiderJob.trigerStarInfoJob(JavbusStarInfoItem);
 
@@ -293,7 +368,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 if (strings.length >= 3) {
                     String starName = text.replace("/starinfo", "").trim();
                     logging.info("触发推InfoJavbus任务, 查询个人信息" + starName);
-                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(starName);
+                    List<String> starNames = this.fixStarName(starName);
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(starNames.get(0));
                     JavbusStarInfoItem.setMessageChatId(messageChatId);
                     StartInfoSpiderJob.trigerStarInfoJob(JavbusStarInfoItem);
 
@@ -316,7 +396,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/star")) {
                 String[] queryStrs = text.split(" ");
                 if (queryStrs.length == 2) {
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(queryStrs[1].trim());
+                    List<String> starNames = this.fixStarName(queryStrs[1].trim());
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logging.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
@@ -325,7 +410,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 if (queryStrs.length >= 3) {
                     String starName = text.replaceAll("/star", "").trim();
-                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starName);
+                    List<String> starNames = this.fixStarName(starName);
+                    if (starNames.size() > 1) {
+                        this.sendStarNameList(starNames, messageChatId);
+                        return;
+                    }
+                    List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logging.info("触发推StarJavbus任务, 查询 " + starName);
@@ -680,6 +770,45 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     }
 
     /**
+     * 将输入的演员名字 从javdb查询出正确的名字
+     *
+     * @param starName
+     * @return
+     */
+    private List<String> fixStarName(String starName) {
+        String queryUrl = TgBotConfig.JAVDB_BASE_URL + "search?q=$s&f=actor";
+        queryUrl = queryUrl.replace("$s", starName);
+        OkHttpClient okHttpClient = null;
+        OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true).addInterceptor(new RetryInterceptor(2))
+                // 连接超时
+                .connectTimeout(60 * 6, TimeUnit.SECONDS)
+                // 读取超时
+                .readTimeout(60 * 6, TimeUnit.SECONDS)
+                // 写超时
+                .writeTimeout(60 * 6, TimeUnit.SECONDS);
+
+        okHttpClient = builder.build();
+        Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavdbSearchReqHeader(starName, ""))).build();
+
+        List<String> results = Collections.emptyList();
+        try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
+            if (response.code() != 200) {
+                logging.warn("当前查询失败: " + response.request().url());
+                return results;
+            }
+            String result = Objects.requireNonNull(responseBody).string();
+            System.out.println(result);
+            Document document = Jsoup.parse(result);
+            Elements elements = document.selectXpath("//*[@id=\"actors\"]/div/a/strong");
+            results = elements.stream().map(e -> e.text()).collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            logging.warn("当前查询出现错误: " + e.getMessage());
+        }
+        return results;
+    }
+
+    /**
      * 当查询单一番号作品时 推送视频预览
      *
      * @param javbusDataItem
@@ -689,6 +818,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             CompletableFuture<Object[]> completableFuture = CompletableFuture.supplyAsync(() -> {
                 String videoPreviewUrl = javbusDataItem.getVideoPreviewUrl();
                 // 下载视频
+                // 这里没有做网络代理设置，可能会出现无法访问的情况
                 OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new RetryInterceptor(2)).retryOnConnectionFailure(true).connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
                         .readTimeout(60 * 6, TimeUnit.SECONDS) // 读取超时
                         .writeTimeout(60 * 6, TimeUnit.SECONDS) // 写超时
@@ -961,7 +1091,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         try {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(javbusDataItem.getMessageChatId());
-            sendMessage.setText("该番号未找到!");
+            sendMessage.setText("该番号未找到!\uD83D\uDE37\uD83D\uDE37\uD83D\uDE37");
             sendMessage.enableHtml(true);
             sendMessage.enableMarkdown(false);
             sendMessage.enableNotification();
