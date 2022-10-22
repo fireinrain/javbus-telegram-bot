@@ -776,6 +776,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      * @return
      */
     private List<String> fixStarName(String starName) {
+        logger.info("查询演员名字: " + starName);
         String queryUrl = TgBotConfig.JAVDB_BASE_URL + "search?q=$s&f=actor";
         queryUrl = queryUrl.replace("$s", starName);
         OkHttpClient okHttpClient = null;
@@ -797,7 +798,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 return results;
             }
             String result = Objects.requireNonNull(responseBody).string();
-            System.out.println(result);
+            // System.out.println(result);
             Document document = Jsoup.parse(result);
             Elements elements = document.selectXpath("//*[@id=\"actors\"]/div/a/strong");
             results = elements.stream().map(e -> e.text()).collect(Collectors.toList());

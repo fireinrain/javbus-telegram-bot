@@ -369,6 +369,7 @@ public class VideoPreviewUtils {
     /**
      * 获取视频元数据
      * 高 宽 时长
+     * REAL-641 NPE
      *
      * @param inputStream
      * @return
