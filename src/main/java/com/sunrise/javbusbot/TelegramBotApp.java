@@ -20,7 +20,7 @@ import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_PORT;
  */
 public class TelegramBotApp {
 
-    public static final Logger logging = LoggerFactory.getLogger(TelegramBotApp.class);
+    public static final Logger logger = LoggerFactory.getLogger(TelegramBotApp.class);
 
 
     public static void main(String[] args) {
@@ -54,7 +54,7 @@ public class TelegramBotApp {
             //    JobExcutor.doSpiderJob(spiderJob);
             //});
 
-            logging.info("Javbus Bot 已经启动");
+            logger.info("Javbus Bot 已经启动");
             botsApi.registerBot(pushInfoBot);
         } catch (TelegramApiException e) {
             e.printStackTrace();

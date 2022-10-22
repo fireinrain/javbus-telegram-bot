@@ -12,7 +12,7 @@ import java.util.concurrent.*;
  * @date: 2021/4/25 12:35 AM
  */
 public class JobExcutor {
-    public static final Logger logging = LoggerFactory.getLogger(JobExcutor.class);
+    public static final Logger logger = LoggerFactory.getLogger(JobExcutor.class);
 
     public static volatile ThreadPoolExecutor spiderExcutorService = null;
 
@@ -66,9 +66,9 @@ public class JobExcutor {
                 public void run() {
                     try {
                         TimeUnit.SECONDS.sleep(3);
-                        logging.info(Thread.currentThread().getName() + "----" + finalI);
+                        logger.info(Thread.currentThread().getName() + "----" + finalI);
                         BlockingQueue<Runnable> queue = tgBotExcutorService.getQueue();
-                        logging.info("-----当前队列：" + queue.size());
+                        logger.info("-----当前队列：" + queue.size());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -80,7 +80,7 @@ public class JobExcutor {
 
         for (int j = 0; j < 20; j++) {
             BlockingQueue<Runnable> queue = tgBotExcutorService.getQueue();
-            logging.info("当前队列：" + queue.size());
+            logger.info("当前队列：" + queue.size());
         }
     }
 

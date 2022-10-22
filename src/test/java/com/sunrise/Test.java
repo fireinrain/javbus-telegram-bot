@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 5:42 PM
  */
 public class Test {
-    private static final Logger logging = LoggerFactory.getLogger(Test.class);
+    private static final Logger logger = LoggerFactory.getLogger(Test.class);
 
     public static void main(String[] args) throws IOException, InterruptedException {
         // String a = "\n" +
@@ -53,9 +53,9 @@ public class Test {
         //        .map(e->e.trim().replaceAll(" ",""))
         //        .collect(Collectors.toList());
         //
-        // logging.info(vars);
+        // logger.info(vars);
         //
-        // logging.info(JavbusSpider.getMagnetReqUrl(a));
+        // logger.info(JavbusSpider.getMagnetReqUrl(a));
 
         // File file = new File("src/main/resources/reqHeaders.txt");
         // BufferedReader fileReader = new BufferedReader(new FileReader(file));
@@ -65,9 +65,9 @@ public class Test {
         //    hashMap.put(split[0],split[1]);
         //    return e;
         //}).collect(Collectors.toList());
-        // logging.info(hashMap.size());
+        // logger.info(hashMap.size());
         //
-        // logging.info(file.exists());
+        // logger.info(file.exists());
 
 
         // String message = "hello";
@@ -93,17 +93,17 @@ public class Test {
         //
         //    @Override
         //    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-        //        logging.info(response.toString());
-        //        logging.info(response.body().string());
+        //        logger.info(response.toString());
+        //        logger.info(response.body().string());
         //    }
         //});
 
-        // logging.info(JavbusSpider.isValidDate("2020-12-01"));
-        // logging.info(JavbusSpider.isValidDate("2020-12\nxsxasasx"));
-        // logging.info("2020-12\nxsxasasx");
+        // logger.info(JavbusSpider.isValidDate("2020-12-01"));
+        // logger.info(JavbusSpider.isValidDate("2020-12\nxsxasasx"));
+        // logger.info("2020-12\nxsxasasx");
 
         // int number = (int) Math.ceil((float) 13 / 10);
-        // logging.info(number);
+        // logger.info(number);
         //
         // ArrayList<String> strings = new ArrayList<>();
         // String a = "https://pics.dmm.co.jp/digital/video/ssni00876/ssni00876jp-1.jpg";
@@ -144,7 +144,7 @@ public class Test {
         //
         //
         //
-        // logging.info("");
+        // logger.info("");
 
         // OkHttpClient okHttpClient = new OkHttpClient();
         //
@@ -159,7 +159,7 @@ public class Test {
         // String result = null;
         // try {
         //    if (execute.code() != 200){
-        //        logging.info("无法查询");
+        //        logger.info("无法查询");
         //        return;
         //    }
         //    result = execute.body().string();
@@ -172,14 +172,14 @@ public class Test {
         // Elements contentContainer = document.select("body > div.wrap.mt30 > ul > li");
         //
         // for (Element element : contentContainer) {
-        //    logging.info(element.text());
+        //    logger.info(element.text());
         //}
 
 
         // body > div.wrap.mt30 > ul > li:nth-child(29) > a > p
 
         // Thread.sleep(5000);
-        // logging.info("xxx");
+        // logger.info("xxx");
 
         // String code = "PRED-438";
         // String title = "M男クンのお家（ウチ）までデリバリー楪カレン。";
@@ -336,7 +336,7 @@ public class Test {
             String result = "";
             try (Response execute = okHttpClient.newCall(request).execute();) {
                 if (execute.code() != 200) {
-                    logging.info("无法获取响应：" + request.url());
+                    logger.info("无法获取响应：" + request.url());
                 } else {
                     result = execute.body().string();
                 }
@@ -347,7 +347,7 @@ public class Test {
                 while (retry < 3) {
                     try (Response execute = okHttpClient.newCall(request).execute();) {
                         if (null != execute && execute.code() != 200) {
-                            logging.info("无法获取响应：" + request.url());
+                            logger.info("无法获取响应：" + request.url());
                         }
                         if (null != execute && execute.code() == 200) {
                             result = execute.body().string();
@@ -393,7 +393,7 @@ public class Test {
         //         String result = "";
         //         try (Response execute = okHttpClient.newCall(request).execute();) {
         //             if (execute.code() != 200) {
-        //                 logging.info("无法获取响应：" + request.url());
+        //                 logger.info("无法获取响应：" + request.url());
         //             } else {
         //                 result = execute.body().string();
         //             }
@@ -404,7 +404,7 @@ public class Test {
         //             while (retry < 3) {
         //                 try (Response execute = okHttpClient.newCall(request).execute();) {
         //                     if (null != execute && execute.code() != 200) {
-        //                         logging.info("无法获取响应：" + request.url());
+        //                         logger.info("无法获取响应：" + request.url());
         //                     }
         //                     if (null != execute && execute.code() == 200) {
         //                         result = execute.body().string();
@@ -453,7 +453,7 @@ public class Test {
         //         String result = "";
         //         try (Response execute = okHttpClient.newCall(request).execute();) {
         //             if (execute.code() != 200) {
-        //                 logging.info("无法获取响应：" + request.url());
+        //                 logger.info("无法获取响应：" + request.url());
         //             } else {
         //                 result = execute.body().string();
         //             }
@@ -464,7 +464,7 @@ public class Test {
         //             while (retry < 3) {
         //                 try (Response execute = okHttpClient.newCall(request).execute();) {
         //                     if (null != execute && execute.code() != 200) {
-        //                         logging.info("无法获取响应：" + request.url());
+        //                         logger.info("无法获取响应：" + request.url());
         //                     }
         //                     if (null != execute && execute.code() == 200) {
         //                         result = execute.body().string();
@@ -518,7 +518,7 @@ public class Test {
                 String result = "";
                 try (Response execute = okHttpClient.newCall(request).execute();) {
                     if (execute.code() != 200) {
-                        logging.info("无法获取响应：" + request.url());
+                        logger.info("无法获取响应：" + request.url());
                     } else {
                         result = execute.body().string();
                     }
@@ -529,7 +529,7 @@ public class Test {
                     while (retry < 3) {
                         try (Response execute = okHttpClient.newCall(request).execute();) {
                             if (null != execute && execute.code() != 200) {
-                                logging.info("无法获取响应：" + request.url());
+                                logger.info("无法获取响应：" + request.url());
                             }
                             if (null != execute && execute.code() == 200) {
                                 result = execute.body().string();

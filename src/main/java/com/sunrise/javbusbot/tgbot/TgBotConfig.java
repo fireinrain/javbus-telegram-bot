@@ -1,5 +1,9 @@
 package com.sunrise.javbusbot.tgbot;
 
+import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
@@ -11,6 +15,7 @@ import java.util.Properties;
  * @date: 2021/4/11 5:01 AM
  */
 public class TgBotConfig {
+    private static final Logger logger = LoggerFactory.getLogger(TgBotConfig.class);
     /**
      * 自动回答bot的bot name
      */
@@ -90,8 +95,23 @@ public class TgBotConfig {
             properties.load(TgBotConfig.class.getClassLoader().getResourceAsStream("setting.properties"));
             REPLY_BOT_NAME = properties.getProperty("REPLY_BOT_NAME");
             REPLY_BOT_TOKEN = properties.getProperty("REPLY_BOT_TOKEN");
-            JAVBUS_BOT_NAME = properties.getProperty("JAVBUS_BOT_NAME");
-            JAVBUS_BOT_TOKEN = properties.getProperty("JAVBUS_BOT_TOKEN");
+            // 优先使用环境变量
+            String javbusBotName = System.getenv("JAVBUS_BOT_NAME");
+            String javbusBotToken = System.getenv("JAVBUS_BOT_TOKEN");
+            if (Strings.isNullOrEmpty(javbusBotName)) {
+                logger.info("JAVBUS_BOT_NAME env exist, use env value!");
+                JAVBUS_BOT_NAME = javbusBotName;
+            } else {
+                logger.info("JAVBUS_BOT_NAME env not exist,use setting profile as default");
+                JAVBUS_BOT_NAME = properties.getProperty("JAVBUS_BOT_NAME");
+            }
+            if (Strings.isNullOrEmpty(javbusBotToken)) {
+                logger.info("JAVBUS_BOT_TOKEN env exist, use env value!");
+                JAVBUS_BOT_TOKEN = javbusBotToken;
+            } else {
+                logger.info("JAVBUS_BOT_TOKEN env not exist,use setting profile as default");
+                JAVBUS_BOT_TOKEN = properties.getProperty("JAVBUS_BOT_TOKEN");
+            }
             PROXY_HOST = properties.getProperty("PROXY_HOST");
             PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
             ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));

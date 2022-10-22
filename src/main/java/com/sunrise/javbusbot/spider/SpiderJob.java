@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * @date: 2021/4/25 12:40 AM
  */
 public class SpiderJob implements Runnable {
-    public static final Logger logging = LoggerFactory.getLogger(SpiderJob.class);
+    public static final Logger logger = LoggerFactory.getLogger(SpiderJob.class);
 
 
     private String filmCode;
@@ -54,7 +54,7 @@ public class SpiderJob implements Runnable {
         if (MongodbStorege.isMongoDatabaseAvailable.get()) {
             MongodbStorege.storeInfo(jsonStr, "javbus", "javFilm");
         } else {
-            logging.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
+            logger.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
         }
 
 

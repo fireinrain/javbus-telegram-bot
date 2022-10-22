@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * @date: 2021/4/26 12:48 AM
  */
 public class StarSpiderJob implements Runnable {
-    public static final Logger logging = LoggerFactory.getLogger(StarSpiderJob.class);
+    public static final Logger logger = LoggerFactory.getLogger(StarSpiderJob.class);
 
 
     private List<JavbusDataItem> javbusDataItems;
@@ -56,7 +56,7 @@ public class StarSpiderJob implements Runnable {
         if (MongodbStorege.isMongoDatabaseAvailable.get()) {
             MongodbStorege.storeInfos(this.javbusDataItems, "javbus", "javFilm");
         } else {
-            logging.warn("Warn! No mongoDB online, skip for local store：" + this.javbusDataItems.size());
+            logger.warn("Warn! No mongoDB online, skip for local store：" + this.javbusDataItems.size());
 
         }
 

@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 8:38 PM
  */
 public class MongodbStorege {
-    public static final Logger logging = LoggerFactory.getLogger(MongodbStorege.class);
+    public static final Logger logger = LoggerFactory.getLogger(MongodbStorege.class);
 
 
     private static String mongoDbUrl = TgBotConfig.MONGO_DB_URL;
@@ -111,7 +111,7 @@ public class MongodbStorege {
 
         mongoCollection.insertOne(document);
 
-        logging.info("插入成功：" + info);
+        logger.info("插入成功：" + info);
 
     }
 
@@ -142,7 +142,7 @@ public class MongodbStorege {
 
         mongoCollection.insertMany(documents);
 
-        logging.info("插入批量数据成功：" + listInfos.size());
+        logger.info("插入批量数据成功：" + listInfos.size());
 
     }
 
@@ -155,7 +155,7 @@ public class MongodbStorege {
         // document.append("name", "xiaoqian").append("age", 12).append("addr", "beijin");
         // mongoCollection.insertOne(document);
         boolean portIsUsing = portIsUsing("127.0.0.1", 27017);
-        logging.info("portIsUsing: {}", portIsUsing);
+        logger.info("portIsUsing: {}", portIsUsing);
     }
 
 

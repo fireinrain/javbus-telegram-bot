@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @date: 2021/4/25 4:27 AM
  */
 public class JavbusHelper {
-    public static final Logger logging = LoggerFactory.getLogger(JavbusHelper.class);
+    public static final Logger logger = LoggerFactory.getLogger(JavbusHelper.class);
 
     public static int defaultPageSize = 30;
 
@@ -221,15 +221,15 @@ public class JavbusHelper {
 
 
     public static void main(String[] args) {
-        logging.info(normalCode("abp334"));
+        logger.info(normalCode("abp334"));
         caculatePageInfo(10, 30);
 
-        logging.info(parseStrToUrlEncoder("つかさ"));
+        logger.info(parseStrToUrlEncoder("つかさ"));
 
-        logging.info("{}", startWithNumber("123434-1"));
-        logging.info("{}", startWithAlpha("我是sads"));
-        logging.info("{}", isforeignProduct("DayWithAPornstar.20.04.21"));
-        logging.info(normalCode("DDFBusty.16.10.25"));
+        logger.info("{}", startWithNumber("123434-1"));
+        logger.info("{}", startWithAlpha("我是sads"));
+        logger.info("{}", isforeignProduct("DayWithAPornstar.20.04.21"));
+        logger.info(normalCode("DDFBusty.16.10.25"));
 
     }
 

@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @date: 2021/4/25 3:25 PM
  */
 public class TgBotHelper {
-    public static final Logger logging = LoggerFactory.getLogger(TgBotHelper.class);
+    public static final Logger logger = LoggerFactory.getLogger(TgBotHelper.class);
 
     /**
      * 怎样获取private chatid？
@@ -54,7 +54,7 @@ public class TgBotHelper {
 
                 String s = String.valueOf(tgBotTokenResponse.getResult().getId());
                 chatId[0] = s;
-                logging.info("chat id: {}", s);
+                logger.info("chat id: {}", s);
             }
         });
         try {
@@ -97,7 +97,7 @@ public class TgBotHelper {
 
                 String s = String.valueOf(TgBotMessageSendResponse.getResult().getChat().getId());
                 chatId[0] = s;
-                logging.info("chat id: {}", s);
+                logger.info("chat id: {}", s);
             }
         });
         try {
@@ -127,8 +127,8 @@ public class TgBotHelper {
         //     }
         //     @Override
         //     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-        //         logging.info(response.toString());
-        //         logging.info(response.body().string());
+        //         logger.info(response.toString());
+        //         logger.info(response.body().string());
         //     }
         // });
 

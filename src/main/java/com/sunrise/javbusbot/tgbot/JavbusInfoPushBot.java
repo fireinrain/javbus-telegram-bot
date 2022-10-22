@@ -42,7 +42,7 @@ import static com.sunrise.javbusbot.spider.JavbusSpider.getJavdbSearchReqHeader;
  * @date: 2021/4/24 12:55 PM
  */
 public class JavbusInfoPushBot extends TelegramLongPollingBot {
-    public static final Logger logging = LoggerFactory.getLogger(JavbusInfoPushBot.class);
+    public static final Logger logger = LoggerFactory.getLogger(JavbusInfoPushBot.class);
 
     // TODO chatid 有状态 如果不同的频道使用，那么会导致消息错乱
     // 预留给forward功能
@@ -68,7 +68,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
 
         if (update.hasEditedMessage()) {
-            logging.info("----------------------> recieve message from bot place");
+            logger.info("----------------------> recieve message from bot place");
             // 判断是否开启了forward chat
             if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
                 chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
@@ -86,7 +86,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
         // 设置chatId
         if (update.hasMessage()) {
-            logging.info("----------------------> recieve message from bot place");
+            logger.info("----------------------> recieve message from bot place");
             // 判断是否开启了forward chat
             if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
                 chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
@@ -105,7 +105,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         // channel post
         // post 消息频率约束比bot严格
         if (update.hasChannelPost()) {
-            logging.info("----------------------> recieve message from channel place");
+            logger.info("----------------------> recieve message from channel place");
             if (TgBotConfig.FORWARD_MESSAGE_OPTION) {
                 chatId = TgBotConfig.FORWARD_MESSAGE_OPTION_CHATID;
             } else {
@@ -147,7 +147,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            logging.error("发送消息失败: " + e.getMessage());
+            logger.error("发送消息失败: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -165,7 +165,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            logging.warn("发送等待消息失败: " + e.getMessage());
+            logger.warn("发送等待消息失败: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -181,7 +181,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             String[] strings = text.split(" ");
             if (strings.length == 2) {
                 SpiderJob.trigerJavbusCodeTask(JavbusHelper.normalCode(strings[1].trim()), messageChatId);
-                logging.info("触发推Javbus任务, 查询 " + strings[1]);
+                logger.info("触发推Javbus任务, 查询 " + strings[1]);
                 return;
             } else {
                 SendMessage message = new SendMessage();
@@ -212,7 +212,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 javbusDataItem.setMessageChatId(messageChatId);
                 List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
                 StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                logging.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
                 return;
             } else {
                 SendMessage message = new SendMessage();
@@ -242,7 +242,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 javbusDataItem.setMessageChatId(messageChatId);
                 List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
                 StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                logging.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
                 return;
             } else {
                 SendMessage message = new SendMessage();
@@ -273,7 +273,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    logging.info("触发推StarJavbus任务, 查询所有" + strings[1]);
+                    logger.info("触发推StarJavbus任务, 查询所有" + strings[1]);
                     return;
                 }
                 if (strings.length >= 3) {
@@ -287,7 +287,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    logging.info("触发推StarJavbus任务, 查询所有" + starName);
+                    logger.info("触发推StarJavbus任务, 查询所有" + starName);
                     return;
                 } else {
                     SendMessage message = new SendMessage();
@@ -316,7 +316,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    logging.info("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
+                    logger.info("触发推StarJavbus任务, 查询所有含有磁力" + strings[1]);
                     return;
                 }
                 if (strings.length >= 3) {
@@ -330,7 +330,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    logging.info("触发推StarJavbus任务, 查询所有含有磁力" + starName);
+                    logger.info("触发推StarJavbus任务, 查询所有含有磁力" + starName);
                     return;
                 } else {
                     SendMessage message = new SendMessage();
@@ -351,7 +351,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             if (text.trim().startsWith("/starinfo")) {
                 String[] strings = text.split(" ");
                 if (strings.length == 2) {
-                    logging.info("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
+                    logger.info("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
                     if (starNames.size() > 1) {
@@ -367,7 +367,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 if (strings.length >= 3) {
                     String starName = text.replace("/starinfo", "").trim();
-                    logging.info("触发推InfoJavbus任务, 查询个人信息" + starName);
+                    logger.info("触发推InfoJavbus任务, 查询个人信息" + starName);
                     List<String> starNames = this.fixStarName(starName);
                     if (starNames.size() > 1) {
                         this.sendStarNameList(starNames, messageChatId);
@@ -404,7 +404,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    logging.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                    logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
                     return;
                 }
 
@@ -418,7 +418,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
-                    logging.info("触发推StarJavbus任务, 查询 " + starName);
+                    logger.info("触发推StarJavbus任务, 查询 " + starName);
                     return;
                 } else {
                     SendMessage message = new SendMessage();
@@ -438,7 +438,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
 
         // 直接返回无法处理的消息命令
-        logging.info(TgBotConfig.JAVBUS_BOT_NAME + " 收到消息： " + text);
+        logger.info(TgBotConfig.JAVBUS_BOT_NAME + " 收到消息： " + text);
         // Create a SendMessage object with mandatory fields
         SendMessage message = new SendMessage();
         message.setChatId(messageChatId);
@@ -491,16 +491,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     // JavbusPushInfoPipelineJob tgPushTask = new JavbusPushInfoPipelineJob(javbusDataItem);
                     JobExcutor.doTgJob(tgPushTask);
                 } else {
-                    logging.info("--------------------------------当前爬虫数据已经推送完毕--------------------------------");
+                    logger.info("--------------------------------当前爬虫数据已经推送完毕--------------------------------");
                 }
                 TimeUnit.SECONDS.sleep(5);
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (logging.isDebugEnabled()) {
-                logging.debug("--------------------------------睡眠5秒--------------------------------" + System.currentTimeMillis());
-                logging.debug("--------------------------------当前还有" + linkedDeque.size() + "个任务没有被推入执行器--------------------------------");
+            if (logger.isDebugEnabled()) {
+                logger.debug("--------------------------------睡眠5秒--------------------------------" + System.currentTimeMillis());
+                logger.debug("--------------------------------当前还有" + linkedDeque.size() + "个任务没有被推入执行器--------------------------------");
             }
         }
     }
@@ -526,7 +526,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     sendMessage.enableMarkdown(false);
                     sendMessage.enableNotification();
                     try {
-                        executeAsync(sendMessage).whenCompleteAsync((message, throwable) -> logging.info("推送简介完成：" + javbusDataItem.getCode()));
+                        executeAsync(sendMessage).whenCompleteAsync((message, throwable) -> logger.info("推送简介完成：" + javbusDataItem.getCode()));
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
@@ -540,7 +540,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     magnetMessage.enableHtml(true);
                     magnetMessage.enableMarkdown(false);
                     try {
-                        executeAsync(magnetMessage).whenCompleteAsync((message, throwable) -> logging.info("推送磁力链接完成：" + javbusDataItem.getCode()));
+                        executeAsync(magnetMessage).whenCompleteAsync((message, throwable) -> logger.info("推送磁力链接完成：" + javbusDataItem.getCode()));
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
@@ -598,10 +598,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                                     } catch (IOException exception) {
                                         if (null != body) {
                                             body.close();
-                                            logging.warn("当前请求响应失败");
+                                            logger.warn("当前请求响应失败");
                                         }
                                         exception.printStackTrace();
-                                        logging.error("当前请求地址: " + request.url());
+                                        logger.error("当前请求地址: " + request.url());
                                     }
                                     Object[] objects = new Object[2];
                                     objects[0] = body;
@@ -638,13 +638,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             SendMediaGroup sendMediaGroup = new SendMediaGroup();
                             sendMediaGroup.setChatId(javbusDataItem.getMessageChatId());
                             sendMediaGroup.setMedias(inputMediaPhotoList);
-                            executeAsync(sendMediaGroup).whenCompleteAsync((message, throwable) -> logging.info("推送样品图完成：" + javbusDataItem.getCode()));
+                            executeAsync(sendMediaGroup).whenCompleteAsync((message, throwable) -> logger.info("推送样品图完成：" + javbusDataItem.getCode()));
                         }
 
                     }
                     return new Message();
                 }).exceptionally(throwable -> {
-                    logging.info("推送样品图出现异常：" + throwable.getMessage());
+                    logger.info("推送样品图出现异常：" + throwable.getMessage());
                     return null;
                 });
 
@@ -654,7 +654,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
             } catch (Exception e) {
                 // e.printStackTrace();
-                logging.info("推送作品信息异常：" + e.getMessage());
+                logger.info("推送作品信息异常：" + e.getMessage());
             }
         }
     }
@@ -671,7 +671,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 DelaySampleImgPush delaySampleImgPush = delaySampleImgPushes.take();
 
                 JavbusDataItem javbusDataItem = delaySampleImgPush.getJavbusDataItem();
-                logging.info("延迟队列到期，正在处理中：" + javbusDataItem.getCode());
+                logger.info("延迟队列到期，正在处理中：" + javbusDataItem.getCode());
 
                 pushSampleImagesInfo(javbusDataItem);
 
@@ -694,7 +694,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             executeAsync(selfInfoMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
-                    logging.info("个人信息推送完成： " + javbusStarInfoItem.getStarName());
+                    logger.info("个人信息推送完成： " + javbusStarInfoItem.getStarName());
                 }
 
                 @Override
@@ -703,12 +703,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
-                    logging.info("推送个人信息出现异常：" + e.getMessage());
+                    logger.info("推送个人信息出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            logging.info("推送个人信息出现异常：" + e.getMessage());
+            logger.info("推送个人信息出现异常：" + e.getMessage());
         }
     }
 
@@ -747,11 +747,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 return;
             }
             try {
-                logging.info("当前作品地址为: " + javbusDataItem.getVisitUrl());
+                logger.info("当前作品地址为: " + javbusDataItem.getVisitUrl());
                 pushIntroduceInfo(javbusDataItem);
                 pushVideoPreview(javbusDataItem);
                 pushMagnentInfo(javbusDataItem);
-                logging.info("正在推送样品图延迟任务: " + javbusDataItem.getCode());
+                logger.info("正在推送样品图延迟任务: " + javbusDataItem.getCode());
                 JobExcutor.doDelayPushImgEnqueue(javbusDataItem);
 
             } catch (TelegramApiException e) {
@@ -793,7 +793,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         List<String> results = Collections.emptyList();
         try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
             if (response.code() != 200) {
-                logging.warn("当前查询失败: " + response.request().url());
+                logger.warn("当前查询失败: " + response.request().url());
                 return results;
             }
             String result = Objects.requireNonNull(responseBody).string();
@@ -803,7 +803,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             results = elements.stream().map(e -> e.text()).collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
-            logging.warn("当前查询出现错误: " + e.getMessage());
+            logger.warn("当前查询出现错误: " + e.getMessage());
         }
         return results;
     }
@@ -829,16 +829,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 ResponseBody body = null;
                 Response execute = null;
                 try {
-                    logging.info("开始请求视频地址: " + request.url());
+                    logger.info("开始请求视频地址: " + request.url());
                     execute = client.newCall(request).execute();
                     body = execute.body();
                 } catch (IOException exception) {
                     if (null != body) {
                         body.close();
-                        logging.warn("当前请求响应失败");
+                        logger.warn("当前请求响应失败");
                     }
                     exception.printStackTrace();
-                    logging.error("当前请求地址: " + request.url());
+                    logger.error("当前请求地址: " + request.url());
                 }
                 String bigImgUrl = javbusDataItem.getBigImgUrl();
                 Request thumbRequest = new Request.Builder().get().url(bigImgUrl.trim()).build();
@@ -849,10 +849,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 } catch (IOException e) {
                     if (null != body) {
                         body.close();
-                        logging.warn("当前请求响应失败");
+                        logger.warn("当前请求响应失败");
                     }
                     e.printStackTrace();
-                    logging.error("当前请求地址: " + request.url());
+                    logger.error("当前请求地址: " + request.url());
                 }
                 Object[] objects = new Object[3];
                 objects[0] = body;
@@ -871,7 +871,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             Object[] objects = completableFuture.get();
             ResponseBody responseBody = (ResponseBody) objects[0];
             if (responseBody == null) {
-                logging.warn("当前视频预览请求失败,已跳过");
+                logger.warn("当前视频预览请求失败,已跳过");
                 return;
             }
             SendVideo sendVideo = new SendVideo();
@@ -888,7 +888,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             tempStream.flush();
 
             if ((tempStream.size() / (1000 * 1000)) > 50) {
-                logging.warn("预览视频大于50MB,无法使用Bot发送");
+                logger.warn("预览视频大于50MB,无法使用Bot发送");
                 return;
             }
             InputStream fileInputStream = new ByteArrayInputStream(tempStream.toByteArray());
@@ -916,13 +916,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 // 主动关闭
                 ResponseBody rs = (ResponseBody) objects[0];
                 rs.close();
-                logging.info("推送预览视频完成：" + javbusDataItem.getCode());
+                logger.info("推送预览视频完成：" + javbusDataItem.getCode());
             }).exceptionally(throwable -> {
-                logging.info("推送预览视频CompleteFuture出现异常：" + throwable.getMessage());
+                logger.info("推送预览视频CompleteFuture出现异常：" + throwable.getMessage());
                 // 尝试重新加入延迟队列的最末端
-                logging.info("正在尝试重新加入延迟队列......");
+                logger.info("正在尝试重新加入延迟队列......");
                 if (javbusDataItem.getFetchRetry() >= 1) {
-                    logging.info("推送预览视频尝试次数超过限制(2次),丢弃：" + javbusDataItem.getCode());
+                    logger.info("推送预览视频尝试次数超过限制(2次),丢弃：" + javbusDataItem.getCode());
                 } else {
                     int fetchCount = javbusDataItem.getFetchRetry() + 1;
                     javbusDataItem.setFetchRetry(fetchCount);
@@ -931,9 +931,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 return null;
             });
             messageFuture.join();
-            logging.info("推送视频预览成功: " + code);
+            logger.info("推送视频预览成功: " + code);
         } catch (Exception e) {
-            logging.error("推送视频预览Try出现异常：" + e.getMessage());
+            logger.error("推送视频预览Try出现异常：" + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -994,16 +994,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             ResponseBody body = null;
                             Response execute = null;
                             try {
-                                logging.info("开始请求图片地址: " + request.url());
+                                logger.info("开始请求图片地址: " + request.url());
                                 execute = client.newCall(request).execute();
                                 body = execute.body();
                             } catch (IOException exception) {
                                 if (null != body) {
                                     body.close();
-                                    logging.warn("当前请求响应失败");
+                                    logger.warn("当前请求响应失败");
                                 }
                                 exception.printStackTrace();
-                                logging.error("当前请求地址: " + request.url());
+                                logger.error("当前请求地址: " + request.url());
                             }
                             Object[] objects = new Object[2];
                             objects[0] = body;
@@ -1032,7 +1032,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         Object[] objects = (Object[]) completableFuture.get();
                         ResponseBody responseBody = (ResponseBody) objects[0];
                         if (responseBody == null) {
-                            logging.warn("当前样品图片请求失败,已跳过");
+                            logger.warn("当前样品图片请求失败,已跳过");
                             continue;
                         }
                         InputStream inputStream = responseBody.byteStream();
@@ -1063,13 +1063,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             ResponseBody responseBody = (ResponseBody) objects[0];
                             responseBody.close();
                         }
-                        logging.info("推送样品图完成：" + javbusDataItem.getCode());
+                        logger.info("推送样品图完成：" + javbusDataItem.getCode());
                     }).exceptionally(throwable -> {
-                        logging.info("推送样品图CompleteFuture出现异常：" + throwable.getMessage());
+                        logger.info("推送样品图CompleteFuture出现异常：" + throwable.getMessage());
                         // 尝试重新加入延迟队列的最末端
-                        logging.info("正在尝试重新加入延迟队列......");
+                        logger.info("正在尝试重新加入延迟队列......");
                         if (javbusDataItem.getFetchRetry() >= 2) {
-                            logging.info("推送样品图尝试次数超过限制(3次),丢弃：" + javbusDataItem.getCode());
+                            logger.info("推送样品图尝试次数超过限制(3次),丢弃：" + javbusDataItem.getCode());
                             return null;
                         }
                         int fetchCount = javbusDataItem.getFetchRetry() + 1;
@@ -1081,7 +1081,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
             }
         } catch (Exception e) {
-            logging.info("推送样品图Try出现异常：" + e.getMessage());
+            logger.info("推送样品图Try出现异常：" + e.getMessage());
             e.printStackTrace();
         }
 
@@ -1098,7 +1098,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             executeAsync(sendMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
-                    logging.info(javbusDataItem.getCode() + " 番号查询未找到结果,消息推送完毕");
+                    logger.info(javbusDataItem.getCode() + " 番号查询未找到结果,消息推送完毕");
                 }
 
                 @Override
@@ -1107,12 +1107,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
-                    logging.info("推送番号未找到消息出现异常：" + e.getMessage());
+                    logger.info("推送番号未找到消息出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {
             // e.printStackTrace();
-            logging.info("推送番号未找到消息出现异常：" + e.getMessage());
+            logger.info("推送番号未找到消息出现异常：" + e.getMessage());
         }
 
     }
@@ -1129,7 +1129,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             executeAsync(sendMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
-                    logging.info("推送简介完成：" + javbusDataItem.getCode());
+                    logger.info("推送简介完成：" + javbusDataItem.getCode());
                 }
 
                 @Override
@@ -1138,12 +1138,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
-                    logging.info("推送简介出现异常：" + e.getMessage());
+                    logger.info("推送简介出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {
             // e.printStackTrace();
-            logging.info("推送简介出现异常：" + e.getMessage());
+            logger.info("推送简介出现异常：" + e.getMessage());
             e.printStackTrace();
             // try {
             //    Thread.sleep(2000);
@@ -1165,7 +1165,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             executeAsync(magnetMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
-                    logging.info("磁力信息推送完成： " + javbusDataItem.getCode());
+                    logger.info("磁力信息推送完成： " + javbusDataItem.getCode());
                 }
 
                 @Override
@@ -1174,12 +1174,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
-                    logging.info("推送磁力信息出现异常：" + e.getMessage());
+                    logger.info("推送磁力信息出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {
             // e.printStackTrace();
-            logging.info("推送磁力信息出现异常：" + e.getMessage());
+            logger.info("推送磁力信息出现异常：" + e.getMessage());
             // try {
             //    Thread.sleep(2000);
             //} catch (InterruptedException interruptedException) {

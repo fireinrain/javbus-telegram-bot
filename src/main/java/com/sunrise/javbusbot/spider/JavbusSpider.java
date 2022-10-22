@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @date: 2021/4/24 2:42 PM
  */
 public class JavbusSpider {
-    public static final Logger logging = LoggerFactory.getLogger(JavbusSpider.class);
+    public static final Logger logger = LoggerFactory.getLogger(JavbusSpider.class);
 
     private static String proxyHost = TgBotConfig.PROXY_HOST;
 
@@ -70,7 +70,7 @@ public class JavbusSpider {
      * @return
      */
     public static JavbusStarInfoItem fetchStarInfoByName(String starName) {
-        logging.info("正在查找信息：" + starName);
+        logger.info("正在查找信息：" + starName);
         JavbusStarInfoItem JavbusStarInfoItem = new JavbusStarInfoItem();
         List<JavbusDataItem> javbusDataItems = fetchFilmsInfoByName(starName);
         // 找到mainStarUrl为1的就是主演了
@@ -98,7 +98,7 @@ public class JavbusSpider {
         } finally {
             execute.close();
         }
-        logging.info("请求作品页，正在解析页面......");
+        logger.info("请求作品页，正在解析页面......");
 
         Document document = Jsoup.parse(result);
 
@@ -163,12 +163,12 @@ public class JavbusSpider {
                     JavbusStarInfoItem.setHobby(value);
                     break;
                 default:
-                    logging.info("无法抽取个人信息：" + key + " " + value);
+                    logger.info("无法抽取个人信息：" + key + " " + value);
 
 
             }
         }
-        // logging.info(JavbusStarInfoItem.toPrettyStr());
+        // logger.info(JavbusStarInfoItem.toPrettyStr());
         return JavbusStarInfoItem;
     }
 
@@ -201,7 +201,7 @@ public class JavbusSpider {
      */
     public static List<JavbusDataItem> fetchAllFilmsInfoByName(String starName, boolean hasMagnentOrAll) {
         String info = hasMagnentOrAll == true ? "(磁力)" : "";
-        logging.info("正在查找： " + starName + "所有作品" + info + " ,请稍等......");
+        logger.info("正在查找： " + starName + "所有作品" + info + " ,请稍等......");
         List<JavbusDataItem> javbusDataItems = fetchFilmsInfoByName(starName);
         // 找到mainStarUrl为1的就是主演了
         if (null == javbusDataItems || javbusDataItems.size() <= 0) {
@@ -209,7 +209,7 @@ public class JavbusSpider {
         }
         JavbusDataItem javbusDataItem = javbusDataItems.stream().filter(e -> null != e.getMainStarPageUrl()).findFirst().get();
 
-        logging.info("找到主演首页地址：" + javbusDataItem.getMainStarPageUrl());
+        logger.info("找到主演首页地址：" + javbusDataItem.getMainStarPageUrl());
 
         String[] filmsInfoByUrlPage = fetchFilmsCountsByUrlPage(javbusDataItem.getMainStarPageUrl().getStartPageUrl());
 
@@ -370,7 +370,7 @@ public class JavbusSpider {
         String result = "";
         try (Response execute = okHttpClient.newCall(request).execute();) {
             if (execute.code() != 200) {
-                logging.info("无法获取作品页面数据......: " + pageUrl);
+                logger.info("无法获取作品页面数据......: " + pageUrl);
                 return null;
             } else {
                 result = Objects.requireNonNull(execute.body()).string();
@@ -382,7 +382,7 @@ public class JavbusSpider {
             while (retry < 3) {
                 try (Response execute = okHttpClient.newCall(request).execute();) {
                     if (execute.code() != 200) {
-                        logging.info("无法获取作品页面数据......: " + pageUrl);
+                        logger.info("无法获取作品页面数据......: " + pageUrl);
                         return null;
                     }
                     if (execute.code() == 200) {
@@ -396,7 +396,7 @@ public class JavbusSpider {
 
             }
         }
-        logging.info("查询数据页成功，正在解析页面......:" + pageUrl);
+        logger.info("查询数据页成功，正在解析页面......:" + pageUrl);
         Document document = Jsoup.parse(result);
         Elements elements = document.select("#waterfall > div > a");
 
@@ -404,7 +404,7 @@ public class JavbusSpider {
         Element allFilmNode = allFilmCount.get(0);
         TextNode node = (TextNode) allFilmNode.childNodes().get(2);
         String text1 = node.text();
-        // logging.info(text1);
+        // logger.info(text1);
         String allFilmCountStr = text1.trim().split(" ")[1].trim();
 
         Elements haveMagnentCount = document.select("#resultshowmag");
@@ -413,14 +413,14 @@ public class JavbusSpider {
         String text2 = node2.text();
         String haveMagnentCountStr = text2.trim().split(" ")[1].trim();
 
-        // logging.info(text2);
+        // logger.info(text2);
 
 
         ArrayList<String> filmUrls = new ArrayList<>();
         for (Element element : elements) {
             String text = element.attr("href").trim();
             filmUrls.add(text);
-            // logging.info(text);
+            // logger.info(text);
         }
 
         CompletableFuture[] completableFutures = filmUrls.stream().parallel().map(e -> {
@@ -487,7 +487,7 @@ public class JavbusSpider {
         } finally {
             execute.close();
         }
-        logging.info("请求作品页，正在解析页面......");
+        logger.info("请求作品页，正在解析页面......");
 
         Document document = Jsoup.parse(result);
 
@@ -496,7 +496,7 @@ public class JavbusSpider {
         TextNode node = (TextNode) allFilmNode.childNodes().get(2);
         String text1 = node.text();
         String allCounts = text1.trim().split(" ")[1].trim();
-        logging.info(text1);
+        logger.info(text1);
 
         Elements haveMagnentCount = document.select("#resultshowmag");
         Element haveMagnentFilmNode = haveMagnentCount.get(0);
@@ -504,7 +504,7 @@ public class JavbusSpider {
         String text2 = node2.text();
         String haveMagnents = text2.trim().split(" ")[1].trim();
 
-        logging.info(text2);
+        logger.info(text2);
 
         String[] strings = new String[2];
         strings[0] = allCounts;
@@ -518,7 +518,7 @@ public class JavbusSpider {
         try {
             execute = okHttpClient.newCall(request).execute();
             if (execute.code() != 200) {
-                logging.info("无法获取作品页面数据......: " + pageUrl);
+                logger.info("无法获取作品页面数据......: " + pageUrl);
                 return null;
             }
         } catch (IOException e) {
@@ -532,7 +532,7 @@ public class JavbusSpider {
                     ioException.printStackTrace();
                 }
                 if (execute.code() != 200) {
-                    logging.info("无法获取作品页面数据......:" + pageUrl);
+                    logger.info("无法获取作品页面数据......:" + pageUrl);
                     return null;
                 }
                 if (execute.code() == 200) {
@@ -616,7 +616,7 @@ public class JavbusSpider {
         Element allFilmNode = allFilmCount.get(0);
         TextNode node = (TextNode) allFilmNode.childNodes().get(2);
         String text1 = node.text();
-        // logging.info(text1);
+        // logger.info(text1);
         String allFilmCountStr = text1.trim().split(" ")[1].trim();
 
         Elements haveMagnentCount = document.select("#resultshowmag");
@@ -710,7 +710,7 @@ public class JavbusSpider {
         Element allFilmNode = allFilmCount.get(0);
         TextNode node = (TextNode) allFilmNode.childNodes().get(2);
         String text1 = node.text();
-        // logging.info(text1);
+        // logger.info(text1);
         String allFilmCountStr = text1.trim().split(" ")[1].trim();
 
         Elements haveMagnentCount = document.select("#resultshowmag");
@@ -805,7 +805,7 @@ public class JavbusSpider {
         Element allFilmNode = allFilmCount.get(0);
         TextNode node = (TextNode) allFilmNode.childNodes().get(2);
         String text1 = node.text();
-        // logging.info(text1);
+        // logger.info(text1);
         String allFilmCountStr = text1.trim().split(" ")[1].trim();
 
         Elements haveMagnentCount = document.select("#resultshowmag");
@@ -814,14 +814,14 @@ public class JavbusSpider {
         String text2 = node2.text();
         String haveMagnentCountStr = text2.trim().split(" ")[1].trim();
 
-        // logging.info(text2);
+        // logger.info(text2);
 
 
         ArrayList<String> filmUrls = new ArrayList<>();
         for (Element element : elements) {
             String text = element.attr("href").trim();
             filmUrls.add(text);
-            // logging.info(text);
+            // logger.info(text);
         }
 
         CompletableFuture[] completableFutures = filmUrls.stream().map(e -> {
@@ -873,14 +873,14 @@ public class JavbusSpider {
         if ("occident".equals(queryType)) {
             msg = "欧美查询";
         }
-        logging.info("正在进行" + msg + "......");
+        logger.info("正在进行" + msg + "......");
         Request request = new Request.Builder().url(starUrl).get().headers(Headers.of(getStarSearchReqHeader(starUrl, magFlag))).build();
 
         Response execute = null;
         try {
             execute = okHttpClient.newCall(request).execute();
             if (execute.code() != 200) {
-                logging.info(msg + "--无法查询：" + starName);
+                logger.info(msg + "--无法查询：" + starName);
                 return null;
             }
         } catch (IOException e) {
@@ -892,10 +892,10 @@ public class JavbusSpider {
                     execute = okHttpClient.newCall(request).execute();
                 } catch (IOException ioException) {
                     // ioException.printStackTrace();
-                    logging.info(msg + "--请求页面失败，正在重试......");
+                    logger.info(msg + "--请求页面失败，正在重试......");
                 }
                 if (null != execute && execute.code() != 200) {
-                    logging.info(msg + "--无法查询：" + starName);
+                    logger.info(msg + "--无法查询：" + starName);
                     return null;
                 }
                 if (null != execute && execute.code() == 200) {
@@ -905,7 +905,7 @@ public class JavbusSpider {
             }
         }
         if (execute.code() == 200) {
-            logging.info("查询搜索页成功，正在解析页面......");
+            logger.info("查询搜索页成功，正在解析页面......");
         }
         return execute;
     }
@@ -937,7 +937,7 @@ public class JavbusSpider {
         String result = "";
         try (Response execute = okHttpClient.newCall(request).execute();) {
             if (execute.code() != 200) {
-                logging.info("无法查询：" + filmReqUrl);
+                logger.info("无法查询：" + filmReqUrl);
                 javbusDataItem.setCode(filmCode);
                 return javbusDataItem;
             } else {
@@ -950,7 +950,7 @@ public class JavbusSpider {
             while (retry < 3) {
                 try (Response execute = okHttpClient.newCall(request).execute();) {
                     if (null != execute && execute.code() != 200) {
-                        logging.info("无法查询：" + filmReqUrl);
+                        logger.info("无法查询：" + filmReqUrl);
                         return javbusDataItem;
                     }
                     if (null != execute && execute.code() == 200) {
@@ -964,7 +964,7 @@ public class JavbusSpider {
                 retry++;
             }
         }
-        // logging.info(execute.body().string());
+        // logger.info(execute.body().string());
 
         Document document = Jsoup.parse(result);
 
@@ -1004,7 +1004,7 @@ public class JavbusSpider {
                         href = TgBotConfig.SPIDER_BASE_URL + href;
                     }
                     sampleUrls.add(href);
-                    // logging.info(href);
+                    // logger.info(href);
                 }
             }
             // 针对无码作品样品图 格式不一样
@@ -1054,7 +1054,7 @@ public class JavbusSpider {
 
         for (int i = 0; i < pEls.size(); i++) {
             String text = pEls.get(i).text();
-            // logging.info(text);
+            // logger.info(text);
 
             String[] strings = text.split(":");
             if (strings.length == 1 && i <= pEls.size() - 2) {
@@ -1154,7 +1154,7 @@ public class JavbusSpider {
         // https://www.javbus.org/ajax/uncledatoolsbyajax.php?gid=3622821095&lang=zh&img=https://images.javbus.org/cover/g1q_b.jpg&uc=0&floor=54
         DataNode node = (DataNode) params.get(0).childNodes().get(0);
         String wholeData = node.getWholeData();
-        // logging.info(wholeData);
+        // logger.info(wholeData);
         String magnetReqUrl = getMagnetReqUrl(wholeData, fileReqUrl);
 
         Request magnentReq = makeMagnentReq(fileReqUrl, magnetReqUrl);
@@ -1164,19 +1164,19 @@ public class JavbusSpider {
                 magnentStrs = execute.body().string();
             }
         } catch (IOException e) {
-            logging.info("请求磁力失败......" + javbusDataItem.getCode());
+            logger.info("请求磁力失败......" + javbusDataItem.getCode());
             return;
             // e.printStackTrace();
         }
-        // logging.info(magnentStrs);
+        // logger.info(magnentStrs);
         Document magnentDom = Jsoup.parse(magnentStrs);
         Element node1 = (Element) magnentDom.childNodes().get(0);
         Elements select = node1.select("body > a");
 
         List<MagnentItem> magnentItems = extractMagnentContent(select);
-        // logging.info(magnentItems);
+        // logger.info(magnentItems);
 
-        // logging.info(javbusDataItem);
+        // logger.info(javbusDataItem);
         javbusDataItem.setMagnents(magnentItems);
     }
 
@@ -1193,7 +1193,7 @@ public class JavbusSpider {
         int listSize = 0;
         for (Element element : elements) {
             String text = element.text();
-            // logging.info(text);
+            // logger.info(text);
             if (JavbusHelper.isValidDate(text)) {
                 listSize++;
             }

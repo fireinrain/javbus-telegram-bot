@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * @date: 2021/5/1 6:45 PM
  */
 public class StartInfoSpiderJob implements Runnable {
-    public static final Logger logging = LoggerFactory.getLogger(StartInfoSpiderJob.class);
+    public static final Logger logger = LoggerFactory.getLogger(StartInfoSpiderJob.class);
 
     private JavbusStarInfoItem JavbusStarInfoItem;
 
@@ -47,7 +47,7 @@ public class StartInfoSpiderJob implements Runnable {
         if (MongodbStorege.isMongoDatabaseAvailable.get()) {
             MongodbStorege.storeInfo(jsonStr, "javbus", "javStarInfo");
         } else {
-            logging.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
+            logger.warn("Warn! No mongoDB online, skip for local store：" + jsonStr);
 
         }
 

@@ -27,7 +27,7 @@ import java.util.Objects;
  * @date: 2021/4/11 4:45 AM
  */
 public class ReplyMessageBotTest extends TelegramLongPollingBot {
-    public static final Logger logging = LoggerFactory.getLogger(ReplyMessageBotTest.class);
+    public static final Logger logger = LoggerFactory.getLogger(ReplyMessageBotTest.class);
 
     public static String chatId = "";
 
@@ -49,7 +49,7 @@ public class ReplyMessageBotTest extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         //处理channel消息
         if (update.hasChannelPost()) {
-            logging.info("----------------------> recieve message from channel place");
+            logger.info("----------------------> recieve message from channel place");
             chatId = update.getChannelPost().getChatId().toString();
             //channel post
             if (update.getChannelPost().hasText()) {
@@ -71,7 +71,7 @@ public class ReplyMessageBotTest extends TelegramLongPollingBot {
         //文本消息
         if (update.hasMessage() && update.getMessage().hasText()) {
 
-            logging.info(TgBotConfig.REPLY_BOT_NAME + " 收到消息： " + update.getMessage().getText());
+            logger.info(TgBotConfig.REPLY_BOT_NAME + " 收到消息： " + update.getMessage().getText());
             // Create a SendMessage object with mandatory fields
             SendMessage message = new SendMessage();
             message.setChatId(update.getMessage().getChatId().toString());
@@ -87,7 +87,7 @@ public class ReplyMessageBotTest extends TelegramLongPollingBot {
         //图片消息
         if (update.hasMessage() && update.getMessage().hasPhoto()) {
             List<PhotoSize> photo = update.getMessage().getPhoto();
-            logging.info("收到图片" + photo.size() + "张");
+            logger.info("收到图片" + photo.size() + "张");
             PhotoSize bigPhotoSize = update.getMessage().getPhoto().get(photo.size() - 1);
             String filePath = bigPhotoSize.getFilePath();
 
