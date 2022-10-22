@@ -411,10 +411,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         this.sendStarNameList(starNames, messageChatId);
                         return;
                     }
-                    JavbusStarInfoItem JavbusStarInfoItem = JavbusSpider.fetchStarInfoByName(starNames.get(0));
-                    JavbusStarInfoItem.setMessageChatId(messageChatId);
-                    StartInfoSpiderJob.trigerStarInfoJob(JavbusStarInfoItem);
-
+                    JavbusStarInfoItem javbusStarInfoItem = JavbusSpider.fetchStarInfoByName(starNames.get(0));
+                    javbusStarInfoItem.setMessageChatId(messageChatId);
+                    StartInfoSpiderJob.trigerStarInfoJob(javbusStarInfoItem);
                     return;
                 }
 
@@ -526,7 +525,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     }
 
     public void startJavbusStarInfoItemPushTask() {
-        ConcurrentLinkedDeque<JavbusStarInfoItem> linkedDeque = JobExcutor.JavbusStarInfoItemConcurrentLinkedDeque;
+        ConcurrentLinkedDeque<JavbusStarInfoItem> linkedDeque = JobExcutor.javbusStarInfoItemConcurrentLinkedDeque;
 
         while (true) {
             try {
@@ -781,16 +780,28 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      */
     class JavbusStarInfoItemJob implements Runnable {
 
-        private JavbusStarInfoItem JavbusStarInfoItem;
+        private JavbusStarInfoItem javbusStarInfoItem;
 
-        public JavbusStarInfoItemJob(JavbusStarInfoItem JavbusStarInfoItem) {
-            this.JavbusStarInfoItem = JavbusStarInfoItem;
+        public JavbusStarInfoItemJob(JavbusStarInfoItem javbusStarInfoItem) {
+            this.javbusStarInfoItem = javbusStarInfoItem;
+        }
+
+        public void pushNotFoundResult() {
+            try {
+                pushCodeNotFundMsg(this.javbusStarInfoItem);
+            } catch (TelegramApiException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
         public void run() {
             try {
-                pushJavbusStarInfoItem(JavbusStarInfoItem);
+                if (null == this.javbusStarInfoItem.getStarName() || "".equals(this.javbusStarInfoItem.getStarName())) {
+                    pushNotFoundResult();
+                    return;
+                }
+                pushJavbusStarInfoItem(javbusStarInfoItem);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1158,6 +1169,36 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         } catch (Exception e) {
             logger.info("推送样品图Try出现异常：" + e.getMessage());
             e.printStackTrace();
+        }
+
+    }
+
+    private void pushCodeNotFundMsg(JavbusStarInfoItem javbusStarInfoItem) throws TelegramApiException {
+        try {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(javbusStarInfoItem.getMessageChatId());
+            sendMessage.setText("对不起,该查询未找到!\uD83D\uDE37\uD83D\uDE37\uD83D\uDE37");
+            sendMessage.enableHtml(true);
+            sendMessage.enableMarkdown(false);
+            sendMessage.enableNotification();
+            executeAsync(sendMessage, new SentCallback<Message>() {
+                @Override
+                public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
+                    logger.info(javbusStarInfoItem.getStarName() + " 番号查询未找到结果,消息推送完毕");
+                }
+
+                @Override
+                public void onError(BotApiMethod<Message> botApiMethod, TelegramApiRequestException e) {
+                }
+
+                @Override
+                public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
+                    logger.info("推送番号未找到消息出现异常：" + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            // e.printStackTrace();
+            logger.info("推送番号未找到消息出现异常：" + e.getMessage());
         }
 
     }

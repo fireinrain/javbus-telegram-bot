@@ -20,26 +20,26 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class StartInfoSpiderJob implements Runnable {
     public static final Logger logger = LoggerFactory.getLogger(StartInfoSpiderJob.class);
 
-    private JavbusStarInfoItem JavbusStarInfoItem;
+    private JavbusStarInfoItem javbusStarInfoItem;
 
     private ConcurrentLinkedDeque<JavbusStarInfoItem> concurrentLinkedDeque;
 
-    public StartInfoSpiderJob(JavbusStarInfoItem JavbusStarInfoItem, ConcurrentLinkedDeque<JavbusStarInfoItem> concurrentLinkedDeque) {
+    public StartInfoSpiderJob(JavbusStarInfoItem javbusStarInfoItem, ConcurrentLinkedDeque<JavbusStarInfoItem> concurrentLinkedDeque) {
         Objects.requireNonNull(concurrentLinkedDeque, "JavbusStarInfoItem Queue cant be null");
-        this.JavbusStarInfoItem = JavbusStarInfoItem;
+        this.javbusStarInfoItem = javbusStarInfoItem;
         this.concurrentLinkedDeque = concurrentLinkedDeque;
     }
 
     @Override
     public void run() {
-        if (null == JavbusStarInfoItem || (null != JavbusStarInfoItem && JavbusStarInfoItem.getStarName().equals(""))) {
-            return;
-        }
-        this.concurrentLinkedDeque.offer(JavbusStarInfoItem);
+        // if (null == javbusStarInfoItem || (null != javbusStarInfoItem && javbusStarInfoItem.getStarName().equals(""))) {
+        //     return;
+        // }
+        this.concurrentLinkedDeque.offer(javbusStarInfoItem);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonStr = null;
         try {
-            jsonStr = objectMapper.writeValueAsString(JavbusStarInfoItem);
+            jsonStr = objectMapper.writeValueAsString(javbusStarInfoItem);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -53,8 +53,8 @@ public class StartInfoSpiderJob implements Runnable {
 
     }
 
-    public static void trigerStarInfoJob(JavbusStarInfoItem JavbusStarInfoItem) {
-        StartInfoSpiderJob startInfoSpiderJob = new StartInfoSpiderJob(JavbusStarInfoItem, JobExcutor.JavbusStarInfoItemConcurrentLinkedDeque);
+    public static void trigerStarInfoJob(JavbusStarInfoItem javbusStarInfoItem) {
+        StartInfoSpiderJob startInfoSpiderJob = new StartInfoSpiderJob(javbusStarInfoItem, JobExcutor.javbusStarInfoItemConcurrentLinkedDeque);
         JobExcutor.doTgJob(startInfoSpiderJob);
     }
 }
