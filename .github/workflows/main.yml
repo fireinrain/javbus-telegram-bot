@@ -38,7 +38,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/javbus-tg-bot-jar-with-dependencies.jar
-          remote: /root/javbus-tg-bot/javbus-tg-bot-jar-with-dependencies.jar
+          remote: /root/javbus/javbus-tg-bot-jar-with-dependencies.jar
           host: ${{ secrets.HOST }}
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USER_NAME }}
@@ -50,7 +50,7 @@ jobs:
           command: | # 命令中的 & 表示在后台运行进程
             export JAVBUS_BOT_NAME = ${{secrets.BOT_NAME}} &&
             export JAVBUS_BOT_NAME = ${{secrets.BOT_TOKEN}} &&
-            cd /root/javbus-tg-bot &&
+            cd /root/javbus &&
             ps -ef | grep javbus-tg-bot-jar-with-dependencies.jar | grep -v grep | cut -c 9-15 | xargs kill -9
             nohup java -jar javbus-tg-bot-jar-with-dependencies.jar >/dev/null 2>&1 &
           host: ${{ secrets.HOST }}
