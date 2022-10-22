@@ -1,5 +1,6 @@
 package com.sunrise.javbusbot.tgbot;
 
+import com.google.common.base.Strings;
 import com.sunrise.javbusbot.spider.*;
 import okhttp3.*;
 import org.jsoup.Jsoup;
@@ -818,6 +819,14 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         try {
             CompletableFuture<Object[]> completableFuture = CompletableFuture.supplyAsync(() -> {
                 String videoPreviewUrl = javbusDataItem.getVideoPreviewUrl();
+                if (Strings.isNullOrEmpty(videoPreviewUrl)) {
+                    logger.warn("无法找到预览视频链接: " + javbusDataItem.getVisitUrl());
+                    Object[] objects = new Object[3];
+                    objects[0] = null;
+                    objects[1] = null;
+                    objects[2] = null;
+                    return objects;
+                }
                 // 下载视频
                 // 这里没有做网络代理设置，可能会出现无法访问的情况
                 OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new RetryInterceptor(2)).retryOnConnectionFailure(true).connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
@@ -875,6 +884,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 logger.warn("当前视频预览请求失败,已跳过");
                 return;
             }
+
             SendVideo sendVideo = new SendVideo();
             sendVideo.setChatId(javbusDataItem.getMessageChatId());
             InputStream inputStream = responseBody.byteStream();

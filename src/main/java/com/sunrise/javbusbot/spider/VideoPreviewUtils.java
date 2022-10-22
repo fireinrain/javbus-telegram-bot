@@ -326,11 +326,19 @@ public class VideoPreviewUtils {
                 String videoUrlPart = tempStr[tempStr.length - 1];
                 String[] tempStr2 = videoUrlPart.split(",\"saved\":0");
                 String videoTmpStr = tempStr2[0];
-                String replace = videoTmpStr.replace("\"", "").replace("\\", "").replace("/hlsvideo/", "/litevideo/").replace("/playlist.m3u8", "");
+                String replaceVideoUrl = videoTmpStr.replace("\"", "").replace("\\", "").replace("/hlsvideo/", "/litevideo/");
+                if (videoTmpStr.contains("playlist.m3u8")) {
+                    String replace = replaceVideoUrl.replace("/playlist.m3u8", "");
+                    String mp4Url = replace + "/" + queryCode + "_dmb_w.mp4";
+                    videoUrl = mp4Url;
+                } else {
+                    String replace = replaceVideoUrl;
+                    videoUrl = replace;
+                }
+                //"https:\/\/cc3001.dmm.co.jp\/litevideo\/freepv\/8\/84r\/84real641\/84real641_dmb_w.mp4"
                 // 默认获取720 dmb
                 //_mhb_w 960p
-                String mp4Url = replace + "/" + queryCode + "_dmb_w.mp4";
-                videoUrl = mp4Url;
+                // String mp4Url = replace + "/" + queryCode + "_dmb_w.mp4";
             }
         }
         return videoUrl;

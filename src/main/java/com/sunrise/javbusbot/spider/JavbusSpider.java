@@ -200,12 +200,13 @@ public class JavbusSpider {
      * @return
      */
     public static List<JavbusDataItem> fetchAllFilmsInfoByName(String starName, boolean hasMagnentOrAll) {
+        List<JavbusDataItem> result = Collections.emptyList();
         String info = hasMagnentOrAll == true ? "(磁力)" : "";
         logger.info("正在查找： " + starName + "所有作品" + info + " ,请稍等......");
         List<JavbusDataItem> javbusDataItems = fetchFilmsInfoByName(starName);
         // 找到mainStarUrl为1的就是主演了
         if (null == javbusDataItems || javbusDataItems.size() <= 0) {
-            return new ArrayList<>();
+            return result;
         }
         JavbusDataItem javbusDataItem = javbusDataItems.stream().filter(e -> null != e.getMainStarPageUrl()).findFirst().get();
 
@@ -213,18 +214,16 @@ public class JavbusSpider {
 
         String[] filmsInfoByUrlPage = fetchFilmsCountsByUrlPage(javbusDataItem.getMainStarPageUrl().getStartPageUrl());
 
-        List<JavbusDataItem> collects = null;
         // fetch has magnent films
         if (hasMagnentOrAll) {
             Integer hasMagnent = Integer.valueOf(filmsInfoByUrlPage[1]);
-            return visitAllFilmsByPageNum(javbusDataItem, hasMagnent, true);
+            result = visitAllFilmsByPageNum(javbusDataItem, hasMagnent, true);
+        } else {
+            // fetch all
+            Integer allFilms = Integer.valueOf(filmsInfoByUrlPage[0]);
+            result = visitAllFilmsByPageNum(javbusDataItem, allFilms, false);
         }
-
-        // fetch all
-        Integer allFilms = Integer.valueOf(filmsInfoByUrlPage[0]);
-
-        return visitAllFilmsByPageNum(javbusDataItem, allFilms, false);
-
+        return result;
     }
 
     /**
