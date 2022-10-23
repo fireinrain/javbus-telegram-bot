@@ -139,9 +139,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             String text = update.getEditedMessage().getText();
             historyEntity.setQueryText(text);
             String[] query = text.split(" ");
-            historyEntity.setQueryCommand(query[0]);
-            historyEntity.setQueryStr(query[1]);
-            SqliteDbManager.insertQueryHistory(historyEntity);
+            if (query.length >= 2) {
+                historyEntity.setQueryCommand(query[0]);
+                historyEntity.setQueryStr(query[1]);
+                SqliteDbManager.insertQueryHistory(historyEntity);
+            }
             return;
         }
         if (update.hasMessage()) {
@@ -149,9 +151,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             String text = update.getMessage().getText();
             historyEntity.setQueryText(text);
             String[] query = text.split(" ");
-            historyEntity.setQueryCommand(query[0]);
-            historyEntity.setQueryStr(query[1]);
-            SqliteDbManager.insertQueryHistory(historyEntity);
+            if (query.length >= 2) {
+                historyEntity.setQueryCommand(query[0]);
+                historyEntity.setQueryStr(query[1]);
+                SqliteDbManager.insertQueryHistory(historyEntity);
+            }
             return;
         }
         if (update.hasChannelPost()) {
@@ -159,9 +163,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             String text = update.getChannelPost().getText();
             historyEntity.setQueryText(text);
             String[] query = text.split(" ");
-            historyEntity.setQueryCommand(query[0]);
-            historyEntity.setQueryStr(query[1]);
-            SqliteDbManager.insertQueryHistory(historyEntity);
+            if (query.length >= 2) {
+                historyEntity.setQueryCommand(query[0]);
+                historyEntity.setQueryStr(query[1]);
+                SqliteDbManager.insertQueryHistory(historyEntity);
+            }
         }
     }
 
@@ -220,7 +226,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      */
     private void doWithCommand(String text, String messageChatId) {
         // 统计
-        if (text.trim().startsWith("/states")) {
+        if (text.trim().startsWith("/states all")) {
             QueryStaticEntity queryStatic = SqliteDbManager.getQueryStatic();
             SendMessage message = new SendMessage();
             message.setChatId(messageChatId);

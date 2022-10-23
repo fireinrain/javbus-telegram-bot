@@ -132,8 +132,8 @@ public class SqliteDbManager {
             while (resultSet.next()) {
                 int allCounts = resultSet.getInt(1);
                 int todayQueryCounts = resultSet.getInt(2);
-                System.out.println(allCounts);
-                System.out.println(todayQueryCounts);
+                // System.out.println(allCounts);
+                // System.out.println(todayQueryCounts);
                 queryStaticEntity.setTodayQueryCounts(todayQueryCounts);
                 queryStaticEntity.setTotalQueryCounts(allCounts);
             }
