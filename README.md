@@ -40,7 +40,7 @@ JDK 1.8
     starmag - 查询演员所有磁力作品
     starall - 查询演员所有作品(包含无磁力作品)
     starinfo - 查询演员个人信息
-    states all - 查询机器人服务信息
+    states - 查询机器人服务信息(/states all)
     
 注意: 因为telegram 在大陆是被屏蔽的，所以在本地使用的话 需要开启代理，并将代理的端口设置到
 setting.properties 中。
