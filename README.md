@@ -40,6 +40,7 @@ JDK 1.8
     starmag - 查询演员所有磁力作品
     starall - 查询演员所有作品(包含无磁力作品)
     starinfo - 查询演员个人信息
+    states all - 查询机器人服务信息
     
 注意: 因为telegram 在大陆是被屏蔽的，所以在本地使用的话 需要开启代理，并将代理的端口设置到
 setting.properties 中。
@@ -81,6 +82,9 @@ setting.properties 中。
    命令: /starinfo 三上悠亚
    结果:
    ![功能截图](asserts/img_9.png)
+8. 获取服务器统计信息
+   命令: /states all
+   ![功能截图](asserts/img_10.png)
 
 最后:
 如果本项目对您有帮助的话，可以给人家一个star不，万分感谢
