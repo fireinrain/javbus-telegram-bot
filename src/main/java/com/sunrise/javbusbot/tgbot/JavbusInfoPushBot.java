@@ -275,6 +275,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
                     return;
                 }
+                // 提示必须要两个字符
+                boolean fixLength = this.warnQueryStrFixLength(queryStrs[1].trim(), messageChatId);
+                if (fixLength) {
+                    return;
+                }
                 // 获取演员的正确名字
                 List<String> starNames = this.fixStarName(queryStrs[1].trim());
                 if (starNames.size() > 1) {
@@ -314,6 +319,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                     logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
+                    return;
+                }
+                // 提示必须要两个字符
+                boolean fixLength = this.warnQueryStrFixLength(queryStrs[1].trim(), messageChatId);
+                if (fixLength) {
                     return;
                 }
                 // 获取演员的正确名字
@@ -359,6 +369,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         logger.info("触发推StarJavbus任务, 查询 " + strings[1]);
                         return;
                     }
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(strings[1].trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
                     if (starNames.size() > 1) {
@@ -373,6 +388,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
                 if (strings.length >= 3) {
                     String starName = text.replaceAll("/starall", "").trim();
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(starName.trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(starName);
                     if (starNames.size() > 1) {
@@ -413,6 +433,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         logger.info("触发推StarJavbus任务, 查询 " + strings[1]);
                         return;
                     }
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(strings[1].trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
                     if (starNames.size() > 1) {
@@ -427,6 +452,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 }
                 if (strings.length >= 3) {
                     String starName = text.replace("/starmag", "").trim();
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(starName.trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(starName);
                     if (starNames.size() > 1) {
@@ -469,6 +499,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         return;
                     }
                     logger.info("触发推InfoJavbus任务, 查询个人信息" + strings[1]);
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(strings[1].trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     // 获取演员的正确名字
                     List<String> starNames = this.fixStarName(strings[1].trim());
                     if (starNames.size() > 1) {
@@ -484,6 +519,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 if (strings.length >= 3) {
                     String starName = text.replace("/starinfo", "").trim();
                     logger.info("触发推InfoJavbus任务, 查询个人信息" + starName);
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(starName.trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     List<String> starNames = this.fixStarName(starName);
                     if (starNames.size() > 1) {
                         this.sendStarNameList(starNames, messageChatId);
@@ -523,6 +563,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         logger.info("触发推StarJavbus任务, 查询 " + queryStrs[1]);
                         return;
                     }
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(queryStrs[1].trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     List<String> starNames = this.fixStarName(queryStrs[1].trim());
                     if (starNames.size() > 1) {
                         this.sendStarNameList(starNames, messageChatId);
@@ -537,6 +582,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 if (queryStrs.length >= 3) {
                     String starName = text.replaceAll("/star", "").trim();
+                    // 提示必须要两个字符
+                    boolean fixLength = this.warnQueryStrFixLength(starName.trim(), messageChatId);
+                    if (fixLength) {
+                        return;
+                    }
                     List<String> starNames = this.fixStarName(starName);
                     if (starNames.size() > 1) {
                         this.sendStarNameList(starNames, messageChatId);
@@ -573,10 +623,26 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
         try {
             // Call method to send the message
-            execute(message);
+            executeAsync(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean warnQueryStrFixLength(String queryStr, String messageChatId) {
+        if (queryStr.length() < 2) {
+            SendMessage message = new SendMessage();
+            message.setChatId(messageChatId);
+            message.setText("亲, 模糊查询最少要两个字符长度： " + queryStr + " " + "\uD83D\uDE35\uD83D\uDE35\uD83D\uDE35");
+            try {
+                // Call method to send the message
+                executeAsync(message);
+                return true;
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
 
@@ -939,8 +1005,18 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             String result = Objects.requireNonNull(responseBody).string();
             // System.out.println(result);
             Document document = Jsoup.parse(result);
-            Elements elements = document.selectXpath("//*[@id=\"actors\"]/div/a/strong");
-            results = elements.stream().map(e -> e.text()).collect(Collectors.toList());
+            Elements elements = document.selectXpath("//*[@id=\"actors\"]/div/a");
+            results = elements.stream().map(e -> {
+                String name = "";
+                String title = e.attr("title");
+                String[] split = title.split(", ");
+                if (split.length >= 2) {
+                    name = split[split.length - 1];
+                } else {
+                    name = split[0];
+                }
+                return name;
+            }).collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
             logger.warn("当前查询出现错误: " + e.getMessage());
