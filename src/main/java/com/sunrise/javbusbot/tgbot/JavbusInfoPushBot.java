@@ -170,7 +170,6 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
         }
     }
-
     /**
      * 发送查询出的演员列表
      *
