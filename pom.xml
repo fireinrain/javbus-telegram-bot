@@ -60,6 +60,13 @@
             <artifactId>isoparser</artifactId>
             <version>1.9.41</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.39.3.0</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
         <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->

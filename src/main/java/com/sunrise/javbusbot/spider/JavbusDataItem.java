@@ -367,7 +367,7 @@ public class JavbusDataItem {
         if (magnents != null && magnents.size() > 0) {
             for (int i = 0; i < magnents.size(); i++) {
                 if (i < 5) {
-                    stringBuilder.append("-----------------------------------------------------\n");
+                    stringBuilder.append("-------------------------------------------\n");
                     stringBuilder.append(magnents.get(i).toPrettyStr() + "\n");
                 }
             }

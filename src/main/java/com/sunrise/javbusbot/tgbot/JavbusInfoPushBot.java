@@ -2,6 +2,9 @@ package com.sunrise.javbusbot.tgbot;
 
 import com.google.common.base.Strings;
 import com.sunrise.javbusbot.spider.*;
+import com.sunrise.javbusbot.storege.QueryHistoryEntity;
+import com.sunrise.javbusbot.storege.QueryStaticEntity;
+import com.sunrise.javbusbot.storege.SqliteDbManager;
 import okhttp3.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -46,6 +50,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     // 预留给forward功能
     public static String chatId = "";
 
+    // sqlite db
+    public static Connection sqliteConnect = SqliteDbManager.getConnection();
+
     // private String chatId = "-493244777";
 
     public JavbusInfoPushBot(DefaultBotOptions options) {
@@ -64,7 +71,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
+        this.recordQueryHistory(update);
         if (update.hasEditedMessage()) {
             logger.info("----------------------> recieve message from bot place");
             // 判断是否开启了forward chat
@@ -122,6 +129,43 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     }
 
     /**
+     * 记录查询统计
+     *
+     * @param update
+     */
+    private void recordQueryHistory(Update update) {
+        if (update.hasEditedMessage()) {
+            QueryHistoryEntity historyEntity = new QueryHistoryEntity();
+            String text = update.getEditedMessage().getText();
+            historyEntity.setQueryText(text);
+            String[] query = text.split(" ");
+            historyEntity.setQueryCommand(query[0]);
+            historyEntity.setQueryStr(query[1]);
+            SqliteDbManager.insertQueryHistory(historyEntity);
+            return;
+        }
+        if (update.hasMessage()) {
+            QueryHistoryEntity historyEntity = new QueryHistoryEntity();
+            String text = update.getMessage().getText();
+            historyEntity.setQueryText(text);
+            String[] query = text.split(" ");
+            historyEntity.setQueryCommand(query[0]);
+            historyEntity.setQueryStr(query[1]);
+            SqliteDbManager.insertQueryHistory(historyEntity);
+            return;
+        }
+        if (update.hasChannelPost()) {
+            QueryHistoryEntity historyEntity = new QueryHistoryEntity();
+            String text = update.getChannelPost().getText();
+            historyEntity.setQueryText(text);
+            String[] query = text.split(" ");
+            historyEntity.setQueryCommand(query[0]);
+            historyEntity.setQueryStr(query[1]);
+            SqliteDbManager.insertQueryHistory(historyEntity);
+        }
+    }
+
+    /**
      * 发送查询出的演员列表
      *
      * @param starNames
@@ -130,11 +174,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     private void sendStarNameList(List<String> starNames, String messageChatId) {
         StringBuilder builder = new StringBuilder();
         builder.append("已为您找到如下演员(包含曾用名): \n");
-        builder.append("-----------------------------------------------------\n");
+        builder.append("-------------------------------------------\n");
         for (int i = 1; i <= starNames.size(); i++) {
             builder.append(i + ". " + starNames.get(i - 1) + "\n");
         }
-        builder.append("-----------------------------------------------------\n");
+        builder.append("-------------------------------------------\n");
         builder.append("请选择需要查询的演员，并重新输入命令(/command 序号-xxxx)来选择查询. eg: /command 1-樱空桃");
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(messageChatId);
@@ -175,6 +219,20 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      * @param messageChatId
      */
     private void doWithCommand(String text, String messageChatId) {
+        // 统计
+        if (text.trim().startsWith("/states")) {
+            QueryStaticEntity queryStatic = SqliteDbManager.getQueryStatic();
+            SendMessage message = new SendMessage();
+            message.setChatId(messageChatId);
+            message.setText(queryStatic.getPrettyTgMessage());
+            try {
+                // Call method to send the message
+                executeAsync(message);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
         if (text.trim().startsWith("/code")) {
             String[] strings = text.split(" ");
             if (strings.length == 2) {

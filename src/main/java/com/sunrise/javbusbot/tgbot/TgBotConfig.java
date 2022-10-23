@@ -55,6 +55,10 @@ public class TgBotConfig {
      * mongodb 链接
      */
     public static String MONGO_DB_URL;
+    /**
+     * sqlite链接
+     */
+    public static String SQLITE_DB_PATH;
 
     /**
      * javdb 链接
@@ -117,6 +121,7 @@ public class TgBotConfig {
             PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
             ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));
             MONGO_DB_URL = properties.getProperty("MONGO_DB_URL");
+            SQLITE_DB_PATH = properties.getProperty("SQLITE_DB_PATH");
             JAVDB_BASE_URL = properties.getProperty("JAVDB_BASE_URL");
             SPIDER_BASE_URL = properties.getProperty("SPIDER_BASE_URL");
             SPIDER_FORGIEN_BASE_URL = properties.getProperty("SPIDER_FORGIEN_BASE_URL");
