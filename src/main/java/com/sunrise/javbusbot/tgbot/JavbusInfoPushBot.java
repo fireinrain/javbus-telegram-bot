@@ -185,7 +185,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             builder.append(i + ". " + starNames.get(i - 1) + "\n");
         }
         builder.append("-------------------------------------------\n");
-        builder.append("请选择需要查询的演员，并重新输入命令(/command 序号-xxxx)来选择查询. eg: /command 1-樱空桃");
+        builder.append("请选择需要查询的演员，并重新输入命令(/command 序号-xxxx)来选择查询. /command 指你当前输入的查询命令. eg: /command 1-樱空桃");
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(messageChatId);
         sendMessage.setText(builder.toString());
