@@ -34,6 +34,7 @@ JDK 1.8
 提示: telegram bot设置命令列表的话 需要去bot father那边设置，选好你的bot name，然后将命令列表发给它
 比如:
     code - 查询指定番号(视频预览)
+    trending - 查询热门演员或者作品(star/film)
     latest - 查询演员最新作品(可能无磁力,视频预览)
     maglatest - 查询演员最新磁力作品(视频预览)
     star - 查询演员最多30条作品
@@ -85,6 +86,12 @@ setting.properties 中。
 8. 获取服务器统计信息
    命令: /states all
    ![功能截图](asserts/img_10.png)
+9. 获取热门演员
+   命令: /trending star
+   ![功能截图](asserts/img_11.png)
+10. 获取热门作品
+    命令: /trending film
+    ![功能截图](asserts/img_12.png)
 
 最后:
 如果本项目对您有帮助的话，可以给人家一个star不，万分感谢
