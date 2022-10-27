@@ -628,6 +628,22 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
     }
 
+
+    @Override
+    public void onRegister() {
+        super.onRegister();
+        JobExcutor.doTgJob(() -> this.startJavbusPushTask());
+        JobExcutor.doDelayPushImgJob(() -> this.startDelaySamplePushJob());
+        JobExcutor.doJavbusStarInfoItemJob(() -> this.startJavbusStarInfoItemPushTask());
+    }
+
+    /**
+     * 提示最短查询字符长度
+     *
+     * @param queryStr
+     * @param messageChatId
+     * @return
+     */
     private boolean warnQueryStrFixLength(String queryStr, String messageChatId) {
         if (queryStr.length() < 2) {
             SendMessage message = new SendMessage();
@@ -644,15 +660,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         return false;
     }
 
-
-    @Override
-    public void onRegister() {
-        super.onRegister();
-        JobExcutor.doTgJob(() -> this.startJavbusPushTask());
-        JobExcutor.doDelayPushImgJob(() -> this.startDelaySamplePushJob());
-        JobExcutor.doJavbusStarInfoItemJob(() -> this.startJavbusStarInfoItemPushTask());
-    }
-
+    /**
+     * 演员任务循环
+     */
     public void startJavbusStarInfoItemPushTask() {
         ConcurrentLinkedDeque<JavbusStarInfoItem> linkedDeque = JobExcutor.javbusStarInfoItemConcurrentLinkedDeque;
 
@@ -671,6 +681,9 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * 推送任务循环
+     */
     public void startJavbusPushTask() {
         ConcurrentLinkedDeque<JavbusDataItem> linkedDeque = JobExcutor.javbusDataItemConcurrentLinkedDeque;
         while (true) {
@@ -874,6 +887,11 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * 推送演员信息
+     *
+     * @param javbusStarInfoItem
+     */
     public void pushJavbusStarInfoItem(JavbusStarInfoItem javbusStarInfoItem) {
         try {
             String javStarInfo = javbusStarInfoItem.toPrettyStr();
@@ -1312,6 +1330,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     }
 
+    /**
+     * 推送演员无法查找到信息
+     *
+     * @param javbusStarInfoItem
+     * @throws TelegramApiException
+     */
     private void pushCodeNotFundMsg(JavbusStarInfoItem javbusStarInfoItem) throws TelegramApiException {
         try {
             SendMessage sendMessage = new SendMessage();
@@ -1323,7 +1347,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             executeAsync(sendMessage, new SentCallback<Message>() {
                 @Override
                 public void onResult(BotApiMethod<Message> botApiMethod, Message message) {
-                    logger.info(javbusStarInfoItem.getStarName() + " 番号查询未找到结果,消息推送完毕");
+                    logger.info(javbusStarInfoItem.getStarName() + " 演员查询未找到结果,消息推送完毕");
                 }
 
                 @Override
@@ -1332,16 +1356,22 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
                 @Override
                 public void onException(BotApiMethod<Message> botApiMethod, Exception e) {
-                    logger.info("推送番号未找到消息出现异常：" + e.getMessage());
+                    logger.info("推送演员未找到消息出现异常：" + e.getMessage());
                 }
             });
         } catch (Exception e) {
             // e.printStackTrace();
-            logger.info("推送番号未找到消息出现异常：" + e.getMessage());
+            logger.info("推送演员未找到消息出现异常：" + e.getMessage());
         }
 
     }
 
+    /**
+     * 推送番号无法找到信息
+     *
+     * @param javbusDataItem
+     * @throws TelegramApiException
+     */
     private void pushCodeNotFundMsg(JavbusDataItem javbusDataItem) throws TelegramApiException {
         try {
             SendMessage sendMessage = new SendMessage();
@@ -1372,6 +1402,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     }
 
+    /**
+     * 推送作品简介信息
+     *
+     * @param javbusDataItem
+     * @throws TelegramApiException
+     */
     private void pushIntroduceInfo(JavbusDataItem javbusDataItem) throws TelegramApiException {
         try {
             String prettyStr = javbusDataItem.toPrettyStr();
@@ -1410,6 +1446,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
 
     }
 
+    /**
+     * 推送磁力链接信息
+     *
+     * @param javbusDataItem
+     * @throws TelegramApiException
+     */
     private void pushMagnentInfo(JavbusDataItem javbusDataItem) throws TelegramApiException {
         try {
             String magnetStrs = javbusDataItem.toPrettyMagnetStrs();
@@ -1444,6 +1486,12 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * 判断字符串是否为数字
+     *
+     * @param str
+     * @return bool
+     */
     public static boolean isNumeric(String str) {
         for (int i = str.length(); --i >= 0; ) {
             if (!Character.isDigit(str.charAt(i))) {
