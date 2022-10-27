@@ -8,6 +8,7 @@ import com.sunrise.javbusbot.storege.SqliteDbManager;
 import okhttp3.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import static com.sunrise.javbusbot.spider.JavbusSpider.getJavLibraryReqHeader;
 import static com.sunrise.javbusbot.spider.JavbusSpider.getJavdbSearchReqHeader;
 
 /**
@@ -170,6 +173,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
         }
     }
+
     /**
      * 发送查询出的演员列表
      *
@@ -238,6 +242,35 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             }
             return;
         }
+        // trending 数据来自javlibrary
+        if (text.trim().startsWith("/trending")) {
+            String[] strings = text.split(" ");
+            if (strings.length == 2) {
+                if (strings[1].trim().equals("star")) {
+                    // 触发演员trending
+                    this.pushTrendingStarInfo(messageChatId);
+                    return;
+                }
+                if (strings[1].trim().equals("film")) {
+                    // 触发作品trending
+                    this.pushTrendingFilmInfo(messageChatId);
+                    return;
+                }
+            } else {
+                SendMessage message = new SendMessage();
+                message.setChatId(messageChatId);
+                message.setText(text + " 人家无法识别命令啦,请重新输入(/trending xxxx)" + "❤️❤️❤️");
+
+                try {
+                    // Call method to send the message
+                    executeAsync(message);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+            }
+            return;
+        }
+
         if (text.trim().startsWith("/code")) {
             String[] strings = text.split(" ");
             if (strings.length == 2) {
@@ -626,6 +659,183 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 推送热门作品排行榜
+     *
+     * @param messageChatId
+     */
+    private void pushTrendingFilmInfo(String messageChatId) {
+        CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
+                    OkHttpClient okHttpClient;
+                    OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
+                            .addInterceptor(new RetryInterceptor(2))
+                            // 连接超时
+                            .connectTimeout(60 * 6, TimeUnit.SECONDS)
+                            // 读取超时
+                            .readTimeout(60 * 6, TimeUnit.SECONDS)
+                            // 写超时
+                            .writeTimeout(60 * 6, TimeUnit.SECONDS);
+                    okHttpClient = builder.build();
+                    String queryUrl = "https://www.javlibrary.com/cn/vl_bestrated.php?list&mode=&page=1";
+                    Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
+                    List<String> results = new ArrayList<>();
+                    String filmTrendStr = "";
+                    try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
+                        if (response.code() != 200) {
+                            System.out.println("当前查询失败: " + response.request().url());
+                            return filmTrendStr;
+                        }
+                        String result = Objects.requireNonNull(responseBody).string();
+                        Document document = Jsoup.parse(result);
+                        Elements elements = document.selectXpath("//*[@id=\"rightcolumn\"]/table[2]/tbody/tr");
+                        for (int i = 1; i < elements.size(); i++) {
+                            Element element = elements.get(i);
+                            Elements aTags = element.select("a");
+                            String filmName = aTags.get(aTags.size() - 1).text();
+                            int spaceIdex = filmName.indexOf(" ");
+                            // 标题
+                            String substring = filmName.substring(spaceIdex);
+                            // 番号
+                            String code = filmName.substring(0, spaceIdex);
+                            Elements tdTags = element.select("td");
+                            // 评分
+                            String score = tdTags.get(tdTags.size() - 1).text();
+                            String line = "#" + i + " " + score + " " + code + " " + substring;
+                            results.add(line);
+                        }
+                        filmTrendStr = String.join("\n", results);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        logger.error("访问javlibrary出现错误: " + e.getMessage());
+                    }
+                    return filmTrendStr;
+                }
+        ).whenComplete((result, error) -> {
+            if (!Strings.isNullOrEmpty(result)) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("已为您找到最新热门影片(序号-评分-番号-标题):\n");
+                builder.append("-------------------------------------------\n");
+                builder.append(result + "\n");
+                builder.append("-------------------------------------------\n");
+                builder.append("#trending ");
+                builder.append("#film ");
+                builder.append(" " + LocalDate.now() + " |");
+                builder.append("数据来自: Javlibrary");
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(messageChatId);
+                sendMessage.setParseMode("html");
+                sendMessage.setText(builder.toString());
+                try {
+                    executeAsync(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(messageChatId);
+                sendMessage.setParseMode("html");
+                sendMessage.setText("很抱歉,该查询功能暂时无法为您提供服务,请尝试向管理员反馈.");
+                try {
+                    executeAsync(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            logger.error("当前推送trending film 出现错误: " + e.getMessage());
+            return "";
+        });
+        completableFuture.join();
+    }
+
+    /**
+     * 推送热门演员排行榜
+     *
+     * @param messageChatId
+     */
+    private void pushTrendingStarInfo(String messageChatId) {
+        CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
+                    OkHttpClient okHttpClient;
+                    OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
+                            .addInterceptor(new RetryInterceptor(2))
+                            // 连接超时
+                            .connectTimeout(60 * 6, TimeUnit.SECONDS)
+                            // 读取超时
+                            .readTimeout(60 * 6, TimeUnit.SECONDS)
+                            // 写超时
+                            .writeTimeout(60 * 6, TimeUnit.SECONDS);
+                    okHttpClient = builder.build();
+                    String queryUrl = "https://www.javlibrary.com/cn/star_mostfav.php";
+                    Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
+                    List<String> results = Collections.emptyList();
+                    String starTrendStr = "";
+                    try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
+                        if (response.code() != 200) {
+                            System.out.println("当前查询失败: " + response.request().url());
+                            return starTrendStr;
+                        }
+                        String result = Objects.requireNonNull(responseBody).string();
+                        Document document = Jsoup.parse(result);
+                        Elements elements = document.selectXpath("//*[@class=\"searchitem\"]");
+                        results = elements.stream().map(e -> {
+                            String text = e.text();
+                            if (!text.contains("▲") && !text.contains("▼")) {
+                                String[] temp = text.split(" ");
+                                StringBuilder n = new StringBuilder();
+                                n.append(temp[0]);
+                                n.append(" ▬ ");
+                                n.append(temp[1]);
+                                return n.toString();
+                            }
+                            return text;
+                        }).collect(Collectors.toList());
+                        starTrendStr = String.join("\n", results);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        logger.error("访问javlibrary出现错误: " + e.getMessage());
+                    }
+                    return starTrendStr;
+                }
+        ).whenComplete((result, error) -> {
+            if (!Strings.isNullOrEmpty(result)) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("已为您找到当月最新热门演员:\n");
+                builder.append("-------------------------------------------\n");
+                builder.append(result + "\n");
+                builder.append("-------------------------------------------\n");
+                builder.append("#trending ");
+                builder.append("#star ");
+                builder.append(" " + LocalDate.now() + " |");
+                builder.append("数据来自: Javlibrary");
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(messageChatId);
+                sendMessage.setParseMode("html");
+                sendMessage.setText(builder.toString());
+                try {
+                    executeAsync(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(messageChatId);
+                sendMessage.setParseMode("html");
+                sendMessage.setText("很抱歉,该查询功能暂时无法为您提供服务,请尝试向管理员反馈.");
+                try {
+                    executeAsync(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).exceptionally(e -> {
+            e.printStackTrace();
+            logger.error("当前推送trending star 出现错误: " + e.getMessage());
+            return "";
+        });
+        completableFuture.join();
     }
 
 

@@ -1423,6 +1423,20 @@ public class JavbusSpider {
         return requestHeader;
     }
 
+    public static HashMap<String, String> getJavLibraryReqHeader(String queryStr) {
+        HashMap<String, String> requestHeader = getRequestHeader("javLibraryReqHeader.txt");
+        String refer = "";
+        if (queryStr.contains("list")) {
+            refer = "https://www.javlibrary.com/cn/vl_bestrated.php";
+        }
+        if (queryStr.contains("star")) {
+            refer = "https://www.javlibrary.com/cn/";
+        }
+        requestHeader.put("referer", refer);
+        requestHeader.put(":path", queryStr);
+        return requestHeader;
+    }
+
     /**
      * 测试方法
      *

@@ -1,0 +1,19 @@
+:authority: www.javlibrary.com
+:method: GET
+:path: /cn/star_mostfav.php
+:scheme: https
+accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+accept-language: zh,en;q=0.9,zh-TW;q=0.8,zh-CN;q=0.7,ja;q=0.6
+cache-control: no-cache
+cookie: timezone=-480; over18=18; __cf_bm=jtrNjf5b3IePdS_4wpI4P8SuhV0UEA8IipjcIT4npgA-1666874610-0-ASmnXHWdkB3UQIouGCt3AFT6a2vbUdYWuNH2wiTGegTS/KfMMnwFwBiMC6iKCXZ2CSifbGxToB759k8/QG3b3/om8nibR6ZkTUkwpVGX+lMn6n7f41k29d9dfhjCtZCDSg==
+pragma: no-cache
+referer: https://www.javlibrary.com/cn/
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+sec-fetch-dest: document
+sec-fetch-mode: navigate
+sec-fetch-site: same-origin
+sec-fetch-user: ?1
+upgrade-insecure-requests: 1
+user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36
