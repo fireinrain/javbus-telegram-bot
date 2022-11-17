@@ -1001,7 +1001,13 @@ public class JavbusSpider {
             for (Node childNode : childNodes) {
                 if (childNode instanceof Element) {
                     Element node = (Element) childNode;
-                    String href = node.attr("href");
+                    // String href = node.attr("href");
+                    String href = "";
+                    Elements img = node.select("img");
+                    if (!img.isEmpty()) {
+                        Element imgNode = img.get(0);
+                        href = imgNode.attr("src");
+                    }
                     // 不是来自dmm的图
                     if (href.startsWith("/pics/") || href.startsWith("/imgs")) {
                         href = TgBotConfig.SPIDER_BASE_URL + href;

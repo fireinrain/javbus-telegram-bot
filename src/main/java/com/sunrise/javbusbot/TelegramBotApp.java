@@ -32,6 +32,7 @@ public class TelegramBotApp {
 
             // Set up Http proxy
             DefaultBotOptions botOptions = new DefaultBotOptions();
+            botOptions.setGetUpdatesTimeout(6 * 60);
 
             if (TgBotConfig.ENABLE_PROXY) {
                 botOptions.setProxyHost(PROXY_HOST);
@@ -46,11 +47,11 @@ public class TelegramBotApp {
             //"KAWD-552", "KAWD-563", "KAWD-573", "KAWD-774", "KAWD-692"
             // List<String> strings = Arrays.asList("mide-433");
             // List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/yingyouluo.html");
-            //List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/kuisi.html");
-            //List<SpiderJob> spiderJobs = strings.stream()
+            // List<String> strings = JavbusHelper.getStarAllCodeNrFanHao("https://www.nrfanhao.com/nvyou/kuisi.html");
+            // List<SpiderJob> spiderJobs = strings.stream()
             //        .map(e -> new SpiderJob(e, JobExcutor.concurrentLinkedDeque))
             //        .collect(Collectors.toList());
-            //spiderJobs.forEach(spiderJob -> {
+            // spiderJobs.forEach(spiderJob -> {
             //    JobExcutor.doSpiderJob(spiderJob);
             //});
 
