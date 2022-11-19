@@ -668,6 +668,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      * @param messageChatId
      */
     private void pushTrendingFilmInfo(String messageChatId) {
+        logger.info("正在获取JavLibrary 热门女优排行榜......");
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
                     OkHttpClient okHttpClient;
                     OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
@@ -679,8 +680,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             // 写超时
                             .writeTimeout(60 * 6, TimeUnit.SECONDS);
                     okHttpClient = builder.build();
-                    String queryUrl = "https://www.javlibrary.com/cn/vl_bestrated.php?list&mode=&page=1";
-                    Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
+            String queryUrl = "https://www.javlibrary.com/tw/vl_bestrated.php?list&mode=&page=1";
+            Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
                     List<String> results = new ArrayList<>();
                     String filmTrendStr = "";
                     try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
@@ -758,6 +759,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      * @param messageChatId
      */
     private void pushTrendingStarInfo(String messageChatId) {
+        logger.info("正在获取JavLibrary 热门女优排行榜......");
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
                     OkHttpClient okHttpClient;
                     OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
@@ -769,8 +771,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                             // 写超时
                             .writeTimeout(60 * 6, TimeUnit.SECONDS);
                     okHttpClient = builder.build();
-                    String queryUrl = "https://www.javlibrary.com/cn/star_mostfav.php";
-                    Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
+            String queryUrl = "https://www.javlibrary.com/tw/star_mostfav.php";
+            Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
                     List<String> results = Collections.emptyList();
                     String starTrendStr = "";
                     try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
