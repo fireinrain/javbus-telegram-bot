@@ -1273,17 +1273,13 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
      * @param javbusDataItem
      */
     private void pushVideoPreview(JavbusDataItem javbusDataItem) {
+        String videoPreviewUrl = javbusDataItem.getVideoPreviewUrl();
+        if (Strings.isNullOrEmpty(videoPreviewUrl)) {
+            logger.warn("没有设置预览视频链接，跳过推送预览视频: " + javbusDataItem.getVisitUrl());
+            return;
+        }
         try {
             CompletableFuture<Object[]> completableFuture = CompletableFuture.supplyAsync(() -> {
-                String videoPreviewUrl = javbusDataItem.getVideoPreviewUrl();
-                if (Strings.isNullOrEmpty(videoPreviewUrl)) {
-                    logger.warn("无法找到预览视频链接: " + javbusDataItem.getVisitUrl());
-                    Object[] objects = new Object[3];
-                    objects[0] = null;
-                    objects[1] = null;
-                    objects[2] = null;
-                    return objects;
-                }
                 // 下载视频
                 // 这里没有做网络代理设置，可能会出现无法访问的情况
                 OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new RetryInterceptor(2)).retryOnConnectionFailure(true).connectTimeout(60 * 6, TimeUnit.SECONDS) // 连接超时
@@ -1362,8 +1358,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
             InputStream fileInputStream = new ByteArrayInputStream(tempStream.toByteArray());
             InputStream getMetaDataStream = new ByteArrayInputStream(tempStream.toByteArray());
             // telegram 对bot发送文件单个文件最大不超过50Mb
-            String videoPreviewUrl = (String) objects[2];
-            InputFile inputFile = new InputFile(fileInputStream, videoPreviewUrl.substring(videoPreviewUrl.lastIndexOf("/")));
+            String videoPreviewUrlTmp = (String) objects[2];
+            InputFile inputFile = new InputFile(fileInputStream, videoPreviewUrlTmp.substring(videoPreviewUrlTmp.lastIndexOf("/")));
             sendVideo.setVideo(inputFile);
             sendVideo.setCaption(stringBuilder.toString());
             sendVideo.setParseMode("html");
