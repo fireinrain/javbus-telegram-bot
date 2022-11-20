@@ -1001,13 +1001,14 @@ public class JavbusSpider {
             for (Node childNode : childNodes) {
                 if (childNode instanceof Element) {
                     Element node = (Element) childNode;
-                    // String href = node.attr("href");
-                    String href = "";
-                    Elements img = node.select("img");
-                    if (!img.isEmpty()) {
-                        Element imgNode = img.get(0);
-                        href = imgNode.attr("src");
-                    }
+                    String href = node.attr("href");
+                    // TODO dmm的大图可以直接访问 但是蚊香社的有问题
+                    // String href = "";
+                    // Elements img = node.select("img");
+                    // if (!img.isEmpty()) {
+                    //     Element imgNode = img.get(0);
+                    //     href = imgNode.attr("src");
+                    // }
                     // 不是来自dmm的图
                     if (href.startsWith("/pics/") || href.startsWith("/imgs")) {
                         href = TgBotConfig.SPIDER_BASE_URL + href;
