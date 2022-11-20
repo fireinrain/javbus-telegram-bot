@@ -606,6 +606,19 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         this.sendStarNameList(starNames, messageChatId);
                         return;
                     }
+                    // 如果查询结果为空 直接返回
+                    if (starNames.isEmpty()) {
+                        SendMessage message = new SendMessage();
+                        message.setChatId(messageChatId);
+                        message.setText(text + " 人家查询不到演员: " + queryStrs[1] + "❤️❤️❤️");
+                        try {
+                            // Call method to send the message
+                            execute(message);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        return;
+                    }
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchFilmsInfoByName(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
