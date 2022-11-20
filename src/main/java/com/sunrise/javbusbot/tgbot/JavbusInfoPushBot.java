@@ -395,9 +395,8 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     String[] split = queryStr.split("-");
                     if (split.length == 2 && isNumeric(split[0])) {
                         // 直接查询 不再进行javdb 演员名字查询
-                        JavbusDataItem javbusDataItem = JavbusSpider.fetchLatestFilmInfoByName(split[1].trim());
-                        javbusDataItem.setMessageChatId(messageChatId);
-                        List<JavbusDataItem> javbusDataItems = Collections.singletonList(javbusDataItem);
+                        List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameAll(split[1].trim());
+                        javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                         StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
                         logger.info("触发推StarJavbus任务, 查询 " + strings[1]);
                         return;
