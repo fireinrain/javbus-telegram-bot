@@ -50,6 +50,18 @@ public class TgBotConfig {
      * 是否开启代理
      */
     public static boolean ENABLE_PROXY;
+    /**
+     * 代理用户
+     */
+    public static String PROXY_USER;
+    /**
+     * 代理用户密码
+     */
+    public static String PROXY_PASS;
+    /**
+     * telegram Bot 是否使用代理
+     */
+    public static boolean ENABLE_TG_PROXY;
 
     /**
      * mongodb 链接
@@ -120,6 +132,10 @@ public class TgBotConfig {
             PROXY_HOST = properties.getProperty("PROXY_HOST");
             PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
             ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));
+            ENABLE_TG_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_TG_PROXY"));
+
+            PROXY_USER = properties.getProperty("PROXY_USER");
+            PROXY_PASS = properties.getProperty("PROXY_PASS");
             MONGO_DB_URL = properties.getProperty("MONGO_DB_URL");
             SQLITE_DB_PATH = properties.getProperty("SQLITE_DB_PATH");
             JAVDB_BASE_URL = properties.getProperty("JAVDB_BASE_URL");

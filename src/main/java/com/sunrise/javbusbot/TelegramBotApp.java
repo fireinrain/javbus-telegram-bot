@@ -10,8 +10,10 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_HOST;
-import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_PORT;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+
+import static com.sunrise.javbusbot.tgbot.TgBotConfig.*;
 
 /**
  * Main App
@@ -27,6 +29,15 @@ public class TelegramBotApp {
         try {
             // check mongodb is ok
             MongodbStorege.isMongoDatabaseAvailable();
+            // Create the Authenticator that will return auth's parameters for proxy authentication
+            if (TgBotConfig.ENABLE_TG_PROXY) {
+                Authenticator.setDefault(new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(PROXY_USER, PROXY_PASS.toCharArray());
+                    }
+                });
+            }
             // Create the TelegramBotsApi object to register your bots
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
 
@@ -34,9 +45,10 @@ public class TelegramBotApp {
             DefaultBotOptions botOptions = new DefaultBotOptions();
             botOptions.setGetUpdatesTimeout(6 * 60);
 
-            if (TgBotConfig.ENABLE_PROXY) {
+            if (TgBotConfig.ENABLE_TG_PROXY) {
                 botOptions.setProxyHost(PROXY_HOST);
                 botOptions.setProxyPort(PROXY_PORT);
+
                 // Select proxy type: [HTTP|SOCKS4|SOCKS5] (default: NO_PROXY)
                 botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
             }
