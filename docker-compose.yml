@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  javbus-tg-bot:
+    container_name: javbus-tg-bot
+    environment:
+      # replace with your bot name and bot token
+      - JAVBUS_BOT_NAME=xxxxxxxxxx
+      - JAVBUS_BOT_TOKEN=xxxxxxxxx
+    image: 'javbus-tg-bot:1.0'
