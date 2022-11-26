@@ -6,4 +6,7 @@ services:
       # replace with your bot name and bot token
       - JAVBUS_BOT_NAME=xxxxxxxxxx
       - JAVBUS_BOT_TOKEN=xxxxxxxxx
+    volumes:
+      - ./javbus-tg-bot.db:/app/javbus-tg-bot.db
+      - ./log:/app/log
     image: 'javbus-tg-bot:1.0'
