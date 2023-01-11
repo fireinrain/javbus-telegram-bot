@@ -22,6 +22,19 @@ JDK 1.8
 8. 完成部署
 ```
 
+docker 运行
+
+```bash
+推荐使用docker-compose 安装
+
+1. 在远程环境创建目录 javbus-tg-bot
+2. 下载本仓库中的docker-compose.yml 文件
+3. `docker-compose -f docker-compose.yml up -d`  进行启动
+
+
+
+```
+
 本地开发:
 
 ```bash
