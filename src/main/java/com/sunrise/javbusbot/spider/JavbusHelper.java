@@ -35,7 +35,7 @@ public class JavbusHelper {
 
     public static String normalCode(String code) {
         // 欧美番号
-        if (code.length() >= 8) {
+        if (code.length() >= 12) {
             code = code.replaceAll("\\.", "-");
             return code.toUpperCase(Locale.ROOT);
         }
