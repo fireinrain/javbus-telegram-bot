@@ -29,7 +29,8 @@ docker 运行
 
 1. 在远程环境创建目录 javbus-tg-bot
 2. 下载本仓库中的docker-compose.yml 文件
-3. `docker-compose -f docker-compose.yml up -d`  进行启动
+3. 将docker-compose文件中的 JAVBUS_BOT_NAME,JAVBUS_BOT_TOKEN 修改为你自己的参数
+4. `docker-compose -f docker-compose.yml up -d`  进行启动
 
 
 

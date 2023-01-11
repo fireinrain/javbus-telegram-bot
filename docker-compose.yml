@@ -4,9 +4,9 @@ services:
     container_name: javbus-tg-bot
     environment:
       # replace with your bot name and bot token
-      - JAVBUS_BOT_NAME=xxxxxxxxxx
-      - JAVBUS_BOT_TOKEN=xxxxxxxxx
+      - JAVBUS_BOT_NAME=replace-with-your-bot-name
+      - JAVBUS_BOT_TOKEN=replace-with-your-bot-token
     volumes:
       - ./javbus-tg-bot.db:/app/javbus-tg-bot.db
       - ./log:/app/log
-    image: 'javbus-tg-bot:1.0'
+    image: 'liuzy/javbus-tg-bot'
