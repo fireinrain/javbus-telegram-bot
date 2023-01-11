@@ -19,8 +19,6 @@ import org.mp4parser.boxes.iso14496.part12.TrackBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -264,7 +262,7 @@ public class VideoPreviewUtils {
                     Node node = videoNode.childNodes().get(0);
                     String source = node.toString();
                     // 截取地址
-                    String[] tempStr = source.split("\\{\"bitrate\":3000,\"src\":");
+                    String[] tempStr = source.split("\\{\"bitrate\":1500,\"src\":");
                     String videoPart = tempStr[1];
                     String[] tempStr2 = videoPart.split("}],\"affiliateId\":");
                     String videoStrRaw = tempStr2[0];
@@ -517,13 +515,20 @@ public class VideoPreviewUtils {
     }
 
     public static void main(String[] args) throws IOException {
-        MetaDataHelp metaDataHelp = new MetaDataHelp();
-        FileInputStream fis = new FileInputStream(new File("/Users/sunrise/Downloads/1fsdss408_dmb_w.mp4"));
-        metaDataHelp.find(fis);
-        System.out.println(metaDataHelp.metaHeight);
-        System.out.println(metaDataHelp.metaWidth);
+        // MetaDataHelp metaDataHelp = new MetaDataHelp();
+        // FileInputStream fis = new FileInputStream(new File("/Users/sunrise/Downloads/1fsdss408_dmb_w.mp4"));
+        // metaDataHelp.find(fis);
+        // System.out.println(metaDataHelp.metaHeight);
+        // System.out.println(metaDataHelp.metaWidth);
+        //
+        // getVideoDuration(new FileInputStream("/Users/sunrise/Downloads/Telegram Desktop/ipx00768_dmb_w.mp4"));
 
-        getVideoDuration(new FileInputStream("/Users/sunrise/Downloads/Telegram Desktop/ipx00768_dmb_w.mp4"));
+        JavbusDataItem javbusDataItem = new JavbusDataItem();
+        javbusDataItem.setTitleStr("営業課長の湿ったパンスト 里美ゆりあ");
+        javbusDataItem.setCode("SHKD-744");
+        javbusDataItem.setProduceCompany("アタッカーズ");
+        String filmPreviewUrl = getFilmPreviewUrl(javbusDataItem);
+        System.out.println(filmPreviewUrl);
 
     }
 
