@@ -32,6 +32,8 @@ docker 运行
 3. 将docker-compose文件中的 JAVBUS_BOT_NAME,JAVBUS_BOT_TOKEN 修改为你自己的参数
 4. `docker-compose -f docker-compose.yml up -d`  进行启动
 
+注意: 如果您部署的vps无法访问javdb 官网 那么就需要在docker-compose 文件中开启socks5 代理
+
 
 
 ```
