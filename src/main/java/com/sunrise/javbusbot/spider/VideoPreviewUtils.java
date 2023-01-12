@@ -255,9 +255,17 @@ public class VideoPreviewUtils {
                     Element videoNode = selectXpath.get(5);
                     Node node = videoNode.childNodes().get(0);
                     String source = node.toString();
+                    String[] tempStr = null;
+                    String videoPart = null;
+                    if (source.contains("{\"bitrate\":1500,\"src\":")) {
+                        tempStr = source.split("\\{\"bitrate\":1500,\"src\":");
+                        videoPart = tempStr[1];
+                    }
+                    if (source.contains("{\"bitrate\":3000,\"src\":")) {
+                        tempStr = source.split("\\{\"bitrate\":3000,\"src\":");
+                        videoPart = tempStr[1];
+                    }
                     // 截取地址
-                    String[] tempStr = source.split("\\{\"bitrate\":1500,\"src\":");
-                    String videoPart = tempStr[1];
                     String[] tempStr2 = videoPart.split("}],\"affiliateId\":");
                     String videoStrRaw = tempStr2[0];
                     String videoSrc = videoStrRaw.replace("\\", "").replace("\"", "").replace("//", "https://");

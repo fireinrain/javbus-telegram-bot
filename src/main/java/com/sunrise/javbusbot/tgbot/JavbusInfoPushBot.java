@@ -1251,7 +1251,7 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                     return null;
                 }
             });
-            InetSocketAddress proxyAddr = new InetSocketAddress(TgBotConfig.PROXY_HOST, TgBotConfig.PROXY_PORT);
+            InetSocketAddress proxyAddr = new InetSocketAddress(PROXY_HOST, PROXY_PORT);
             Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
             okHttpClient = builder.proxy(proxy).build();
 
