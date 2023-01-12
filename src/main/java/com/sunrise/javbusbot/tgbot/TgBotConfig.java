@@ -108,7 +108,10 @@ public class TgBotConfig {
     static {
         Properties properties = new Properties();
         try {
+
             properties.load(TgBotConfig.class.getClassLoader().getResourceAsStream("setting.properties"));
+            MONGO_DB_URL = properties.getProperty("MONGO_DB_URL");
+
             REPLY_BOT_NAME = properties.getProperty("REPLY_BOT_NAME");
             REPLY_BOT_TOKEN = properties.getProperty("REPLY_BOT_TOKEN");
             // 优先使用环境变量
@@ -129,14 +132,39 @@ public class TgBotConfig {
                 logger.info("JAVBUS_BOT_TOKEN env exist, use env value!");
                 JAVBUS_BOT_TOKEN = javbusBotToken;
             }
-            PROXY_HOST = properties.getProperty("PROXY_HOST");
-            PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
-            ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));
-            ENABLE_TG_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_TG_PROXY"));
+            String enableProxyTemp = System.getenv("ENABLE_PROXY");
+            if (Strings.isNullOrEmpty(enableProxyTemp) || enableProxyTemp.equals("false")) {
+                logger.info("ENABLE_PROXY env not exist,use setting profile as default");
+                ENABLE_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_PROXY"));
+                PROXY_HOST = properties.getProperty("PROXY_HOST");
+                PROXY_PORT = Integer.parseInt(properties.getProperty("PROXY_PORT"));
+                PROXY_USER = properties.getProperty("PROXY_USER");
+                PROXY_PASS = properties.getProperty("PROXY_PASS");
 
-            PROXY_USER = properties.getProperty("PROXY_USER");
-            PROXY_PASS = properties.getProperty("PROXY_PASS");
-            MONGO_DB_URL = properties.getProperty("MONGO_DB_URL");
+
+            } else if (!Strings.isNullOrEmpty(enableProxyTemp) && enableProxyTemp.equals("true")) {
+                logger.info("ENABLE_PROXY env exist, use env value!");
+                logger.info("Proxy for client enabled,so use the whole proxy setting from env");
+                ENABLE_PROXY = Boolean.parseBoolean(enableProxyTemp);
+                String proxyHost = System.getenv("PROXY_HOST");
+                if (!Strings.isNullOrEmpty(javbusBotToken)) {
+                    PROXY_HOST = proxyHost;
+                }
+                String proxyPortTemp = System.getenv("PROXY_PORT");
+                if (!Strings.isNullOrEmpty(proxyPortTemp)) {
+                    PROXY_PORT = Integer.parseInt(proxyPortTemp);
+                }
+                String proxyUser = System.getenv("PROXY_USER");
+                if (!Strings.isNullOrEmpty(javbusBotToken)) {
+                    PROXY_USER = proxyUser;
+                }
+                String proxyPass = System.getenv("PROXY_PASS");
+                if (!Strings.isNullOrEmpty(javbusBotToken)) {
+                    PROXY_USER = proxyPass;
+                }
+            }
+
+            ENABLE_TG_PROXY = Boolean.parseBoolean(properties.getProperty("ENABLE_TG_PROXY"));
             SQLITE_DB_PATH = properties.getProperty("SQLITE_DB_PATH");
             JAVDB_BASE_URL = properties.getProperty("JAVDB_BASE_URL");
             SPIDER_BASE_URL = properties.getProperty("SPIDER_BASE_URL");

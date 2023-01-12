@@ -6,6 +6,13 @@ services:
       # replace with your bot name and bot token
       - JAVBUS_BOT_NAME=replace-with-your-bot-name
       - JAVBUS_BOT_TOKEN=replace-with-your-bot-token
+      # 如果因为版权问题,所部署的vps无法访问javdb,请开启sock5代理
+      # 给程序使用
+      # - ENABLE_PROXY=true
+      # - PROXY_HOST=your-proxy-vps-ip
+      # - PROXT_PORT=your-proxy-vps-port
+      # - PROXY_USER=your-proxy-vps-socks5-user
+      # - PROXY_PASS=your-proxy-vps-socks5-password
     volumes:
       - ./javbus-tg-bot.db:/app/javbus-tg-bot.db
       - ./log:/app/log
