@@ -147,7 +147,7 @@ public class TgBotConfig {
                 logger.info("Proxy for client enabled,so use the whole proxy setting from env");
                 ENABLE_PROXY = Boolean.parseBoolean(enableProxyTemp);
                 String proxyHost = System.getenv("PROXY_HOST");
-                if (!Strings.isNullOrEmpty(javbusBotToken)) {
+                if (!Strings.isNullOrEmpty(proxyHost)) {
                     PROXY_HOST = proxyHost;
                 }
                 String proxyPortTemp = System.getenv("PROXY_PORT");
@@ -155,12 +155,12 @@ public class TgBotConfig {
                     PROXY_PORT = Integer.parseInt(proxyPortTemp);
                 }
                 String proxyUser = System.getenv("PROXY_USER");
-                if (!Strings.isNullOrEmpty(javbusBotToken)) {
+                if (!Strings.isNullOrEmpty(proxyUser)) {
                     PROXY_USER = proxyUser;
                 }
                 String proxyPass = System.getenv("PROXY_PASS");
-                if (!Strings.isNullOrEmpty(javbusBotToken)) {
-                    PROXY_USER = proxyPass;
+                if (!Strings.isNullOrEmpty(proxyPass)) {
+                    PROXY_PASS = proxyPass;
                 }
             }
 

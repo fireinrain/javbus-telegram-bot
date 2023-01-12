@@ -43,8 +43,7 @@ import java.util.stream.Collectors;
 
 import static com.sunrise.javbusbot.spider.JavbusSpider.getJavLibraryReqHeader;
 import static com.sunrise.javbusbot.spider.JavbusSpider.getJavdbSearchReqHeader;
-import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_PASS;
-import static com.sunrise.javbusbot.tgbot.TgBotConfig.PROXY_USER;
+import static com.sunrise.javbusbot.tgbot.TgBotConfig.*;
 
 /**
  * @description: tg bot 信息推送
@@ -1241,17 +1240,21 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 // 写超时
                 .writeTimeout(60 * 6, TimeUnit.SECONDS);
         if (TgBotConfig.ENABLE_PROXY) {
+            Authenticator.setDefault(new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    if (getRequestingHost().equalsIgnoreCase(PROXY_HOST)) {
+                        if (PROXY_PORT == getRequestingPort()) {
+                            return new PasswordAuthentication(PROXY_USER, PROXY_PASS.toCharArray());
+                        }
+                    }
+                    return null;
+                }
+            });
             InetSocketAddress proxyAddr = new InetSocketAddress(TgBotConfig.PROXY_HOST, TgBotConfig.PROXY_PORT);
             Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
-            if (TgBotConfig.ENABLE_PROXY) {
-                java.net.Authenticator.setDefault(new Authenticator() {
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(PROXY_USER, PROXY_PASS.toCharArray());
-                    }
-                });
-            }
             okHttpClient = builder.proxy(proxy).build();
+
         } else {
             okHttpClient = builder.build();
         }
