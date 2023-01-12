@@ -899,6 +899,9 @@ public class JavbusSpider {
             filmReqUrl = foreignerBaseUrl + filmCode;
         } else {
             // 移除多余的日期
+            // TODO starall 可能会漏掉作品
+            // 无法查询：https://www.javbus.com/GVG-004
+            // https://www.javbus.org/YRNKNKJDVAJ-466
             filmCode = JavbusHelper.removeDateFromFilmCode(filmCode);
             filmReqUrl = baseUrl + filmCode;
         }
