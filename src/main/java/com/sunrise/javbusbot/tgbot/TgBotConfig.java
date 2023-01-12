@@ -188,6 +188,7 @@ public class TgBotConfig {
 
     public static void main(String[] args) {
         Properties properties = new Properties();
+        Class<TgBotConfig> tgBotConfigClass = TgBotConfig.class;
         try {
             properties.load(TgBotConfig.class.getClassLoader().getResourceAsStream("setting.properties"));
             System.out.println(properties);

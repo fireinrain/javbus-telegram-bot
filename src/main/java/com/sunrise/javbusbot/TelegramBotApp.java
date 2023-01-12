@@ -21,6 +21,7 @@ import static com.sunrise.javbusbot.tgbot.TgBotConfig.*;
  * @author sunrise
  */
 public class TelegramBotApp {
+    public static final TgBotConfig tgBotConfig = new TgBotConfig();
 
     public static final Logger logger = LoggerFactory.getLogger(TelegramBotApp.class);
 
