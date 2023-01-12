@@ -21,8 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
@@ -65,13 +63,9 @@ public class VideoPreviewUtils {
                 // 写超时
                 .writeTimeout(60 * 6, TimeUnit.SECONDS);
 
-        if (enableProxy) {
-            InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
-            okHttpClient = clientBuilder.proxy(proxy).build();
-        } else {
-            okHttpClient = clientBuilder.build();
-        }
+
+        okHttpClient = clientBuilder.build();
+
         // okHttpClient.newCall()
         HashMap<String, String> urlMap = new HashMap<>();
         urlMap.put("r18", "https://www.r18.com/common/search/order=match/searchword=${code}/");

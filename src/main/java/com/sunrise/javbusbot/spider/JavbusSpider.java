@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -30,12 +28,6 @@ import java.util.stream.Collectors;
  */
 public class JavbusSpider {
     public static final Logger logger = LoggerFactory.getLogger(JavbusSpider.class);
-
-    private static String proxyHost = TgBotConfig.PROXY_HOST;
-
-    private static int proxyPort = TgBotConfig.PROXY_PORT;
-
-    private static boolean enableProxy = TgBotConfig.ENABLE_PROXY;
 
     private static String baseUrl = TgBotConfig.SPIDER_BASE_URL;
 
@@ -54,13 +46,7 @@ public class JavbusSpider {
                 .readTimeout(60 * 6, TimeUnit.SECONDS)
                 // 写超时
                 .writeTimeout(60 * 6, TimeUnit.SECONDS);
-        if (enableProxy) {
-            InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
-            okHttpClient = builder.proxy(proxy).build();
-        } else {
-            okHttpClient = builder.build();
-        }
+        okHttpClient = builder.build();
     }
 
     /**
@@ -276,8 +262,6 @@ public class JavbusSpider {
      * @return
      */
     public static List<JavbusDataItem> fetchFilmsInfoByEachPageUrl(String pageUrl, boolean hasMagnentOrAll) {
-        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
         OkHttpClient okHttpClient = null;
         if (hasMagnentOrAll) {
             OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
@@ -306,11 +290,8 @@ public class JavbusSpider {
                             return cookies != null ? cookies : new ArrayList<Cookie>();
                         }
                     });
-            if (enableProxy) {
-                okHttpClient = builder.proxy(proxy).build();
-            } else {
-                okHttpClient = builder.build();
-            }
+
+            okHttpClient = builder.build();
         } else {
             OkHttpClient.Builder builder = new OkHttpClient.Builder()
 
@@ -358,11 +339,7 @@ public class JavbusSpider {
                             return newCookies;
                         }
                     });
-            if (enableProxy) {
-                okHttpClient = builder.proxy(proxy).build();
-            } else {
-                okHttpClient = builder.build();
-            }
+            okHttpClient = builder.build();
 
         }
         Request request = new Request.Builder().url(pageUrl).get().headers(Headers.of(getStarSearchReqHeader(pageUrl, true))).build();
@@ -545,8 +522,6 @@ public class JavbusSpider {
 
     @NotNull
     private static OkHttpClient getCookiedOkHttpClient() {
-        InetSocketAddress proxyAddr = new InetSocketAddress(proxyHost, proxyPort);
-        Proxy proxy = new Proxy(Proxy.Type.SOCKS, proxyAddr);
         OkHttpClient okHttpClient = null;
         OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
                 // 连接超时
@@ -567,11 +542,7 @@ public class JavbusSpider {
                         return cookies != null ? cookies : new ArrayList<Cookie>();
                     }
                 });
-        if (enableProxy) {
-            okHttpClient = builder.proxy(proxy).build();
-        } else {
-            okHttpClient = builder.build();
-        }
+        okHttpClient = builder.build();
         return okHttpClient;
     }
 
