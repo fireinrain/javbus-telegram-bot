@@ -1252,13 +1252,16 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                 String name = "";
                 String title = e.attr("title");
                 String[] split = title.split(", ");
-                if (split.length >= 2) {
-                    name = split[split.length - 1];
-                } else {
-                    name = split[0];
-                }
-                return name;
-            }).collect(Collectors.toList());
+                // 默认只获取title最后的一个元素 不合理
+                // if (split.length >= 2) {
+                //     name = split[split.length - 1];
+                // } else {
+                //     name = split[0];
+                // }
+                List<String> stringList = Arrays.stream(split).sorted().map(el -> el.trim())
+                        .collect(Collectors.toList());
+                return stringList;
+            }).flatMap(Collection::stream).collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
             logger.warn("当前查询出现错误: " + e.getMessage());
