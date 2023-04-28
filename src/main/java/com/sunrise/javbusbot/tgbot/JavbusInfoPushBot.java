@@ -480,6 +480,10 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
                         this.sendStarNameList(starNames, messageChatId);
                         return;
                     }
+                    if (starNames.size() <= 0) {
+                        logger.info("查询演员曾用名失败");
+                        return;
+                    }
                     List<JavbusDataItem> javbusDataItems = JavbusSpider.fetchAllFilmsInfoByNameHasMagnent(starNames.get(0));
                     javbusDataItems.forEach(e -> e.setMessageChatId(messageChatId));
                     StarSpiderJob.trigerStarJavbusTask(javbusDataItems);
@@ -686,28 +690,28 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     private void pushTrendingFilmInfo(String messageChatId) {
         logger.info("正在获取JavLibrary 热门女优排行榜......");
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
-                    OkHttpClient okHttpClient;
-                    OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
-                            .addInterceptor(new RetryInterceptor(2))
-                            // 连接超时
-                            .connectTimeout(60 * 6, TimeUnit.SECONDS)
-                            // 读取超时
-                            .readTimeout(60 * 6, TimeUnit.SECONDS)
-                            // 写超时
-                            .writeTimeout(60 * 6, TimeUnit.SECONDS);
-                    okHttpClient = builder.build();
+            OkHttpClient okHttpClient;
+            OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
+                    .addInterceptor(new RetryInterceptor(2))
+                    // 连接超时
+                    .connectTimeout(60 * 6, TimeUnit.SECONDS)
+                    // 读取超时
+                    .readTimeout(60 * 6, TimeUnit.SECONDS)
+                    // 写超时
+                    .writeTimeout(60 * 6, TimeUnit.SECONDS);
+            okHttpClient = builder.build();
             String queryUrl = "https://www.javlibrary.com/tw/vl_bestrated.php?list&mode=&page=1";
             Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
-                    List<String> results = new ArrayList<>();
-                    String filmTrendStr = "";
-                    try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
-                        if (response.code() != 200) {
-                            System.out.println("当前查询失败: " + response.request().url());
-                            return filmTrendStr;
-                        }
-                        String result = Objects.requireNonNull(responseBody).string();
-                        Document document = Jsoup.parse(result);
-                        Elements elements = document.selectXpath("//*[@id=\"rightcolumn\"]/table[2]/tbody/tr");
+            List<String> results = new ArrayList<>();
+            String filmTrendStr = "";
+            try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
+                if (response.code() != 200) {
+                    System.out.println("当前查询失败: " + response.request().url());
+                    return filmTrendStr;
+                }
+                String result = Objects.requireNonNull(responseBody).string();
+                Document document = Jsoup.parse(result);
+                Elements elements = document.selectXpath("//*[@id=\"rightcolumn\"]/table[2]/tbody/tr");
                         for (int i = 1; i < elements.size(); i++) {
                             Element element = elements.get(i);
                             Elements aTags = element.select("a");
@@ -777,28 +781,28 @@ public class JavbusInfoPushBot extends TelegramLongPollingBot {
     private void pushTrendingStarInfo(String messageChatId) {
         logger.info("正在获取JavLibrary 热门女优排行榜......");
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
-                    OkHttpClient okHttpClient;
-                    OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
-                            .addInterceptor(new RetryInterceptor(2))
-                            // 连接超时
-                            .connectTimeout(60 * 6, TimeUnit.SECONDS)
-                            // 读取超时
-                            .readTimeout(60 * 6, TimeUnit.SECONDS)
-                            // 写超时
-                            .writeTimeout(60 * 6, TimeUnit.SECONDS);
-                    okHttpClient = builder.build();
+            OkHttpClient okHttpClient;
+            OkHttpClient.Builder builder = new OkHttpClient.Builder().retryOnConnectionFailure(true)
+                    .addInterceptor(new RetryInterceptor(2))
+                    // 连接超时
+                    .connectTimeout(60 * 6, TimeUnit.SECONDS)
+                    // 读取超时
+                    .readTimeout(60 * 6, TimeUnit.SECONDS)
+                    // 写超时
+                    .writeTimeout(60 * 6, TimeUnit.SECONDS);
+            okHttpClient = builder.build();
             String queryUrl = "https://www.javlibrary.com/tw/star_mostfav.php";
             Request request = new Request.Builder().url(queryUrl).get().headers(Headers.of(getJavLibraryReqHeader(queryUrl))).build();
-                    List<String> results = Collections.emptyList();
-                    String starTrendStr = "";
-                    try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
-                        if (response.code() != 200) {
-                            System.out.println("当前查询失败: " + response.request().url());
-                            return starTrendStr;
-                        }
-                        String result = Objects.requireNonNull(responseBody).string();
-                        Document document = Jsoup.parse(result);
-                        Elements elements = document.selectXpath("//*[@class=\"searchitem\"]");
+            List<String> results = Collections.emptyList();
+            String starTrendStr = "";
+            try (Response response = okHttpClient.newCall(request).execute(); ResponseBody responseBody = response.body()) {
+                if (response.code() != 200) {
+                    System.out.println("当前查询失败: " + response.request().url());
+                    return starTrendStr;
+                }
+                String result = Objects.requireNonNull(responseBody).string();
+                Document document = Jsoup.parse(result);
+                Elements elements = document.selectXpath("//*[@class=\"searchitem\"]");
                         results = elements.stream().map(e -> {
                             String text = e.text();
                             if (!text.contains("▲") && !text.contains("▼")) {
