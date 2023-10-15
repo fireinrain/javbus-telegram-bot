@@ -848,7 +848,7 @@ public class JavbusSpider {
             msg = "欧美查询";
         }
         logger.info("正在进行" + msg + "......");
-        Request request = new Request.Builder().url(starUrl).get().headers(Headers.of(getStarSearchReqHeader(starUrl, magFlag))).build();
+        Request request = new Request.Builder().url(starUrl).get().addHeader("Cookie",TgBotConfig.JAVBUS_COOKIE).headers(Headers.of(getStarSearchReqHeader(starUrl, magFlag))).build();
 
         Response execute = null;
         try {
@@ -893,6 +893,7 @@ public class JavbusSpider {
      * @return
      */
     public static JavbusDataItem fetchFilmInFoByCode(String filmCode) {
+        logger.info("正在查询番号: ",filmCode,"相关信息...");
         String filmReqUrl = "";
         // 判断filmCode类型
         if (JavbusHelper.isforeignProduct(filmCode)) {
@@ -909,7 +910,7 @@ public class JavbusSpider {
 
         JavbusDataItem javbusDataItem = new JavbusDataItem();
 
-        Request request = new Request.Builder().url(filmReqUrl).get().build();
+        Request request = new Request.Builder().url(filmReqUrl).addHeader("Cookie",TgBotConfig.JAVBUS_COOKIE).get().build();
 
         String result = "";
         try (Response execute = okHttpClient.newCall(request).execute();) {
