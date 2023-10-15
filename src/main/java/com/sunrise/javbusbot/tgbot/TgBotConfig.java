@@ -173,7 +173,11 @@ public class TgBotConfig {
             SQLITE_DB_PATH = properties.getProperty("SQLITE_DB_PATH");
             JAVDB_BASE_URL = properties.getProperty("JAVDB_BASE_URL");
             SPIDER_BASE_URL = properties.getProperty("SPIDER_BASE_URL");
-            JAVBUS_COOKIE = properties.getProperty("JAVBUS_COOKIE");
+            String javbusCookie = System.getenv("JAVBUS_COOKIE");
+            if (!Strings.isNullOrEmpty(javbusCookie)) {
+                JAVBUS_COOKIE = javbusCookie;
+            }
+            // JAVBUS_COOKIE = properties.getProperty("JAVBUS_COOKIE");
             SPIDER_FORGIEN_BASE_URL = properties.getProperty("SPIDER_FORGIEN_BASE_URL");
             FORWARD_MESSAGE_OPTION = Boolean.parseBoolean(properties.getProperty("FORWARD_MESSAGE_OPTION"));
             FORWARD_MESSAGE_OPTION_CHATID = properties.getProperty("FORWARD_MESSAGE_OPTION_CHATID");
